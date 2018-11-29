@@ -16,18 +16,14 @@ static uint8_t rx_buffer[MAX_BUFFER_SIZE] = { 0 };
 
 
 //  ***************************************************************************
-/// @brief	Initialize USART
+/// @brief	Initialization USART
 /// @note	Mode 8N1
 //  ***************************************************************************
 void usart3_init() {
 
-	// Enable USART3 clock 
+	// Enable clock
 	REG_PMC_PCER0 = PMC_PCER0_PID20;
 	while ((REG_PMC_PCSR0 & PMC_PCER0_PID20) == 0);
-
-	// Enable PDC clock
-	REG_PMC_PCER1 = PMC_PCER1_PID39;
-	while ( (REG_PMC_PCSR1 & PMC_PCER1_PID39) == 0 );
 	
 	// Configure TX as output (B peripheral function) without pull-up
 	REG_PIOD_PER   = TX_PIN;
@@ -51,11 +47,11 @@ void usart3_init() {
 	REG_USART3_MR = US_MR_CHRL_8_BIT | US_MR_PAR_NO | US_MR_NBSTOP_1_BIT | US_MR_USART_MODE_NORMAL | US_MR_USCLKS_MCK | US_MR_CHMODE_NORMAL;
 
 	// Configure baud rate
-	REG_USART3_BRGR = (SystemCoreClock / USART_BAUDRATE) / 4;
+	REG_USART3_BRGR = (SystemCoreClock / USART_BAUDRATE) / 16;
 
 	// Disable all interrupts
 	REG_USART3_IDR = 0xFFFFFFFF;
-	NVIC_EnableIRQ(USART1_IRQn);
+	NVIC_EnableIRQ(USART3_IRQn);
 
 	// Configure PDC channels
 	REG_USART3_TCR = 0;
@@ -151,8 +147,7 @@ uint8_t* usart3_get_tx_buffer_address() {
 
 //  ***************************************************************************
 /// @brief	Start asynchronous receive
-/// @param	clock_speed: I2C_SPEED_100KHZ or I2C_SPEED_400KHZ constants
-/// @return	none
+/// @param	none
 //  ***************************************************************************
 void usart3_start_rx() {
 
@@ -160,7 +155,7 @@ void usart3_start_rx() {
 	REG_USART3_PTCR = US_PTCR_RXTDIS;
 
 	// Initialize frame timeout
-	REG_USART3_RTOR = 35;
+	REG_USART3_RTOR = 35 * 8;
 	REG_USART3_CR |= US_CR_STTTO;
 	REG_USART3_IER = US_IER_TIMEOUT;
 
@@ -174,16 +169,15 @@ void usart3_start_rx() {
 
 //  ***************************************************************************
 /// @brief	Check frame receive complete
-/// @param	None
 /// @return	true - frame received, false - no
 //  ***************************************************************************
 bool usart3_is_frame_received() {
-	return REG_USART3_CSR & US_CSR_TIMEOUT;
+	uint32_t reg = REG_USART3_CSR;
+	return reg & US_CSR_TIMEOUT;
 }
 
 //  ***************************************************************************
 /// @brief	Get received frame size
-/// @param	None
 /// @return	Frame size
 //  ***************************************************************************
 uint32_t usart3_get_frame_size() {
@@ -203,11 +197,10 @@ uint8_t* usart3_get_rx_buffer_address() {
 //  ***************************************************************************
 /// @brief	USART3 ISR
 /// @note	This for only frame timeout IRQ
-/// @return	none
 //  ***************************************************************************
 void USART3_Handler() {
 	
-	// // Frame received - disable DMA and frame timeout IRQ
-	REG_USART3_IDR = US_IER_TIMEOUT;
+	// Frame received - disable DMA and frame timeout IRQ
+	REG_USART3_IDR = US_IDR_TIMEOUT;
 	REG_USART3_PTCR = US_PTCR_RXTDIS;
 }

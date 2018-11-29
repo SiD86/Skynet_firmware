@@ -18,7 +18,7 @@ bool     usart1_is_tx_complete();
 uint8_t* usart1_get_tx_buffer_address();
 
 void     usart1_start_rx();
-bool     usart1_is_frame_receive();
+bool     usart1_is_frame_received();
 uint32_t usart1_get_frame_size();
 uint8_t* usart1_get_rx_buffer_address();
 

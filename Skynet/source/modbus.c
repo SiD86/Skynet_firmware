@@ -1,11 +1,11 @@
 //  ***************************************************************************
-/// @file    modbus.c
+/// @file    ModBus.c
 /// @author  NeoProg
 //  ***************************************************************************
 #include <sam.h>
 #include <string.h>
 #include "modbus.h"
-#include "usart1_pdc.h"
+#include "usart0_pdc.h"
 #include "ram_map.h"
 #include "veeprom.h"
 
@@ -44,19 +44,19 @@ static uint16_t calculate_crc16(const uint8_t* data, uint32_t size);
 
 
 //  ***************************************************************************
-/// @brief  Modbus initialization
+/// @brief  ModBus initialization
 /// @note	none
 /// @param  none
 /// @return none
 //  ***************************************************************************
 void modbus_init(void) {
 	
-	usart1_init();
-	usart1_start_rx();
+	usart0_init();
+	usart0_start_rx();
 }
 
 //  ***************************************************************************
-/// @brief  Modbus process
+/// @brief  ModBus process
 /// @note	Call from main loop
 /// @param  none
 /// @return none
@@ -64,31 +64,31 @@ void modbus_init(void) {
 void modbus_process(void) {
 	
 	// Check USART errors
-	if (usart1_is_error() == true) {
-		usart1_reset(true, true);
-		usart1_start_rx();
+	if (usart0_is_error() == true) {
+		usart0_reset(true, true);
+		usart0_start_rx();
 		return;
 	}
 	
 	// Check frame receive
-	if (usart1_is_frame_receive() == false) {
+	if (usart0_is_frame_received() == false) {
 		return;
 	}
 	
 	// Check complete transmit response
-	if (usart1_is_tx_complete() == false) {
-		usart1_start_rx();
+	if (usart0_is_tx_complete() == false) {
+		usart0_start_rx();
 		return;
 	}
 	
 
-	uint8_t* response = usart1_get_tx_buffer_address();
-	uint8_t* request = usart1_get_rx_buffer_address();
-	uint32_t request_size = usart1_get_frame_size();
+	uint8_t* response = usart0_get_tx_buffer_address();
+	uint8_t* request = usart0_get_rx_buffer_address();
+	uint32_t request_size = usart0_get_frame_size();
 	
 	// Verify frame
 	if (is_request_valid(request, request_size) == false) {
-		usart1_start_rx();
+		usart0_start_rx();
 		return;
 	}
 	
@@ -115,7 +115,7 @@ void modbus_process(void) {
 			break;
 
 		default:
-			usart1_start_rx();
+			usart0_start_rx();
 			return;
 	}
 	
@@ -132,8 +132,8 @@ void modbus_process(void) {
 			response[response_size++] = crc & 0xFF;
 			response[response_size++] = crc >> 8;
 			
-			usart1_start_tx(response_size);
-			usart1_start_rx();
+			usart0_start_tx(response_size);
+			usart0_start_rx();
 		}
 		return;
 	}
@@ -148,16 +148,16 @@ void modbus_process(void) {
 	response[response_size++] = crc >> 8;
 	
 	// Send response
-	usart1_start_tx(response_size);
-	usart1_start_rx();
+	usart0_start_tx(response_size);
+	usart0_start_rx();
 }
 
 
 
 
 //  ***************************************************************************
-/// @brief  Check modbus frame
-/// @param  request: modbus request
+/// @brief  Check ModBus frame
+/// @param  request: ModBus request
 /// @param  size:  frame size
 /// @return true - frame valid, false - frame invalid
 //  ***************************************************************************
@@ -183,9 +183,9 @@ static bool is_request_valid(const uint8_t* request, uint32_t size) {
 }
 
 //  ***************************************************************************
-/// @brief  Function for processing Modbus read RAM command
-/// @param  request: modbus request
-/// @param  response modbus response
+/// @brief  Function for processing ModBus read RAM command
+/// @param  request: ModBus request
+/// @param  response ModBus response
 /// @param  rq_size  request size
 /// @param  rs_size  response size
 /// @retval response
@@ -221,9 +221,9 @@ uint32_t read_ram_command_handler(const uint8_t* request, uint8_t* response, uin
 }
 
 //  ***************************************************************************
-/// @brief  Function for processing Modbus write RAM command
-/// @param  request: modbus request
-/// @param  response modbus response
+/// @brief  Function for processing ModBus write RAM command
+/// @param  request: ModBus request
+/// @param  response ModBus response
 /// @param  rq_size  request size
 /// @retval response
 /// @return command process result
@@ -254,9 +254,9 @@ uint32_t write_ram_command_handler(const uint8_t* request, uint16_t rq_size) {
 }
 
 //  ***************************************************************************
-/// @brief  Function for processing modbus read EEPROM command
-/// @param  request: modbus request
-/// @param  response modbus response
+/// @brief  Function for processing ModBus read EEPROM command
+/// @param  request: ModBus request
+/// @param  response ModBus response
 /// @param  rq_size  request size
 /// @param  rs_size  response size
 /// @retval response
@@ -291,9 +291,9 @@ static uint32_t read_eeprom_command_handler(const uint8_t* request, uint8_t* res
 }
 
 //  ***************************************************************************
-/// @brief  Function for processing modbus write EEPROM command
-/// @param  request: modbus request
-/// @param  response modbus response
+/// @brief  Function for processing ModBus write EEPROM command
+/// @param  request: ModBus request
+/// @param  response ModBus response
 /// @param  rq_size  request size
 /// @retval response
 /// @return command process result
@@ -324,8 +324,8 @@ uint32_t write_eeprom_command_handler(const uint8_t* request, uint16_t rq_size) 
 }
 
 //  ***************************************************************************
-/// @brief  Calculate modbus frame CRC16
-/// @param  frame: modbus frame
+/// @brief  Calculate ModBus frame CRC16
+/// @param  frame: ModBus frame
 /// @param  size:  frame size
 /// @return CRC16 value
 //  ***************************************************************************

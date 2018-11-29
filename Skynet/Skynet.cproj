@@ -36,7 +36,7 @@
         <documentation help="" />
         <offline-documentation help="" />
         <dependencies>
-          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.36.1" />
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.26.0" />
         </dependencies>
       </framework-data>
     </AsfFrameworkConfig>
@@ -95,7 +95,7 @@
   <armgcc.compiler.directories.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
-      <Value>%24(PackRepoDir)\atmel\SAM3X_DFP\1.0.50\include</Value>
+      <Value>%24(PackRepoDir)\atmel\SAM3X_DFP\1.0.51\include</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
@@ -116,13 +116,13 @@
   <armgcc.assembler.general.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
-      <Value>%24(PackRepoDir)\atmel\SAM3X_DFP\1.0.50\include</Value>
+      <Value>%24(PackRepoDir)\atmel\SAM3X_DFP\1.0.51\include</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
   <armgcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
-      <Value>%24(PackRepoDir)\atmel\SAM3X_DFP\1.0.50\include</Value>
+      <Value>%24(PackRepoDir)\atmel\SAM3X_DFP\1.0.51\include</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
 </ArmGcc>
@@ -146,7 +146,7 @@
       <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
       <Value>../include</Value>
       <Value>../lib</Value>
-      <Value>%24(PackRepoDir)\atmel\SAM3X_DFP\1.0.50\include</Value>
+      <Value>%24(PackRepoDir)\atmel\SAM3X_DFP\1.0.51\include</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
@@ -169,14 +169,14 @@
   <armgcc.assembler.general.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
-      <Value>%24(PackRepoDir)\atmel\SAM3X_DFP\1.0.50\include</Value>
+      <Value>%24(PackRepoDir)\atmel\SAM3X_DFP\1.0.51\include</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
   <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
   <armgcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
-      <Value>%24(PackRepoDir)\atmel\SAM3X_DFP\1.0.50\include</Value>
+      <Value>%24(PackRepoDir)\atmel\SAM3X_DFP\1.0.51\include</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
@@ -224,6 +224,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\version.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\wireless.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\wireless_protocol.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="lib\adc.c">
@@ -274,6 +280,12 @@
     <Compile Include="lib\uart.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="lib\usart0_pdc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\usart0_pdc.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="lib\usart1_pdc.c">
       <SubType>compile</SubType>
     </Compile>
@@ -317,6 +329,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="source\veeprom.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="source\wireless.c">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

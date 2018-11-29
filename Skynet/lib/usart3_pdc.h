@@ -6,6 +6,8 @@
 #ifndef USART3_PDC_H_
 #define USART3_PDC_H_
 
+#include <stdbool.h>
+
 
 void     usart3_init();
 void     usart3_reset(bool tx, bool rx);
@@ -16,7 +18,7 @@ bool     usart3_is_tx_complete();
 uint8_t* usart3_get_tx_buffer_address();
 
 void     usart3_start_rx();
-bool     usart3_is_frame_receive();
+bool     usart3_is_frame_received();
 uint32_t usart3_get_frame_size();
 uint8_t* usart3_get_rx_buffer_address();
 
