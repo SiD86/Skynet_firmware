@@ -40,6 +40,14 @@ bool callback_is_gaits_engine_error_set(void) {
 	return error_status & ERROR_MODULE_GAITS_ENGINE;
 }
 
+//  ***************************************************************************
+/// @brief  Callback function for check error - Monitoring error
+/// @return true - gaits engine error bit set, false - no
+//  ***************************************************************************
+bool callback_is_monitoring_error_set(void) {
+	return error_status & ERROR_MODULE_MONITORING;
+}
+
 
 
 /// ***************************************************************************

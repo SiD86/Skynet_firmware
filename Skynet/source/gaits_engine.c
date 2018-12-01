@@ -69,7 +69,7 @@ void gaits_engine_init(void) {
 //  ***************************************************************************
 void gaits_engine_process(void) {
     
-    if (callback_is_gaits_engine_error_set() == true) return; // Module disable
+    if (callback_is_gaits_engine_error_set() == true) return; // Module disabled
     
     
     static uint32_t current_sequence_step = 0;

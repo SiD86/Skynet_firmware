@@ -6,13 +6,14 @@
 #include <stdbool.h>
 #include <string.h>
 #include "wireless.h"
+#include "wireless_protocol.h"
 #include "usart3_pdc.h"
 #include "systimer.h"
 #include "error_handling.h"
 
 #define SEND_STATE_DATA_PERIOD			(100)	// ms
 #define WIRELESS_FRAME_SIZE				(sizeof(wireless_protocol_frame_t))
-#define WIRELESS_FRAME_DATA_SIZE		(sizeof(wireless_protocol_frame_t::data))
+#define WIRELESS_FRAME_DATA_SIZE		(32)
 
 
 static wireless_protocol_control_data_t wireless_control_data = {0};

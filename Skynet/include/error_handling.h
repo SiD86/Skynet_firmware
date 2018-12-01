@@ -14,6 +14,7 @@ typedef enum {
 	ERROR_MODULE_SERVO_DRIVER   = 0x00020000,
 	ERROR_MODULE_LIMBS_DRIVER   = 0x00040000,
 	ERROR_MODULE_GAITS_ENGINE   = 0x00080000,
+	ERROR_MODULE_MONITORING		= 0x00100000
 } error_module_name_t;
 
 
@@ -23,6 +24,7 @@ extern uint32_t error_status;
 extern bool callback_is_servo_driver_error_set(void);
 extern bool callback_is_limbs_driver_error_set(void);
 extern bool callback_is_gaits_engine_error_set(void);
+extern bool callback_is_monitoring_error_set(void);
 
 extern void callback_set_selfdiag_error(error_module_name_t module);
 extern void callback_set_config_error(error_module_name_t module);

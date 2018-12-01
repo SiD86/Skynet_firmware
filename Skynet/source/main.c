@@ -7,11 +7,15 @@
 #include "gaits_engine.h"
 #include "limbs_driver.h"
 #include "servo_driver.h"
+#include "wireless.h"
+#include "monitoring.h"
 #include "systimer.h"
 #include "veeprom.h"
 #include "modbus.h"
 #include "scr.h"
 #include "error_handling.h"
+#include "uart.h"
+#include "dac.h"
 #define MAX_MAIN_LOOP_ITERATION_TIME				(40) // ms
 
 
@@ -32,11 +36,13 @@ int main(void) {
 	systimer_init();
 	veeprom_init();
 	modbus_init();
+	wireless_init();
+	monitoring_init();
 	
 	servo_driver_init();
 	limbs_driver_init();
 	gaits_engine_init();
-
+	
     while (1)  {
 		
 		uint32_t begin_loop_time = get_time_ms();
@@ -69,6 +75,8 @@ static void enter_to_emergency_loop(void) {
 	while (1)  {
 		
 		modbus_process();
+		wireless_process();
+		monitoring_process();
 		scr_process();
 	}
 }
