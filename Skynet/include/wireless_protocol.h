@@ -36,7 +36,15 @@ typedef struct __attribute__ ((packed)) {
 typedef struct __attribute__ ((packed)) {
 	
 	uint32_t error_status;
-	uint8_t reserved[28];
+	
+	uint16_t wireless_voltage;
+	uint16_t periphery_voltage;
+	uint16_t battery_bank0_voltage;
+	uint16_t battery_bank1_voltage;
+	uint16_t power_board_temperature;
+	
+	
+	uint8_t reserved[18];
 	
 } wireless_protocol_state_data_t;
 

@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include "monitoring.h"
 #include "adc.h"
+#include "dac.h"
 #include "error_handling.h"
 
 #define ADC_CHANNEL_COUNT						(5)
@@ -16,11 +17,22 @@
 #define BATTERY_BANK1_VOLTAGE_ADC_CH			(1)
 #define POWER_BOARD_TEMPERATURE_ADC_CH			(0)
 
+#define FAN_DAC_CH								(0)
+#define FAN_LEVEL0_TEMPERATURE					(4000)	// 40.00 *C
+#define FAN_LEVEL1_TEMPERATURE					(5000)	// 50.00 *C
+#define FAN_LEVEL2_TEMPERATURE					(6000)	// 60.00 *C
+#define FAN_LEVEL3_TEMPERATURE					(7000)	// 70.00 *C
+#define FAN_LEVEL0_DAC_VALUE					(1023)
+#define FAN_LEVEL1_DAC_VALUE					(2046)
+#define FAN_LEVEL2_DAC_VALUE					(3069)
+#define FAN_LEVEL3_DAC_VALUE					(4095)
+
 
 typedef enum {
 	NOINIT,
 	WAIT_ADC_CONVERSION,
-	CALCULATE
+	CALCULATE,
+	FAN_PROCESS
 } state_t;
 
 
@@ -34,6 +46,7 @@ static uint32_t power_board_temperature = 0;	// 0.01 *C
 
 
 static uint32_t calculate_voltage(float adc_voltage, float up_resistor, float down_resistor);
+static uint32_t calculate_temperature(float adc_voltage, float resistor);
 
 
 //  ***************************************************************************
@@ -42,8 +55,12 @@ static uint32_t calculate_voltage(float adc_voltage, float up_resistor, float do
 //  ***************************************************************************
 void monitoring_init(void) {
 	
+	dac_init();
+	dac_set_output_value(FAN_DAC_CH, 0);
+	
 	adc_init();
 	adc_start_conversion();
+	
 	subsystem_state = WAIT_ADC_CONVERSION;
 }
 
@@ -78,7 +95,27 @@ void monitoring_process(void) {
 			periphery_voltage		= calculate_voltage(adc_voltage[1], 1500, 1300);
 			battery_bank0_voltage	= calculate_voltage(adc_voltage[2], 1000000, 1000000);
 			battery_bank1_voltage	= calculate_voltage(adc_voltage[3], 1000000, 1000000);
-			//power_board_temperature = calculate_voltage(adc_voltage[4], 1200000, 330000);
+			power_board_temperature = calculate_temperature(adc_voltage[4], 1200000);
+			
+			subsystem_state = FAN_PROCESS;
+			break;
+			
+		case FAN_PROCESS:
+			if (power_board_temperature >= FAN_LEVEL3_TEMPERATURE) {
+				dac_set_output_value(FAN_DAC_CH, FAN_LEVEL3_DAC_VALUE);
+			}
+			else if (power_board_temperature >= FAN_LEVEL2_TEMPERATURE) {
+				dac_set_output_value(FAN_DAC_CH, FAN_LEVEL2_DAC_VALUE);
+			}
+			else if (power_board_temperature >= FAN_LEVEL1_TEMPERATURE) {
+				dac_set_output_value(FAN_DAC_CH, FAN_LEVEL1_DAC_VALUE);
+			}
+			else if (power_board_temperature >= FAN_LEVEL0_TEMPERATURE) {
+				dac_set_output_value(FAN_DAC_CH, FAN_LEVEL0_DAC_VALUE);
+			}
+			else {
+				dac_set_output_value(FAN_DAC_CH, 0);
+			}
 			
 			subsystem_state = WAIT_ADC_CONVERSION;
 			break;
@@ -104,4 +141,15 @@ static uint32_t calculate_voltage(float adc_voltage, float up_resistor, float do
 	float divisor_factor = (up_resistor + down_resistor) / down_resistor;
 	
 	return (adc_voltage * divisor_factor) * 100;
+}
+
+//  ***************************************************************************
+/// @brief	Calculate temperature
+/// @param	adc_voltage: ADC voltage, [V]
+/// @param	resistor: resistor value, [Ohm]
+/// @return	Temperature, [0.01 *C]
+//  ***************************************************************************
+static uint32_t calculate_temperature(float adc_voltage, float resistor) {
+	
+	return 0;
 }
