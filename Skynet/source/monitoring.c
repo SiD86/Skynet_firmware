@@ -22,7 +22,8 @@
 #define FAN_LEVEL1_TEMPERATURE					(5000)	// 50.00 *C
 #define FAN_LEVEL2_TEMPERATURE					(6000)	// 60.00 *C
 #define FAN_LEVEL3_TEMPERATURE					(7000)	// 70.00 *C
-#define FAN_LEVEL0_DAC_VALUE					(1023)
+#define FAN_LEVEL0_DAC_VALUE					(950)
+#define FAN_LEVEL1_DAC_VALUE					(1023)
 #define FAN_LEVEL1_DAC_VALUE					(2046)
 #define FAN_LEVEL2_DAC_VALUE					(3069)
 #define FAN_LEVEL3_DAC_VALUE					(4095)
@@ -74,6 +75,7 @@ void monitoring_process(void) {
 	
 	
 	static float adc_voltage[5] = {0};
+	static uint32_t dac_value = 0;
 	switch (subsystem_state) {
 		
 		case WAIT_ADC_CONVERSION:
@@ -114,7 +116,7 @@ void monitoring_process(void) {
 				dac_set_output_value(FAN_DAC_CH, FAN_LEVEL0_DAC_VALUE);
 			}
 			else {
-				dac_set_output_value(FAN_DAC_CH, 0);
+				dac_set_output_value(FAN_DAC_CH, dac_value);
 			}
 			
 			subsystem_state = WAIT_ADC_CONVERSION;
