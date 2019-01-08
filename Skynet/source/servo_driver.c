@@ -13,9 +13,9 @@
 #include "error_handling.h"
 
 #define MG996R_DISABLE_PULSE_WIDTH              (0)
-#define MG996R_MIN_PULSE_WIDTH                  (900)
-#define MG996R_MAX_PULSE_WIDTH                  (2300)
-#define MG996R_MAX_SERVO_ANGLE                  (155)
+#define MG996R_MIN_PULSE_WIDTH                  (880)
+#define MG996R_MAX_PULSE_WIDTH                  (2280)
+#define MG996R_MAX_SERVO_ANGLE                  (150)
 
 #define OVERRIDE_SMOOTH_ITERATION_COUNT         (50)
 #define OVERRIDE_DISABLE_VALUE                  (0x7F)
@@ -25,60 +25,52 @@
 typedef enum {
     DIRECTION_DIRECT,    // MAX -> MIN
     DIRECTION_REVERSE    // MIN -> MAX
-} servo_direction_t;
+} direction_t;
 
 // Servo information
 typedef struct {
-
-    float current_angle;                // Current servo angle, [degree]
-    float dest_angle;                   // Destination servo angle, [degree]
-    
-    // Internal configuration
-    uint32_t          zero_offset;      // Servo zero offset, [degree]
-    servo_direction_t direction;        // Move direction
-    
-    // For smooth algorithm usage
-    float    smooth_delta;              // Offset servo angle for one iteration, [degree]
-    uint32_t smooth_iter_count;         // Movement iteration count
-
+	bool 		is_enable;		// Enable channel flag
+    float       angle;			// Current servo angle, [degree]
+    uint32_t    zero_offset;    // Servo zero offset, [degree]
+    direction_t direction;      // Move direction
 } servo_info_t;
 
 // Servo driver states
 typedef enum {
     STATE_NOINIT,
     STATE_STARTUP,
-    STATE_PROCESS,
-    STATE_WAIT_NEXT_PWM_PERIOD
-} servo_driver_state_t;
+	STATE_WAIT_NEXT_PWM_PERIOD,
+    STATE_LOAD
+} driver_state_t;
 
 
-int8_t  ram_servo_dest_angle_override[SUPPORT_SERVO_COUNT] = {0};   // Read only
-uint8_t ram_servo_current_angle[SUPPORT_SERVO_COUNT] = {0};         // Write only
+int8_t ram_servo_angle_override[SUPPORT_SERVO_COUNT] = {0};	// Write only
+int8_t ram_servo_angle[SUPPORT_SERVO_COUNT] = {0};			// Read only
     
-static servo_driver_state_t driver_state = STATE_NOINIT;
-static servo_info_t         servo_channels[SUPPORT_SERVO_COUNT] = { 0 };
+static driver_state_t driver_state = STATE_NOINIT;
+static servo_info_t   servo_channels[SUPPORT_SERVO_COUNT] = { 0 };
 
 
 static bool read_configuration(void);
-static void smooth_algorithm_process(servo_info_t* servo_info);
 static uint32_t convert_angle_to_pulse_width(const servo_info_t* servo_info);
 
 
 //  ***************************************************************************
-/// @brief  Servo driver initialize
-/// @param  none
+/// @brief  Servo driver initialization
+/// @param  servo_ch_enable_mask: servo channels enable mask: bit = 1 - enable
 /// @return none
 //  ***************************************************************************
-void servo_driver_init(void) {
+void servo_driver_init(uint32_t servo_ch_enable_mask) {
     
     if (read_configuration() == false) {
         callback_set_config_error(ERROR_MODULE_SERVO_DRIVER);
         return;
     }
-    
-    // Disable override
+	
+	// Initialization servo channels
     for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
-        ram_servo_dest_angle_override[i] = OVERRIDE_DISABLE_VALUE;
+		servo_channels[i].is_enable = (servo_ch_enable_mask & (1 << i));
+        ram_servo_angle_override[i] = OVERRIDE_DISABLE_VALUE;
     }
 
     pwm_init();
@@ -88,73 +80,34 @@ void servo_driver_init(void) {
 }
 
 //  ***************************************************************************
-/// @brief  Start smooth move servo to new position
-/// @param  servo: servo index
-/// @param  angle: destination angle
-/// @param  iteration_count: iteration count for movement complete
+/// @brief  Start move servo to new angle
+/// @param  ch:    servo channel
+/// @param  angle: new angle
 /// @return none
 //  ***************************************************************************
-void servo_driver_start_move(uint32_t ch, int32_t angle, uint32_t iteration_count) {
+void servo_driver_move(uint32_t ch, float angle) {
     
-    if (ch >= SUPPORT_SERVO_COUNT || iteration_count == 0) {
+    if (ch >= SUPPORT_SERVO_COUNT) {
         callback_set_selfdiag_error(ERROR_MODULE_SERVO_DRIVER);
         return;
     }
+	
+	// Check channel state
+	if (servo_channels[ch].is_enable == false) {
+		return;
+	}
     
-    
-    servo_channels[ch].dest_angle   = servo_channels[ch].zero_offset + angle;
-    servo_channels[ch].smooth_delta = (servo_channels[ch].dest_angle - servo_channels[ch].current_angle) / iteration_count;
-    if (servo_channels[ch].smooth_delta != 0) {
-        servo_channels[ch].smooth_iter_count = iteration_count;
-    }
-    else {
-        servo_channels[ch].smooth_iter_count = 0;
-    }
-    
-    if (servo_channels[ch].dest_angle > MG996R_MAX_SERVO_ANGLE) {
+    // Calculate servo angle
+    servo_channels[ch].angle = servo_channels[ch].zero_offset + angle;
+    if (servo_channels[ch].angle > MG996R_MAX_SERVO_ANGLE) {
         callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
         return;
     }
 }
 
 //  ***************************************************************************
-/// @brief  Stop move servo
-/// @param  servo: servo index
-/// @return none
-//  ***************************************************************************
-void servo_driver_stop_move(uint32_t ch) {
-
-    if (ch >= SUPPORT_SERVO_COUNT) {
-        callback_set_selfdiag_error(ERROR_MODULE_SERVO_DRIVER);
-        return;
-    }
-
-    // Stop movement algorithm
-    servo_channels[ch].dest_angle = servo_channels[ch].current_angle;
-    servo_channels[ch].smooth_iter_count = 0;
-    servo_channels[ch].smooth_delta = 0;
-}
-
-//  ***************************************************************************
-/// @brief  Check all servo in move complete
-/// @param  none
-/// @return none
-//  ***************************************************************************
-bool servo_driver_is_move_complete(void) {
-    
-    for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
-        
-        if (servo_channels[i].smooth_iter_count != 0) {
-            return false; // One or more servos movement not complete
-        }
-    }
-    return true;
-}
-
-//  ***************************************************************************
 /// @brief  Servo driver process
-/// @param  none
-/// @return none
+/// @note   Call from main loop
 //  ***************************************************************************
 void servo_driver_process(void) {
     
@@ -162,70 +115,70 @@ void servo_driver_process(void) {
         pwm_stop();
         return; // Module disabled
     }
-    
+	
 
     static uint32_t prev_counter_value = 0;
-    
     uint32_t counter_value = pwm_get_counter();
-    switch (driver_state)
-    {
     
-    case STATE_STARTUP:
-        prev_counter_value = counter_value;
-        driver_state = STATE_WAIT_NEXT_PWM_PERIOD;
-        break;
-
-    case STATE_PROCESS:
-    
-        // Update position for all servo
-        for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
-            
-            // Override process
-            if (ram_servo_dest_angle_override[i] != OVERRIDE_DISABLE_VALUE) {
-                
-                if (servo_channels[i].dest_angle != ram_servo_dest_angle_override[i]) {
-                    servo_driver_start_move(i, ram_servo_dest_angle_override[i], OVERRIDE_SMOOTH_ITERATION_COUNT);
-                }
-            }
-            
-            smooth_algorithm_process(&servo_channels[i]);
-            pwm_set_width(i, convert_angle_to_pulse_width(&servo_channels[i]));
-        }
+    switch (driver_state) {
         
-        driver_state = STATE_WAIT_NEXT_PWM_PERIOD;
-        break;
-        
-    case STATE_WAIT_NEXT_PWM_PERIOD:
-    
-        // Wait PWM next period
-        if (prev_counter_value != counter_value) {
-            
-            if (counter_value - prev_counter_value > 1) { // We skip sync timer tick
-                callback_set_sync_error(ERROR_MODULE_SERVO_DRIVER);
-            }
-            
+        case STATE_STARTUP:
             prev_counter_value = counter_value;
-            driver_state = STATE_PROCESS;
-        }
-        else { // IDLE state
-            
-            // Update RAM variables
+            driver_state = STATE_WAIT_NEXT_PWM_PERIOD;
+            break;
+			
+		case STATE_WAIT_NEXT_PWM_PERIOD:
+			if (prev_counter_value != counter_value) {
+			
+				if (counter_value - prev_counter_value > 1) {
+					// We skipped PWM period. Calculations have very long time
+					callback_set_sync_error(ERROR_MODULE_SERVO_DRIVER);
+				}
+			
+				prev_counter_value = counter_value;
+				driver_state = STATE_LOAD;
+			}
+			break;
+
+        case STATE_LOAD:
             for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
-                ram_servo_current_angle[i] = servo_channels[i].current_angle;
+				
+				uint32_t pulse_width = PWM_DISABLE_CHANNEL_VALUE;
+				if (servo_channels[i].is_enable == true) {
+					
+					// Override process
+					if (ram_servo_angle_override[i] != OVERRIDE_DISABLE_VALUE) {
+						servo_channels[i].angle = servo_channels[i].zero_offset + ram_servo_angle_override[i];
+					}
+					
+					// Calculate pulse width
+					pulse_width = convert_angle_to_pulse_width(&servo_channels[i]);
+				}
+				
+				// Load pulse width
+				pwm_set_width(i, pulse_width);
+				
+				// Update RAM variable
+				ram_servo_angle[i] = servo_channels[i].angle;
             }
-        }
-        break;
-        
-    case STATE_NOINIT:
-    default:
-        callback_set_selfdiag_error(ERROR_MODULE_SERVO_DRIVER);
-        break;
+            
+            driver_state = STATE_WAIT_NEXT_PWM_PERIOD;
+            break;
+            
+        case STATE_NOINIT:
+        default:
+            callback_set_selfdiag_error(ERROR_MODULE_SERVO_DRIVER);
+            break;
     }
 }
 
+
+
+
+
 //  ***************************************************************************
 /// @brief  Read configuration
-/// @param    none
+/// @param  none
 /// @return true - read success, false - fail
 //  ***************************************************************************
 static bool read_configuration(void) {
@@ -247,52 +200,29 @@ static bool read_configuration(void) {
         }
         
         // Read start angle
-        uint8_t start_angle = servo_zero_offset + veeprom_read_8(base_address + SERVO_START_ANGLE_EE_ADDRESS);
+        int32_t start_angle = servo_zero_offset + veeprom_read_8(base_address + SERVO_START_ANGLE_EE_ADDRESS);
         if (start_angle > MG996R_MAX_SERVO_ANGLE) {
             return false;
         }
         
         // Fill information
-        servo_channels[i].current_angle = start_angle;
-        servo_channels[i].dest_angle    = start_angle;
-        
-        servo_channels[i].zero_offset   = servo_zero_offset;
-        servo_channels[i].direction     = direction;
-        
-        servo_channels[i].smooth_delta = 0;
-        servo_channels[i].smooth_iter_count = 0;
+        servo_channels[i].angle = start_angle;
+        servo_channels[i].zero_offset = servo_zero_offset;
+        servo_channels[i].direction = direction;
     }
 
     return true;
 }
 
 //  ***************************************************************************
-/// @brief  Update current angle for servo
-/// @param  servo_info: @ref servo_info_t
-/// @return none
-//  ***************************************************************************
-static void smooth_algorithm_process(servo_info_t* servo_info) {
-    
-    // Calculate new servo angle
-    if (servo_info->smooth_iter_count > 0) {
-        servo_info->current_angle += servo_info->smooth_delta;
-        --servo_info->smooth_iter_count;
-    }
-    else {
-        // On last iteration current angle must be equal destination angle (for remove calculation error)
-        servo_info->current_angle = servo_info->dest_angle; 
-    }
-}
-
-//  ***************************************************************************
 /// @brief  Convert servo angle to PWM pulse width
-/// @note    This is Arduino map function
+/// @note   This is Arduino map function
 /// @param  angle: current servo angle
 /// @return PWM pulse width
 //  ***************************************************************************
 static uint32_t convert_angle_to_pulse_width(const servo_info_t* servo_info) {
     
-    uint32_t pulse_width = servo_info->current_angle * (MG996R_MAX_PULSE_WIDTH - MG996R_MIN_PULSE_WIDTH) / MG996R_MAX_SERVO_ANGLE + MG996R_MIN_PULSE_WIDTH;
+    uint32_t pulse_width = servo_info->angle * (MG996R_MAX_PULSE_WIDTH - MG996R_MIN_PULSE_WIDTH) / MG996R_MAX_SERVO_ANGLE + MG996R_MIN_PULSE_WIDTH;
     if (servo_info->direction == DIRECTION_REVERSE) {
         pulse_width = MG996R_MAX_PULSE_WIDTH - (pulse_width - MG996R_MIN_PULSE_WIDTH);
     }

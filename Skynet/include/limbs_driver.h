@@ -9,25 +9,21 @@
 #include <stdbool.h>
 
 #define SUPPORT_LIMB_COUNT				(6)
-#define NO_MOVE							(0xFFFF)
-
-typedef enum {
-	
-	LIMB_FRONT_LEFT_LEG,
-	LIMB_CENTER_LEFT_LEG,
-	LIMB_REAR_LEFT_LEG,
-	
-	LIMB_FRONT_RIGHT_LEG,
-	LIMB_CENTER_RIGHT_LEG,
-	LIMB_REAR_RIGHT_LEG,
-	
-} limb_t;
+#define LIMB_NO_MOVE					(0xFFFF)
 
 
-void limbs_driver_init(void);
-void limbs_driver_start_move(limb_t limb, int32_t coxa, int32_t femur, int32_t tibia, uint32_t iteration_count);
-void limbs_driver_stop_move(limb_t limb);
-bool limbs_driver_is_move_complete(void);
+typedef struct {
+	float x;
+	float y;
+	float z;
+} point_3d_t;
+
+
+extern void limbs_driver_init(void);
+extern void limbs_driver_start_move(point_3d_t* point_list);
+extern void limbs_driver_stop_move(void);
+extern void limbs_driver_process(void);
+extern bool limbs_driver_is_move_complete(void);
 
 
 #endif /* LIMB_H_ */

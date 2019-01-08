@@ -10,29 +10,31 @@
 #define PWM_PERIOD_US                   (1000000 / PWM_FREQUENCY_HZ)
 #define PULSE_WIDTH_TO_TICKS(_width)    (PWM_PERIOD_TICKS / PWM_PERIOD_US * _width)
 
-#define PWM_CH0_PIN                     (PIO_PD0)
-#define PWM_CH1_PIN                     (PIO_PD2)
-#define PWM_CH2_PIN                     (PIO_PD6)
-#define PWM_CH3_PIN                     (PIO_PA7)
-#define PWM_CH4_PIN                     (PIO_PC1)
-#define PWM_CH5_PIN                     (PIO_PC3)
-#define PWM_CH6_PIN                     (PIO_PC5)
-#define PWM_CH7_PIN                     (PIO_PC7)
+#define PWM_CH0_PIN                     (PIO_PC13)
+#define PWM_CH1_PIN                     (PIO_PB21)
+#define PWM_CH2_PIN                     (PIO_PB14)
+#define PWM_CH3_PIN                     (PIO_PC12)
+#define PWM_CH4_PIN                     (PIO_PC14)
+#define PWM_CH5_PIN                     (PIO_PC16)
+#define PWM_CH6_PIN                     (PIO_PC18)
+#define PWM_CH7_PIN                     (PIO_PA20)
 #define PWM_CH8_PIN                     (PIO_PC9)
-#define PWM_CH9_PIN                     (PIO_PA20)
-#define PWM_CH10_PIN                    (PIO_PC18)
-#define PWM_CH11_PIN                    (PIO_PC16)
-#define PWM_CH12_PIN                    (PIO_PC14)
-#define PWM_CH13_PIN                    (PIO_PC12)
-#define PWM_CH14_PIN                    (PIO_PC2)
-#define PWM_CH15_PIN                    (PIO_PC4)
-#define PWM_CH16_PIN                    (PIO_PC6)
-#define PWM_CH17_PIN                    (PIO_PC8)
 
-#define PWM_ALL_PINS_PORTA              (PWM_CH3_PIN  | PWM_CH9_PIN)
-#define PWM_ALL_PINS_PORTC              (PWM_CH4_PIN  | PWM_CH5_PIN  | PWM_CH6_PIN  | PWM_CH7_PIN  | PWM_CH8_PIN  | PWM_CH10_PIN | PWM_CH11_PIN | \
-                                         PWM_CH12_PIN | PWM_CH13_PIN | PWM_CH14_PIN | PWM_CH15_PIN | PWM_CH16_PIN |    PWM_CH17_PIN)
-#define PWM_ALL_PINS_PORTD              (PWM_CH0_PIN  | PWM_CH1_PIN  | PWM_CH2_PIN)
+#define PWM_CH9_PIN                     (PIO_PD3)
+#define PWM_CH10_PIN                    (PIO_PD1)
+#define PWM_CH11_PIN                    (PIO_PD2)
+#define PWM_CH12_PIN                    (PIO_PD6)
+#define PWM_CH13_PIN                    (PIO_PA7)
+#define PWM_CH14_PIN                    (PIO_PC1)
+#define PWM_CH15_PIN                    (PIO_PC3)
+#define PWM_CH16_PIN                    (PIO_PC5)
+#define PWM_CH17_PIN                    (PIO_PC7)
+
+#define PWM_ALL_PINS_PORTA              (PWM_CH7_PIN | PWM_CH13_PIN)
+#define PWM_ALL_PINS_PORTB				(PWM_CH1_PIN | PWM_CH2_PIN)
+#define PWM_ALL_PINS_PORTC              (PWM_CH0_PIN | PWM_CH3_PIN  | PWM_CH4_PIN  | PWM_CH5_PIN  | PWM_CH6_PIN  | PWM_CH8_PIN | \
+                                         PWM_CH14_PIN | PWM_CH15_PIN | PWM_CH16_PIN | PWM_CH17_PIN)
+#define PWM_ALL_PINS_PORTD              (PWM_CH9_PIN  | PWM_CH10_PIN  | PWM_CH11_PIN | PWM_CH12_PIN)
 
 
 static volatile uint32_t pwm_channel_ticks[18] = { 0 };
@@ -50,6 +52,10 @@ void pwm_init(void) {
     REG_PIOA_PER  = PWM_ALL_PINS_PORTA;
     REG_PIOA_OER  = PWM_ALL_PINS_PORTA;
     REG_PIOA_SODR = PWM_ALL_PINS_PORTA;
+	
+	REG_PIOB_PER  = PWM_ALL_PINS_PORTB;
+	REG_PIOB_OER  = PWM_ALL_PINS_PORTB;
+	REG_PIOB_SODR = PWM_ALL_PINS_PORTB;
     
     REG_PIOC_PER  = PWM_ALL_PINS_PORTC;
     REG_PIOC_OER  = PWM_ALL_PINS_PORTC;
@@ -164,6 +170,7 @@ void TC0_Handler(void) {
 
         // Connect all pins to VCC (reset state)
         REG_PIOA_SODR = PWM_ALL_PINS_PORTA;
+		REG_PIOB_SODR = PWM_ALL_PINS_PORTB;
         REG_PIOC_SODR = PWM_ALL_PINS_PORTC;
         REG_PIOD_SODR = PWM_ALL_PINS_PORTD;
 
@@ -206,9 +213,9 @@ void TC3_Handler(void) {
 
     uint32_t status = REG_TC1_SR0;
 
-    if (status & TC_SR_CPAS) { REG_PIOD_CODR = PWM_CH0_PIN; }
-    if (status & TC_SR_CPBS) { REG_PIOD_CODR = PWM_CH1_PIN; }
-    if (status & TC_SR_CPCS) { REG_PIOD_CODR = PWM_CH2_PIN; }
+    if (status & TC_SR_CPAS) { REG_PIOC_CODR = PWM_CH0_PIN; }
+    if (status & TC_SR_CPBS) { REG_PIOB_CODR = PWM_CH1_PIN; }
+    if (status & TC_SR_CPCS) { REG_PIOB_CODR = PWM_CH2_PIN; }
 }
 
 //  ***************************************************************************
@@ -220,7 +227,7 @@ void TC4_Handler(void) {
 
     uint32_t status = REG_TC1_SR1;
 
-    if (status & TC_SR_CPAS) { REG_PIOA_CODR = PWM_CH3_PIN; }
+    if (status & TC_SR_CPAS) { REG_PIOC_CODR = PWM_CH3_PIN; }
     if (status & TC_SR_CPBS) { REG_PIOC_CODR = PWM_CH4_PIN; }
     if (status & TC_SR_CPCS) { REG_PIOC_CODR = PWM_CH5_PIN; }
 }
@@ -235,7 +242,7 @@ void TC5_Handler(void) {
     uint32_t status = REG_TC1_SR2;
 
     if (status & TC_SR_CPAS) { REG_PIOC_CODR = PWM_CH6_PIN; }
-    if (status & TC_SR_CPBS) { REG_PIOC_CODR = PWM_CH7_PIN; }
+    if (status & TC_SR_CPBS) { REG_PIOA_CODR = PWM_CH7_PIN; }
     if (status & TC_SR_CPCS) { REG_PIOC_CODR = PWM_CH8_PIN; }
 }
 
@@ -248,9 +255,9 @@ void TC6_Handler(void) {
 
     uint32_t status = REG_TC2_SR0;
 
-    if (status & TC_SR_CPAS) { REG_PIOA_CODR = PWM_CH9_PIN;  }
-    if (status & TC_SR_CPBS) { REG_PIOC_CODR = PWM_CH10_PIN; }
-    if (status & TC_SR_CPCS) { REG_PIOC_CODR = PWM_CH11_PIN; }
+    if (status & TC_SR_CPAS) { REG_PIOD_CODR = PWM_CH9_PIN;  }
+    if (status & TC_SR_CPBS) { REG_PIOD_CODR = PWM_CH10_PIN; }
+    if (status & TC_SR_CPCS) { REG_PIOD_CODR = PWM_CH11_PIN; }
 }
 
 //  ***************************************************************************
@@ -262,8 +269,8 @@ void TC7_Handler(void) {
 
     uint32_t status = REG_TC2_SR1;
 
-    if (status & TC_SR_CPAS) { REG_PIOC_CODR = PWM_CH12_PIN; }
-    if (status & TC_SR_CPBS) { REG_PIOC_CODR = PWM_CH13_PIN; }
+    if (status & TC_SR_CPAS) { REG_PIOD_CODR = PWM_CH12_PIN; }
+    if (status & TC_SR_CPBS) { REG_PIOA_CODR = PWM_CH13_PIN; }
     if (status & TC_SR_CPCS) { REG_PIOC_CODR = PWM_CH14_PIN; }
 }
 

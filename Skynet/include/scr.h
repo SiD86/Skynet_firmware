@@ -9,7 +9,6 @@
 
 extern uint8_t scr;
 
-
 void scr_process(void);
 
 

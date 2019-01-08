@@ -5,9 +5,11 @@
 #include <sam.h>
 #include <string.h>
 #include "modbus.h"
-#include "usart0_pdc.h"
 #include "ram_map.h"
 #include "veeprom.h"
+#include "usart0_pdc.h"
+
+#define USART_BAUD_RATE                         (175000)
 
 #define CRC16_POLYNOM							(0xA001)	// CRC polynom
 
@@ -17,9 +19,9 @@
 #define MB_READ_EEPROM_CMD_MIN_LENGTH			(7)
 #define MB_WRITE_EEPROM_CMD_MIN_LENGTH			(8)
 
-#define MAX_READ_RAM_SIZE						(16)
-#define MAX_WRITE_RAM_SIZE						(16)
-#define MAX_READ_EEPROM_SIZE					(16)
+#define MAX_READ_RAM_SIZE						(32)
+#define MAX_WRITE_RAM_SIZE						(32)
+#define MAX_READ_EEPROM_SIZE					(32)
 #define MAX_WRITE_EEPROM_SIZE					(16)
 
 #define MB_CMD_WRITE_RAM						(0x41)		// ModBus Function Code: Write RAM
@@ -35,11 +37,11 @@
 #define MB_BAD_FRAME							(0xFF)
 
 
-static bool is_request_valid(const uint8_t* request, uint32_t size);
-uint32_t read_ram_command_handler(const uint8_t* request, uint8_t* response, uint16_t rq_size, uint8_t* rs_size);
-uint32_t write_ram_command_handler(const uint8_t* request, uint16_t rq_size);
+static bool     is_request_valid(const uint8_t* request, uint32_t size);
+static uint32_t read_ram_command_handler(const uint8_t* request, uint8_t* response, uint16_t rq_size, uint8_t* rs_size);
+static uint32_t write_ram_command_handler(const uint8_t* request, uint16_t rq_size);
 static uint32_t read_eeprom_command_handler(const uint8_t* request, uint8_t* response, uint8_t rq_size, uint8_t* rs_size);
-uint32_t write_eeprom_command_handler(const uint8_t* request, uint16_t rq_size);
+static uint32_t write_eeprom_command_handler(const uint8_t* request, uint16_t rq_size);
 static uint16_t calculate_crc16(const uint8_t* data, uint32_t size);
 
 
@@ -51,51 +53,47 @@ static uint16_t calculate_crc16(const uint8_t* data, uint32_t size);
 //  ***************************************************************************
 void modbus_init(void) {
 	
-	usart0_init();
-	usart0_start_rx();
+	usart0_init(USART_BAUD_RATE);
+	usart0_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
 }
 
 //  ***************************************************************************
 /// @brief  ModBus process
 /// @note	Call from main loop
-/// @param  none
-/// @return none
 //  ***************************************************************************
 void modbus_process(void) {
 	
 	// Check USART errors
 	if (usart0_is_error() == true) {
 		usart0_reset(true, true);
-		usart0_start_rx();
+		usart0_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
 		return;
 	}
 	
-	// Check frame receive
+	// Check frame received
 	if (usart0_is_frame_received() == false) {
 		return;
 	}
 	
 	// Check complete transmit response
 	if (usart0_is_tx_complete() == false) {
-		usart0_start_rx();
+		usart0_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
 		return;
 	}
 	
-
-	uint8_t* response = usart0_get_tx_buffer_address();
-	uint8_t* request = usart0_get_rx_buffer_address();
-	uint32_t request_size = usart0_get_frame_size();
-	
 	// Verify frame
+	const uint8_t* request = usart0_get_internal_rx_buffer_address();
+	uint32_t request_size = usart0_get_frame_size();
 	if (is_request_valid(request, request_size) == false) {
-		usart0_start_rx();
+		usart0_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
 		return;
 	}
 	
 	// Process command
+	uint8_t* response = usart0_get_internal_tx_buffer_address();
 	uint8_t response_size = 0;
 	uint32_t result = MB_OK;
-	
+
 	switch (request[1]) {
 		
 		case MB_CMD_READ_RAM:
@@ -115,7 +113,7 @@ void modbus_process(void) {
 			break;
 
 		default:
-			usart0_start_rx();
+			usart0_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
 			return;
 	}
 	
@@ -133,7 +131,7 @@ void modbus_process(void) {
 			response[response_size++] = crc >> 8;
 			
 			usart0_start_tx(response_size);
-			usart0_start_rx();
+			usart0_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
 		}
 		return;
 	}
@@ -149,8 +147,9 @@ void modbus_process(void) {
 	
 	// Send response
 	usart0_start_tx(response_size);
-	usart0_start_rx();
+	usart0_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
 }
+
 
 
 
@@ -192,7 +191,7 @@ static bool is_request_valid(const uint8_t* request, uint32_t size) {
 /// @retval rs_size
 /// @return command process result
 //  ***************************************************************************
-uint32_t read_ram_command_handler(const uint8_t* request, uint8_t* response, uint16_t rq_size, uint8_t* rs_size) {
+static uint32_t read_ram_command_handler(const uint8_t* request, uint8_t* response, uint16_t rq_size, uint8_t* rs_size) {
 	
 	// Check request size
 	if (rq_size < MB_READ_RAM_CMD_MIN_LENGTH) {
@@ -202,17 +201,16 @@ uint32_t read_ram_command_handler(const uint8_t* request, uint8_t* response, uin
 	// Parse request parameters
 	uint16_t address = (request[2] << 8) | request[3];
 	uint8_t bytes_count = request[4];
+	
+	// Check request parameters
 	if (bytes_count == 0 || bytes_count > MAX_READ_RAM_SIZE) {
 		return MB_EXCEPTION_ILLEGAL_DATA_VALUE;
 	}
 
-	// Check request parameters
-	if (address + bytes_count - 1 > RAM_MAP_END_ADDRESS) {
+	// Process command
+	if (ram_map_read(address, &response[3], bytes_count) == false) {
 		return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
 	}
-	
-	// Process command
-	ram_map_get_data(address, &response[3], bytes_count);
 	
 	response[2] = bytes_count;
 	*rs_size += bytes_count + 1; // +1: response[2] = bytes_count;
@@ -228,7 +226,7 @@ uint32_t read_ram_command_handler(const uint8_t* request, uint8_t* response, uin
 /// @retval response
 /// @return command process result
 //  ***************************************************************************
-uint32_t write_ram_command_handler(const uint8_t* request, uint16_t rq_size) {
+static uint32_t write_ram_command_handler(const uint8_t* request, uint16_t rq_size) {
 	
 	// Check request size
 	if (rq_size < MB_WRITE_RAM_CMD_MIN_LENGTH) {
@@ -238,17 +236,16 @@ uint32_t write_ram_command_handler(const uint8_t* request, uint16_t rq_size) {
 	// Parse request parameters
 	uint16_t address = (request[2] << 8) | request[3];
 	uint8_t bytes_count = request[4];
+	
+	// Check request parameters 
 	if (bytes_count == 0 || bytes_count > MAX_READ_RAM_SIZE) {
 		return MB_EXCEPTION_ILLEGAL_DATA_VALUE;
 	}
 
-	// Check request parameters
-	if (address + bytes_count - 1 > RAM_MAP_END_ADDRESS) {
+	// Process command
+	if (ram_map_write(address, &request[5], bytes_count) == false) {
 		return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
 	}
-
-	// Process command
-	ram_map_put_data(address, &request[5], bytes_count);
 	
 	return MB_OK;
 }
@@ -273,14 +270,11 @@ static uint32_t read_eeprom_command_handler(const uint8_t* request, uint8_t* res
 	// Parse request parameters
 	uint16_t address = (request[2] << 8) | request[3];
 	uint8_t bytes_count = request[4];
+	
+	// Check request parameters
 	if (bytes_count == 0 || bytes_count > MAX_READ_EEPROM_SIZE) {
 		return MB_EXCEPTION_ILLEGAL_DATA_VALUE;
 	}
-
-	// Check request parameters
-	/*if (address + bytes_count - 1 > INTERNAL_RAM_END_ADDRESS) {
-		return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
-	}*/
 	
 	// Process command
 	response[2] = bytes_count;
@@ -298,7 +292,7 @@ static uint32_t read_eeprom_command_handler(const uint8_t* request, uint8_t* res
 /// @retval response
 /// @return command process result
 //  ***************************************************************************
-uint32_t write_eeprom_command_handler(const uint8_t* request, uint16_t rq_size) {
+static uint32_t write_eeprom_command_handler(const uint8_t* request, uint16_t rq_size) {
 	
 	// Check request size
 	if (rq_size < MB_WRITE_EEPROM_CMD_MIN_LENGTH) {
@@ -308,17 +302,16 @@ uint32_t write_eeprom_command_handler(const uint8_t* request, uint16_t rq_size) 
 	// Parse request parameters
 	uint16_t address = (request[2] << 8) | request[3];
 	uint8_t bytes_count = request[4];
+	
+	// Check request parameters
 	if (bytes_count == 0 || bytes_count > MAX_READ_EEPROM_SIZE) {
 		return MB_EXCEPTION_ILLEGAL_DATA_VALUE;
 	}
 	
-	// Check request parameters
-	/*if (address + bytes_count - 1 > INTERNAL_RAM_END_ADDRESS) {
-		return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
-	}*/
-	
 	// Process command
-	veeprom_write_bytes(address, &request[5], bytes_count);
+	if (veeprom_write_bytes(address, &request[5], bytes_count) == false) {
+		return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
+	}
 	
 	return MB_OK;
 }

@@ -6,6 +6,8 @@
 #ifndef PWM_H_
 #define PWM_H_
 
+#define PWM_DISABLE_CHANNEL_VALUE			(0x0000)
+
 extern void pwm_init(void);
 extern void pwm_start(void);
 extern void pwm_stop(void);

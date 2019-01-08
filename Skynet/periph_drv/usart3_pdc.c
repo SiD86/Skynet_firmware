@@ -5,21 +5,22 @@
 #include <sam.h>
 #include <stdbool.h>
 #include "usart3_pdc.h"
-#define USART_BAUDRATE						(175000)
 #define TX_PIN								(PIO_PD4)
 #define RX_PIN								(PIO_PD5)
-#define MAX_BUFFER_SIZE						(64)
+#define INTERNAL_TX_BUFFER_SIZE				(1024)
+#define INTERNAL_RX_BUFFER_SIZE             (1024)
 
 
-static uint8_t tx_buffer[MAX_BUFFER_SIZE] = { 0 };
-static uint8_t rx_buffer[MAX_BUFFER_SIZE] = { 0 };
+static uint8_t internal_tx_buffer[INTERNAL_TX_BUFFER_SIZE] = { 0 };
+static uint8_t internal_rx_buffer[INTERNAL_RX_BUFFER_SIZE] = { 0 };
 
 
 //  ***************************************************************************
 /// @brief	Initialization USART
 /// @note	Mode 8N1
+/// @param  baud_rate: USART baud rate
 //  ***************************************************************************
-void usart3_init() {
+void usart3_init(uint32_t baud_rate) {
 
 	// Enable clock
 	REG_PMC_PCER0 = PMC_PCER0_PID20;
@@ -46,21 +47,53 @@ void usart3_init() {
 	// Configure 8N1 mode
 	REG_USART3_MR = US_MR_CHRL_8_BIT | US_MR_PAR_NO | US_MR_NBSTOP_1_BIT | US_MR_USART_MODE_NORMAL | US_MR_USCLKS_MCK | US_MR_CHMODE_NORMAL;
 
-	// Configure baud rate
-	REG_USART3_BRGR = (SystemCoreClock / USART_BAUDRATE) / 16;
-
 	// Disable all interrupts
 	REG_USART3_IDR = 0xFFFFFFFF;
 	NVIC_EnableIRQ(USART3_IRQn);
 
 	// Configure PDC channels
 	REG_USART3_TCR = 0;
-	REG_USART3_TPR = (uint32_t)tx_buffer;
+	REG_USART3_TPR = (uint32_t)internal_tx_buffer;
 	REG_USART3_RCR = 0;
-	REG_USART3_RPR = (uint32_t)rx_buffer;
+	REG_USART3_RPR = (uint32_t)internal_rx_buffer;
 
-	// Enable TX and RX
-	REG_USART3_CR = US_CR_TXEN | US_CR_RXEN;
+	// Configure baud rate
+	usart3_set_baud_rate(baud_rate);
+}
+
+//  ***************************************************************************
+/// @brief	Set USART baud rate
+/// @param	baud_rate: USART baud rate
+//  ***************************************************************************
+void usart3_set_baud_rate(uint32_t baud_rate) {
+    
+    // Disable PDC channels and reset TX and RX
+    REG_USART3_PTCR = US_PTCR_TXTDIS | US_PTCR_RXTDIS;
+    REG_USART3_CR = US_CR_RSTTX | US_CR_RSTRX | US_CR_RSTSTA;
+    
+	//
+    // Configure baud rate
+	//
+	uint32_t CD = (SystemCoreClock / baud_rate) / 16;
+	uint8_t best_FP = 0;
+	float best_error = 100;
+	for (uint8_t FP = 0; FP < 8; ++FP) {
+		
+		float actual_baud_rate = SystemCoreClock / (16.0 * (CD + FP / 8.0));
+		float error = (1.0 - baud_rate / actual_baud_rate) * 100.0;
+		if (error < 0) {
+			error *= -1;
+		}
+		
+		if (error < best_error) {
+			best_error = error;
+			best_FP = FP;
+		}
+	}
+	REG_USART3_BRGR = (best_FP << 16) | CD;
+    
+    // Enable TX and RX
+    REG_USART3_CR = US_CR_TXEN | US_CR_RXEN;
 }
 
 //  ***************************************************************************
@@ -76,12 +109,12 @@ bool usart3_is_error() {
 //  ***************************************************************************
 /// @brief	Reset USART
 /// @note	Reset status register, reset transmitter and receiver
-/// @param	tx: true - reset TX
-/// @param	rx: true - reset RX
+/// @param	is_reset_transmitter: true - reset transmitter
+/// @param	is_reset_receiver: true - reset receiver
 //  ***************************************************************************
-void usart3_reset(bool tx, bool rx) {
+void usart3_reset(bool is_reset_transmitter, bool is_reset_receiver) {
 
-	if (tx == true) {
+	if (is_reset_transmitter == true) {
 
 		// Disable PDC channel and reset TX
 		REG_USART3_PTCR = US_PTCR_TXTDIS;
@@ -89,13 +122,13 @@ void usart3_reset(bool tx, bool rx) {
 
 		// Reset PDC channel
 		REG_USART3_TCR = 0;
-		REG_USART3_TPR = (uint32_t)tx_buffer;
+		REG_USART3_TPR = (uint32_t)internal_tx_buffer;
 
 		// Enable TX
 		REG_USART3_CR = US_CR_TXEN;
 	}
 
-	if (rx == true) {
+	if (is_reset_receiver == true) {
 
 		// Disable PDC channel and reset RX
 		REG_USART3_PTCR = US_PTCR_RXTDIS;
@@ -106,7 +139,7 @@ void usart3_reset(bool tx, bool rx) {
 
 		// Reset PDC channel
 		REG_USART3_RCR = 0;
-		REG_USART3_RPR = (uint32_t)rx_buffer;
+		REG_USART3_RPR = (uint32_t)internal_rx_buffer;
 
 		// Enable RX
 		REG_USART3_CR = US_CR_RXEN;
@@ -115,14 +148,18 @@ void usart3_reset(bool tx, bool rx) {
 
 //  ***************************************************************************
 /// @brief	Start asynchronous transmit
-/// @param	size: bytes count for transmit
+/// @param	bytes_count: bytes count for transmit
 //  ***************************************************************************
-void usart3_start_tx(uint32_t size) {
+void usart3_start_tx(uint32_t bytes_count) {
+	
+	if (bytes_count > INTERNAL_TX_BUFFER_SIZE) {
+		bytes_count = INTERNAL_TX_BUFFER_SIZE;
+	}
 
 	// Initialize DMA for transfer 
 	REG_USART3_PTCR = US_PTCR_TXTDIS;
-	REG_USART3_TPR = (uint32_t)tx_buffer;
-	REG_USART3_TCR = size;
+	REG_USART3_TPR = (uint32_t)internal_tx_buffer;
+	REG_USART3_TCR = bytes_count;
 	REG_USART3_PTCR = US_PTCR_TXTEN;
 }
 
@@ -136,20 +173,22 @@ bool usart3_is_tx_complete() {
 }
 
 //  ***************************************************************************
-/// @brief	Get TX buffer address
+/// @brief	Get internal TX buffer address
 /// @return Buffer address
 //  ***************************************************************************
-uint8_t* usart3_get_tx_buffer_address() {
-	return tx_buffer;
+uint8_t* usart3_get_internal_tx_buffer_address() {
+	return internal_tx_buffer;
 }
 
 
 
 //  ***************************************************************************
 /// @brief	Start asynchronous receive
+/// @param  external_rx_buffer: pointer to external buffer
+/// @param  external_buffer_size: external buffer size
 /// @param	none
 //  ***************************************************************************
-void usart3_start_rx() {
+void usart3_start_rx(uint8_t* external_rx_buffer, uint32_t external_buffer_size) {
 
 	// Disable DMA
 	REG_USART3_PTCR = US_PTCR_RXTDIS;
@@ -160,8 +199,14 @@ void usart3_start_rx() {
 	REG_USART3_IER = US_IER_TIMEOUT;
 
 	// Initialize DMA for receive
-	REG_USART3_RPR = (uint32_t)rx_buffer;
-	REG_USART3_RCR = MAX_BUFFER_SIZE;
+	if (external_rx_buffer == USART3_USE_INTERNAL_BUFFER) {
+		REG_USART3_RPR = (uint32_t)internal_rx_buffer;
+		REG_USART3_RCR = INTERNAL_RX_BUFFER_SIZE;
+	}
+	else {
+		REG_USART3_RPR = (uint32_t)external_rx_buffer;
+		REG_USART3_RCR = external_buffer_size;
+	}
 
 	// Enable DMA
 	REG_USART3_PTCR = US_PTCR_RXTEN;
@@ -181,15 +226,15 @@ bool usart3_is_frame_received() {
 /// @return	Frame size
 //  ***************************************************************************
 uint32_t usart3_get_frame_size() {
-	return MAX_BUFFER_SIZE - REG_USART3_RCR;
+	return INTERNAL_RX_BUFFER_SIZE - REG_USART3_RCR;
 }
 
 //  ***************************************************************************
-/// @brief	Get TX buffer address
+/// @brief	Get internal RX buffer address
 /// @return Buffer address
 //  ***************************************************************************
-uint8_t* usart3_get_rx_buffer_address() {
-	return rx_buffer;
+const uint8_t* usart3_get_internal_rx_buffer_address() {
+	return internal_rx_buffer;
 }
 
 
