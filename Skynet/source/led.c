@@ -40,11 +40,11 @@ void led_enable(led_id id) {
     }
     
     // LED already enabled
-    if (REG_PIOC_OSR & leds[id]) {
+    if ((REG_PIOC_ODSR & leds[id]) == 0) {
         return;
     }
     
     // Disable all LEDs and enable requested LED
-    REG_PIOC_CODR = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
-    REG_PIOC_SODR = leds[id];
+	REG_PIOC_SODR = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
+    REG_PIOC_CODR = leds[id];
 }

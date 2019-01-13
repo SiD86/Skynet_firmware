@@ -100,11 +100,10 @@ void limbs_driver_init(void) {
     // Initialization servo driver and set start servo angles
     servo_driver_init();
     for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
-        servo_driver_set_angle(i * 3 + 0, limbs[i].links[LINK_COXA].angle);
-        servo_driver_set_angle(i * 3 + 1, limbs[i].links[LINK_FEMUR].angle);
-        servo_driver_set_angle(i * 3 + 2, limbs[i].links[LINK_TIBIA].angle);
+        servo_driver_move(i * 3 + 0, limbs[i].links[LINK_COXA].angle);
+        servo_driver_move(i * 3 + 1, limbs[i].links[LINK_FEMUR].angle);
+        servo_driver_move(i * 3 + 2, limbs[i].links[LINK_TIBIA].angle);
     }
-    servo_driver_move();
     
     // Initialization driver state
     movement_iteration_count = DEFAULT_ITERATION_COUNT;
@@ -230,11 +229,10 @@ void limbs_driver_process(void) {
             
         case STATE_LOAD:
             for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
-                servo_driver_set_angle(i * 3 + 0, limbs[i].links[LINK_COXA].angle);
-                servo_driver_set_angle(i * 3 + 1, limbs[i].links[LINK_FEMUR].angle);
-                servo_driver_set_angle(i * 3 + 2, limbs[i].links[LINK_TIBIA].angle);
+                servo_driver_move(i * 3 + 0, limbs[i].links[LINK_COXA].angle);
+                servo_driver_move(i * 3 + 1, limbs[i].links[LINK_FEMUR].angle);
+                servo_driver_move(i * 3 + 2, limbs[i].links[LINK_TIBIA].angle);
             }
-            servo_driver_move();
             
             begin_wait_time = get_time_ms();
             driver_state = STATE_WAIT;

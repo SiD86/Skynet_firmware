@@ -67,11 +67,11 @@ void scr_process(void) {
 			
 		case SCR_CMD_SELECT_GAIT_ROTATE_RIGHT:
 			movement_driver_select_sequence(SEQUENCE_ROTATE_RIGHT);
-			break;
+			break;*/
 			
 		case SCR_CMD_RESET:
 			REG_RSTC_CR = 0xA5000005;
-			break;*/
+			break;
 	}
 	
 	scr = 0x00;

@@ -3,21 +3,19 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include <sam.h>
-#include <stdlib.h>
 #include <stdbool.h>
-#include <string.h>
 #include "servo_driver.h"
 #include "pwm.h"
 #include "veeprom.h"
 #include "veeprom_map.h"
 #include "error_handling.h"
 
-#define MG996R_DISABLE_PULSE_WIDTH              (0)
+#define DISABLE_PULSE_WIDTH						(0)
+
 #define MG996R_MIN_PULSE_WIDTH                  (880)
 #define MG996R_MAX_PULSE_WIDTH                  (2280)
 #define MG996R_MAX_SERVO_ANGLE                  (150)
 
-#define DS3218_DISABLE_PULSE_WIDTH              (0)
 #define DS3218_MIN_PULSE_WIDTH                  (500)
 #define DS3218_MAX_PULSE_WIDTH                  (2500)
 #define DS3218_MAX_SERVO_ANGLE                  (270)
@@ -45,10 +43,19 @@ typedef struct {
     servo_type_t type;          // Servo type
 } servo_info_t;
 
+// Servo driver states
+typedef enum {
+    STATE_NOINIT,
+    STATE_STARTUP,
+	STATE_WAIT_NEXT_PWM_PERIOD,
+    STATE_LOAD_PULSE_WIDTH
+} driver_state_t;
+
 
 int8_t ram_servo_angle_override[SUPPORT_SERVO_COUNT] = {0};	// Write only
 int8_t ram_servo_angle[SUPPORT_SERVO_COUNT] = {0};			// Read only
     
+static driver_state_t driver_state = STATE_NOINIT;
 static servo_info_t   servo_channels[SUPPORT_SERVO_COUNT] = { 0 };
 
 
@@ -74,43 +81,33 @@ void servo_driver_init(void) {
 
     pwm_init();
     pwm_enable();
+    
+    driver_state = STATE_STARTUP;
 }
 
 //  ***************************************************************************
-/// @brief  Set servo destination angle
+/// @brief  Start move servo to new angle
 /// @param  ch:    servo channel
-/// @param  angle: destination angle
+/// @param  angle: new angle
 /// @return none
 //  ***************************************************************************
-void servo_driver_set_angle(uint32_t ch, float angle) {
+void servo_driver_move(uint32_t ch, float angle) {
     
     if (ch >= SUPPORT_SERVO_COUNT) {
         callback_set_internal_error(ERROR_MODULE_SERVO_DRIVER);
         return;
     }
-    
+	
     // Calculate servo angle
     servo_channels[ch].angle = servo_channels[ch].zero_offset + angle;
-    if (servo_channels[ch].angle > MG996R_MAX_SERVO_ANGLE) {
+	
+	// Check angle
+    if (servo_channels[ch].type == SERVO_TYPE_MG996R && servo_channels[ch].angle > MG996R_MAX_SERVO_ANGLE) {
         callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
-        return;
     }
-}    
-
-//  ***************************************************************************
-/// @brief  Start move all servos to destination angles
-/// @return none
-//  ***************************************************************************
-void servo_driver_move(void) {
-    
-    pwm_lock_buffer();
-    for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
-        
-        if (ram_servo_angle_override[i] != OVERRIDE_DISABLE_VALUE) {
-            pwm_set_width(i, convert_angle_to_pulse_width(&servo_channels[i]));
-        }        
-    }    
-    pwm_unlock_buffer();
+	else if (servo_channels[ch].type == SERVO_TYPE_DS3218 && servo_channels[ch].angle > DS3218_MAX_SERVO_ANGLE) {
+        callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
+    }
 }
 
 //  ***************************************************************************
@@ -123,17 +120,55 @@ void servo_driver_process(void) {
         pwm_disable();
         return; // Module disabled
     }
+	
+
+    static uint32_t prev_counter_value = 0;
+    uint32_t counter_value = pwm_get_counter();
     
-    
-    for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
+    switch (driver_state) {
         
-        // Override process
-        if (ram_servo_angle_override[i] != OVERRIDE_DISABLE_VALUE) {
-            servo_channels[i].angle = servo_channels[i].zero_offset + ram_servo_angle_override[i];
-        }
-        
-        // Update RAM variable
-        ram_servo_angle[i] = servo_channels[i].angle;
+        case STATE_STARTUP:
+            prev_counter_value = counter_value;
+            driver_state = STATE_WAIT_NEXT_PWM_PERIOD;
+            break;
+			
+		case STATE_WAIT_NEXT_PWM_PERIOD:
+			if (prev_counter_value != counter_value) {
+			
+				if (counter_value - prev_counter_value > 1) {
+					// We skipped PWM period. Very long time between servo_driver_process() function calls
+					callback_set_sync_error(ERROR_MODULE_SERVO_DRIVER);
+				}
+			
+				prev_counter_value = counter_value;
+				driver_state = STATE_LOAD_PULSE_WIDTH;
+			}
+			break;
+
+        case STATE_LOAD_PULSE_WIDTH:
+			pwm_set_buffers_state(PWM_BUFFERS_LOCK);
+            for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
+				
+				// Override servo angle process
+				if (ram_servo_angle_override[i] != OVERRIDE_DISABLE_VALUE) {
+					servo_channels[i].angle = servo_channels[i].zero_offset + ram_servo_angle_override[i];
+				}
+					
+				// Calculate and load pulse width
+				pwm_set_width(i, convert_angle_to_pulse_width(&servo_channels[i]));
+				
+				// Update RAM variable
+				ram_servo_angle[i] = servo_channels[i].angle;
+            }
+            pwm_set_buffers_state(PWM_BUFFERS_UNLOCK);
+			
+            driver_state = STATE_WAIT_NEXT_PWM_PERIOD;
+            break;
+            
+        case STATE_NOINIT:
+        default:
+            callback_set_internal_error(ERROR_MODULE_SERVO_DRIVER);
+            break;
     }
 }
 
@@ -207,7 +242,7 @@ static uint32_t convert_angle_to_pulse_width(const servo_info_t* servo_info) {
     }  
     else if (servo_info->type == SERVO_TYPE_DS3218) {
         
-        uint32_t pulse_width = servo_info->angle * (DS3218_MAX_SERVO_ANGLE - DS3218_MIN_PULSE_WIDTH) / DS3218_MAX_SERVO_ANGLE + DS3218_MIN_PULSE_WIDTH;
+        uint32_t pulse_width = servo_info->angle * (DS3218_MAX_PULSE_WIDTH - DS3218_MIN_PULSE_WIDTH) / DS3218_MAX_SERVO_ANGLE + DS3218_MIN_PULSE_WIDTH;
         if (servo_info->direction == DIRECTION_REVERSE) {
             pulse_width = DS3218_MAX_PULSE_WIDTH - (pulse_width - DS3218_MIN_PULSE_WIDTH);
         }
@@ -215,5 +250,5 @@ static uint32_t convert_angle_to_pulse_width(const servo_info_t* servo_info) {
     }
     
     callback_set_internal_error(ERROR_MODULE_SERVO_DRIVER);
-    return DS3218_DISABLE_PULSE_WIDTH;
+    return DISABLE_PULSE_WIDTH;
 }
