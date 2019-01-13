@@ -9,9 +9,8 @@
 // Base addresses for servo configuration
 #define SERVO_ZERO_OFFSET_EE_ADDRESS				(0x0100)	///< U8 Servo zero offset
 #define SERVO_ROTATE_DIRECTION_EE_ADDRESS			(0x0101)	///< U8 Servo rotate direction
-#define SERVO_START_ANGLE_EE_ADDRESS				(0x0102)	///< U8 Servo start angle
-#define SERVO_STEPS_CALC_ALG_EE_ADDRESS				(0x0103)	///< U8 Servo steps calculation algorithm
-#define SERVO_STEPS_FACTOR_EE_ADDRESS				(0x0104)	///< U8 Servo steps factor
+#define SERVO_TYPE_EE_ADDRESS                       (0x0102)    ///< U8 Servo type
+#define SERVO_START_ANGLE_EE_ADDRESS				(0x0103)	///< U8 Servo start angle
 #define SERVO_CONFIGURATION_SIZE					(8)
 
 #define LIMB_CONTROL_EE_ADDRESS						(0x01C0)	///< U16 Limb control

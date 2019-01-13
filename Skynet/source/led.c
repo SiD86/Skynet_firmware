@@ -35,7 +35,7 @@ void led_init(void) {
 void led_enable(led_id id) {
     
     if (id >= sizeof(leds) / sizeof(leds[0])) {
-        callback_set_selfdiag_error(ERROR_MODULE_LED);
+        callback_set_internal_error(ERROR_MODULE_LED);
         return;
     }
     

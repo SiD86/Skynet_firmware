@@ -3,6 +3,7 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include <sam.h>
+#include <stdbool.h>
 #include "pwm.h"
 
 #define PWM_FREQUENCY_HZ                (100)
@@ -38,7 +39,7 @@
 
 
 static volatile uint32_t pwm_channel_ticks[18] = { 0 };
-static volatile uint32_t pwm_counter = 0;
+static volatile bool pwm_channels_buffers_lock = false;
 
 
 //  ***************************************************************************
@@ -79,36 +80,38 @@ void pwm_init(void) {
     uint32_t reg_ier_value = TC_IER_CPAS | TC_IER_CPBS | TC_IER_CPCS;
     REG_TC1_CMR0 = REG_TC1_CMR1 = REG_TC1_CMR2 = REG_TC2_CMR0 = REG_TC2_CMR1 = REG_TC2_CMR2 = reg_cmr_value;
     REG_TC1_IER0 = REG_TC1_IER1 = REG_TC1_IER2 = REG_TC2_IER0 = REG_TC2_IER1 = REG_TC2_IER2 = reg_ier_value;
+    
+    // Initialize buffers
+    for (uint32_t i = 0; i < 18; ++i) {
+        pwm_channel_ticks[i] = 0;
+    }        
+    
+    // Unlock buffers
+    pwm_channels_buffers_lock = false;
 }
 
 //  ***************************************************************************
-/// @brief  PWM start
+/// @brief  PWM enable
 /// @param  none
 /// @return none
 //  ***************************************************************************
-void pwm_start(void) {
+void pwm_enable(void) {
 
+    // NOTE: PWM channels auto enable in next PWM cycle
+    
     // Enable sync timer
     REG_TC0_CCR0 = TC_CCR_SWTRG | TC_CCR_CLKEN;
     NVIC_EnableIRQ(TC0_IRQn);
-
-    // NOTE: PWM channels auto enable in next PWM cycle
-    NVIC_EnableIRQ(TC3_IRQn);
-    NVIC_EnableIRQ(TC4_IRQn);
-    NVIC_EnableIRQ(TC5_IRQn);
-    NVIC_EnableIRQ(TC6_IRQn);
-    NVIC_EnableIRQ(TC7_IRQn);
-    NVIC_EnableIRQ(TC8_IRQn);
     
-    pwm_counter = 0;
+    pwm_channels_buffers_lock = false;
 }
 
 //  ***************************************************************************
-/// @brief  PWM stop
+/// @brief  PWM disable
 /// @param  none
 /// @return none
 //  ***************************************************************************
-void pwm_stop(void) {
+void pwm_disable(void) {
     
     // Disable sync timer
     REG_TC0_CCR0 = TC_CCR_CLKDIS;
@@ -121,25 +124,26 @@ void pwm_stop(void) {
     REG_TC2_CCR0 = TC_CCR_CLKDIS;
     REG_TC2_CCR1 = TC_CCR_CLKDIS;
     REG_TC2_CCR2 = TC_CCR_CLKDIS;
-
-    // Disable all IRQ
-    NVIC_DisableIRQ(TC3_IRQn);
-    NVIC_DisableIRQ(TC4_IRQn);
-    NVIC_DisableIRQ(TC5_IRQn);
-    NVIC_DisableIRQ(TC6_IRQn);
-    NVIC_DisableIRQ(TC7_IRQn);
-    NVIC_DisableIRQ(TC8_IRQn);
 }
 
 //  ***************************************************************************
-/// @brief  PWM get sync timer counter
-/// @param  none
-/// @return counter value
+/// @brief  Lock buffers
+/// @return none
 //  ***************************************************************************
-uint32_t pwm_get_counter(void) {
-    return pwm_counter;
-}
+void pwm_lock_buffer(void) {
+    
+    pwm_channels_buffers_lock = true;
+}  
 
+//  ***************************************************************************
+/// @brief  Unlock buffers
+/// @return none
+//  ***************************************************************************
+void pwm_unlock_buffer(void) {
+    
+     pwm_channels_buffers_lock = false;
+}
+    
 //  ***************************************************************************
 /// @brief  Set channel pulse width
 /// @param  ch: PWM channel index
@@ -156,8 +160,6 @@ void pwm_set_width(uint32_t ch, uint32_t width) {
 
 //  ***************************************************************************
 /// @brief  Sync timer ISR
-/// @note    none
-/// @param  none
 /// @return none
 //  ***************************************************************************
 void TC0_Handler(void) {
@@ -166,8 +168,6 @@ void TC0_Handler(void) {
 
     if (status & TC_SR_CPCS) {
         
-        ++pwm_counter;
-
         // Connect all pins to VCC (reset state)
         REG_PIOA_SODR = PWM_ALL_PINS_PORTA;
 		REG_PIOB_SODR = PWM_ALL_PINS_PORTB;
@@ -175,24 +175,26 @@ void TC0_Handler(void) {
         REG_PIOD_SODR = PWM_ALL_PINS_PORTD;
 
         // Load pulse width to PWM channels
-        REG_TC1_RA0 = pwm_channel_ticks[0];
-        REG_TC1_RB0 = pwm_channel_ticks[1];
-        REG_TC1_RC0 = pwm_channel_ticks[2];
-        REG_TC1_RA1 = pwm_channel_ticks[3];
-        REG_TC1_RB1 = pwm_channel_ticks[4];
-        REG_TC1_RC1 = pwm_channel_ticks[5];
-        REG_TC1_RA2 = pwm_channel_ticks[6];
-        REG_TC1_RB2 = pwm_channel_ticks[7];
-        REG_TC1_RC2 = pwm_channel_ticks[8];
-        REG_TC2_RA0 = pwm_channel_ticks[9];
-        REG_TC2_RB0 = pwm_channel_ticks[10];
-        REG_TC2_RC0 = pwm_channel_ticks[11];
-        REG_TC2_RA1 = pwm_channel_ticks[12];
-        REG_TC2_RB1 = pwm_channel_ticks[13];
-        REG_TC2_RC1 = pwm_channel_ticks[14];
-        REG_TC2_RA2 = pwm_channel_ticks[15];
-        REG_TC2_RB2 = pwm_channel_ticks[16];
-        REG_TC2_RC2 = pwm_channel_ticks[17];
+        if (pwm_channels_buffers_lock == false) {
+            REG_TC1_RA0 = pwm_channel_ticks[0];
+            REG_TC1_RB0 = pwm_channel_ticks[1];
+            REG_TC1_RC0 = pwm_channel_ticks[2];
+            REG_TC1_RA1 = pwm_channel_ticks[3];
+            REG_TC1_RB1 = pwm_channel_ticks[4];
+            REG_TC1_RC1 = pwm_channel_ticks[5];
+            REG_TC1_RA2 = pwm_channel_ticks[6];
+            REG_TC1_RB2 = pwm_channel_ticks[7];
+            REG_TC1_RC2 = pwm_channel_ticks[8];
+            REG_TC2_RA0 = pwm_channel_ticks[9];
+            REG_TC2_RB0 = pwm_channel_ticks[10];
+            REG_TC2_RC0 = pwm_channel_ticks[11];
+            REG_TC2_RA1 = pwm_channel_ticks[12];
+            REG_TC2_RB1 = pwm_channel_ticks[13];
+            REG_TC2_RC1 = pwm_channel_ticks[14];
+            REG_TC2_RA2 = pwm_channel_ticks[15];
+            REG_TC2_RB2 = pwm_channel_ticks[16];
+            REG_TC2_RC2 = pwm_channel_ticks[17];
+        }        
 
         // Start PWM cycle
         REG_TC1_CCR0 = TC_CCR_SWTRG | TC_CCR_CLKEN;

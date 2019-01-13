@@ -31,14 +31,14 @@ extern bool callback_is_wireless_modbus_error_set(void);
 extern bool callback_is_monitoring_error_set(void);
 extern bool callback_is_multimedia_error_set(void);
 
-extern void callback_set_selfdiag_error(error_module_name_t module);
+extern void callback_set_internal_error(error_module_name_t module);
 extern void callback_set_config_error(error_module_name_t module);
 extern void callback_set_memory_error(error_module_name_t module);
 extern void callback_set_sync_error(error_module_name_t module);
 extern void callback_set_out_of_range_error(error_module_name_t module);
 extern void callback_set_hardware_error(error_module_name_t module);
 
-extern bool callback_is_fatal_error_set(void);
+extern bool callback_is_emergency_mode_active(void);
 extern bool callback_is_any_error_set(void);
 
 #endif // _ERROR_HANDLING_H_

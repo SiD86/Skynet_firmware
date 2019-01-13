@@ -120,7 +120,7 @@ void multimedia_process(void) {
             
         case STATE_NOINIT:
         default:
-            callback_set_selfdiag_error(ERROR_MODULE_MULTIMEDIA);
+            callback_set_internal_error(ERROR_MODULE_MULTIMEDIA);
             break;
     }
     

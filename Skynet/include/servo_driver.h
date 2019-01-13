@@ -13,8 +13,9 @@
 extern int8_t ram_servo_angle_override[SUPPORT_SERVO_COUNT];	// Write only
 extern int8_t ram_servo_angle[SUPPORT_SERVO_COUNT];				// Read only
 
-extern void servo_driver_init(uint32_t servo_ch_enable_mask); 
-extern void servo_driver_move(uint32_t ch, float angle);
+extern void servo_driver_init(void); 
+extern void servo_driver_set_angle(uint32_t ch, float angle);
+extern void servo_driver_move(void);
 extern void servo_driver_process(void);
 
 

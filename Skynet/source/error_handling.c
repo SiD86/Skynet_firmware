@@ -5,8 +5,8 @@
 #include <sam.h>
 #include "error_handling.h"
 
-#define FATAL_ERROR_MASK				(0x0001)
-#define SELFDIAG_ERROR_MASK				(0x0002)
+#define EMERGENCY_MODE_MASK				(0x0001)
+#define INTERNAL_ERROR_MASK				(0x0002)
 #define CONFIG_ERROR_MASK				(0x0004)
 #define MEMORY_ERROR_MASK				(0x0008)
 #define SYNC_ERROR_MASK					(0x0010)
@@ -71,8 +71,8 @@ bool callback_is_multimedia_error_set(void) {
 /// @brief  Callback function for set error - SelfDiag Error
 /// @param  @ref error_module_name_t
 //  ***************************************************************************
-void callback_set_selfdiag_error(error_module_name_t module) {
-	error_status |= (module | SELFDIAG_ERROR_MASK | FATAL_ERROR_MASK);
+void callback_set_internal_error(error_module_name_t module) {
+	error_status |= (module | INTERNAL_ERROR_MASK | EMERGENCY_MODE_MASK);
 }
 
 //  ***************************************************************************
@@ -80,7 +80,7 @@ void callback_set_selfdiag_error(error_module_name_t module) {
 /// @param  @ref error_module_name_t
 //  ***************************************************************************
 void callback_set_config_error(error_module_name_t module) {
-	error_status |= (module | CONFIG_ERROR_MASK | FATAL_ERROR_MASK);
+	error_status |= (module | CONFIG_ERROR_MASK | EMERGENCY_MODE_MASK);
 }
 
 /// ***************************************************************************
@@ -88,7 +88,7 @@ void callback_set_config_error(error_module_name_t module) {
 /// @param  @ref error_module_name_t
 //  ***************************************************************************
 void callback_set_memory_error(error_module_name_t module) {
-	error_status |= (module | MEMORY_ERROR_MASK | FATAL_ERROR_MASK);
+	error_status |= (module | MEMORY_ERROR_MASK | EMERGENCY_MODE_MASK);
 }
 
 /// ***************************************************************************
@@ -96,7 +96,7 @@ void callback_set_memory_error(error_module_name_t module) {
 /// @param  @ref error_module_name_t
 //  ***************************************************************************
 void callback_set_sync_error(error_module_name_t module) {
-	error_status |= (module | SYNC_ERROR_MASK | FATAL_ERROR_MASK);
+	error_status |= (module | SYNC_ERROR_MASK);
 }
 
 /// ***************************************************************************
@@ -118,11 +118,11 @@ void callback_set_hardware_error(error_module_name_t module) {
 
 
 /// ***************************************************************************
-/// @brief  Callback function for check error - Fatal error
-/// @return true - fatal error bit set, false - no
+/// @brief  Callback function for check - Emergency Mode
+/// @return true - emergency mode is active, false - no
 //  ***************************************************************************
-bool callback_is_fatal_error_set(void) {
-	return error_status & FATAL_ERROR_MASK;
+bool callback_is_emergency_mode_active(void) {
+	return error_status & EMERGENCY_MODE_MASK;
 }
 
 /// ***************************************************************************

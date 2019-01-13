@@ -36,86 +36,23 @@ int main(void) {
     
 	// Initialize FW
 	systimer_init();
-	//veeprom_init();
-	//modbus_init();
-	//wireless_init();
-	//monitoring_init();
-    //multimedia_init();
-	//led_init();
-	
-	//limbs_driver_init();
-	
+	veeprom_init();
+	modbus_init();
 	wireless_modbus_init();
+	monitoring_init();
 	multimedia_init();
+	led_init();
     
-	multimedia_update_image();
-    while (true) {
-        multimedia_process();   
-		wireless_modbus_process();
-		scr_process();
-    }        
+    servo_driver_init();
+    limbs_driver_init();
 	//movement_driver_init();
-	
-	/*uint32_t state = 0;
-	uint32_t start_wait = 0;
-	
-	int32_t x[50] = {0};
-	int32_t z[50] = {0};
-	for (uint32_t i = 0; i < 50; ++i) {
-		x[i] = 91 + (183.0 - 91.0) / 50.0 * i;
-		z[i] = -91 + 91.0 / 50.0 * i;
-	}
-	uint32_t index = 0;*/
-	
-	while (1)  {
-		
-		/*switch (state) {
-			
-		case 0:
-			limbs_driver_start_move(3, x[index], -50, z[index], 0);
-			state = 1;
-			start_wait = get_time_ms();
-			break;
-			
-		case 1:
-			if (get_time_ms() - start_wait > 10) {
-				state = 0;
-				++index;
-				if (index == 49) {
-					state = 2;
-				}
-			}
-			break;
-			
-		case 2:
-			limbs_driver_start_move(3, x[index], -50, z[index], 0);
-			state = 3;
-			start_wait = get_time_ms();
-			break;
-			
-		case 3:
-			if (get_time_ms() - start_wait > 10) {
-				state = 2;
-				--index;
-				if (index == 0) {
-					state = 0;
-				}
-			}
-			break;
-		}*/
-  
-		limbs_driver_process();
-		servo_driver_process();
-		modbus_process();
-		scr_process();
-	}
-	
+    
     while (1)  {
 		
 		//
 		// CHECK SYSTEM STATUS
 		//
-		if (callback_is_fatal_error_set() == true) {
+		if (callback_is_emergency_mode_active() == true) {
             led_enable(RED_LED);
 			enter_to_emergency_loop();
 		}
@@ -127,9 +64,10 @@ int main(void) {
 		//
 		// NORMAL MODE PROCESS
 		//
-		//movement_driver_process();
+        servo_driver_process();
         limbs_driver_process();
-		servo_driver_process();
+        //movement_driver_process();
+		
         
         wireless_modbus_process();
 		modbus_process();

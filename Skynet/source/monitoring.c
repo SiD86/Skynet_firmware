@@ -122,7 +122,7 @@ void monitoring_process(void) {
 		
 		case NOINIT:
 		default:
-			callback_set_selfdiag_error(ERROR_MODULE_MONITORING);
+			callback_set_internal_error(ERROR_MODULE_MONITORING);
 			break;
 	}
 }
