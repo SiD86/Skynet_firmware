@@ -102,6 +102,9 @@ void servo_driver_move(uint32_t ch, float angle) {
     servo_channels[ch].angle = servo_channels[ch].zero_offset + angle;
 	
 	// Check angle
+	if (servo_channels[ch].angle < 0) {
+		callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
+	}
     if (servo_channels[ch].type == SERVO_TYPE_MG996R && servo_channels[ch].angle > MG996R_MAX_SERVO_ANGLE) {
         callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
     }

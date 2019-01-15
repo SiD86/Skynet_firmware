@@ -8,9 +8,9 @@
 
 
 typedef enum {
-    RED_LED,
+	GREEN_LED,
     YELLOW_LED,
-    GREEN_LED
+    RED_LED
 } led_id;
 
 

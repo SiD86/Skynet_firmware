@@ -61,8 +61,8 @@ typedef struct {
     point_3d_t delta_pos;
     uint32_t iterations_left;
     
+	point_3d_t begin_position;
     link_info_t links[3];
-    point_3d_t begin_position;
     
 } limb_info_t;
 
@@ -221,6 +221,7 @@ void limbs_driver_process(void) {
                         limbs[i].current_pos.z = limbs[i].dest_pos.z;
                         --limbs[i].iterations_left;
                     }
+					
                     kinematic_calculate_angles(&limbs[i]);
                     driver_state = STATE_LOAD;
                 }
@@ -263,12 +264,20 @@ static bool read_configuration(void) {
     //
     // Read kinematic configuration
     //
-    limbs[LIMB_FRONT_LEFT].current_pos.x = 150;
-    limbs[LIMB_FRONT_LEFT].current_pos.y = -50;
-    limbs[LIMB_FRONT_LEFT].current_pos.z = 0;
+	
+    //
+	// LIMB_FRONT_LEFT
+	//
+    limbs[LIMB_FRONT_LEFT].current_pos.x = 100;
+    limbs[LIMB_FRONT_LEFT].current_pos.y = 0;
+    limbs[LIMB_FRONT_LEFT].current_pos.z = 100;
+	
+	limbs[LIMB_FRONT_LEFT].begin_position.x = 0;
+    limbs[LIMB_FRONT_LEFT].begin_position.y = 0;
+    limbs[LIMB_FRONT_LEFT].begin_position.z = 0;
    
     limbs[LIMB_FRONT_LEFT].links[LINK_COXA].length      = 45;
-    limbs[LIMB_FRONT_LEFT].links[LINK_COXA].zero_rotate = 0/*45*/;
+    limbs[LIMB_FRONT_LEFT].links[LINK_COXA].zero_rotate = 45;
     limbs[LIMB_FRONT_LEFT].links[LINK_COXA].min_angle   = -90;
     limbs[LIMB_FRONT_LEFT].links[LINK_COXA].max_angle   = 90;
     
@@ -283,9 +292,16 @@ static bool read_configuration(void) {
     limbs[LIMB_FRONT_LEFT].links[LINK_TIBIA].max_angle   = 120;
 	
 	
-	limbs[LIMB_CENTER_LEFT].current_pos.x = 150;
-    limbs[LIMB_CENTER_LEFT].current_pos.y = -50;
+	//
+	// LIMB_CENTER_LEFT
+	//
+    limbs[LIMB_CENTER_LEFT].current_pos.x = 140;
+    limbs[LIMB_CENTER_LEFT].current_pos.y = 0;
     limbs[LIMB_CENTER_LEFT].current_pos.z = 0;
+	
+	limbs[LIMB_CENTER_LEFT].begin_position.x = 0;
+    limbs[LIMB_CENTER_LEFT].begin_position.y = 0;
+    limbs[LIMB_CENTER_LEFT].begin_position.z = 0;
    
     limbs[LIMB_CENTER_LEFT].links[LINK_COXA].length      = 45;
     limbs[LIMB_CENTER_LEFT].links[LINK_COXA].zero_rotate = 0;
@@ -302,13 +318,19 @@ static bool read_configuration(void) {
     limbs[LIMB_CENTER_LEFT].links[LINK_TIBIA].min_angle   = 0;
     limbs[LIMB_CENTER_LEFT].links[LINK_TIBIA].max_angle   = 120;
 	
+	//
+	// LIMB_REAR_LEFT
+	//
+    limbs[LIMB_REAR_LEFT].current_pos.x = 100;
+    limbs[LIMB_REAR_LEFT].current_pos.y = 0;
+    limbs[LIMB_REAR_LEFT].current_pos.z = -100;
 	
-	limbs[LIMB_REAR_LEFT].current_pos.x = 150;
-    limbs[LIMB_REAR_LEFT].current_pos.y = -50;
-    limbs[LIMB_REAR_LEFT].current_pos.z = 0;
+	limbs[LIMB_REAR_LEFT].begin_position.x = 0;
+    limbs[LIMB_REAR_LEFT].begin_position.y = 0;
+    limbs[LIMB_REAR_LEFT].begin_position.z = 0;
    
     limbs[LIMB_REAR_LEFT].links[LINK_COXA].length      = 45;
-    limbs[LIMB_REAR_LEFT].links[LINK_COXA].zero_rotate = 0/*-45*/;
+    limbs[LIMB_REAR_LEFT].links[LINK_COXA].zero_rotate = -45;
     limbs[LIMB_REAR_LEFT].links[LINK_COXA].min_angle   = -90;
     limbs[LIMB_REAR_LEFT].links[LINK_COXA].max_angle   = 90;
     
@@ -322,13 +344,19 @@ static bool read_configuration(void) {
     limbs[LIMB_REAR_LEFT].links[LINK_TIBIA].min_angle   = 0;
     limbs[LIMB_REAR_LEFT].links[LINK_TIBIA].max_angle   = 120;
     
-    
-    limbs[LIMB_FRONT_RIGHT].current_pos.x = 150;
-    limbs[LIMB_FRONT_RIGHT].current_pos.y = -50;
-    limbs[LIMB_FRONT_RIGHT].current_pos.z = 0;
+    //
+	// LIMB_FRONT_RIGHT
+	//
+    limbs[LIMB_FRONT_RIGHT].current_pos.x = 100;
+    limbs[LIMB_FRONT_RIGHT].current_pos.y = 0;
+    limbs[LIMB_FRONT_RIGHT].current_pos.z = 100;
+	
+	limbs[LIMB_FRONT_RIGHT].begin_position.x = 0;
+    limbs[LIMB_FRONT_RIGHT].begin_position.y = 0;
+    limbs[LIMB_FRONT_RIGHT].begin_position.z = 0;
    
     limbs[LIMB_FRONT_RIGHT].links[LINK_COXA].length      = 45;
-    limbs[LIMB_FRONT_RIGHT].links[LINK_COXA].zero_rotate = 0/*45*/;
+    limbs[LIMB_FRONT_RIGHT].links[LINK_COXA].zero_rotate = 45;
     limbs[LIMB_FRONT_RIGHT].links[LINK_COXA].min_angle   = -90;
     limbs[LIMB_FRONT_RIGHT].links[LINK_COXA].max_angle   = 90;
     
@@ -342,10 +370,16 @@ static bool read_configuration(void) {
     limbs[LIMB_FRONT_RIGHT].links[LINK_TIBIA].min_angle   = 0;
     limbs[LIMB_FRONT_RIGHT].links[LINK_TIBIA].max_angle   = 120;
     
-	
-    limbs[LIMB_CENTER_RIGHT].current_pos.x = 150;
-    limbs[LIMB_CENTER_RIGHT].current_pos.y = -50;
+	//
+	// LIMB_CENTER_RIGHT
+	//
+    limbs[LIMB_CENTER_RIGHT].current_pos.x = 140;
+    limbs[LIMB_CENTER_RIGHT].current_pos.y = 0;
     limbs[LIMB_CENTER_RIGHT].current_pos.z = 0;
+	
+	limbs[LIMB_CENTER_RIGHT].begin_position.x = 0;
+    limbs[LIMB_CENTER_RIGHT].begin_position.y = 0;
+    limbs[LIMB_CENTER_RIGHT].begin_position.z = 0;
 
     limbs[LIMB_CENTER_RIGHT].links[LINK_COXA].length      = 45;
     limbs[LIMB_CENTER_RIGHT].links[LINK_COXA].zero_rotate = 0;
@@ -362,13 +396,19 @@ static bool read_configuration(void) {
     limbs[LIMB_CENTER_RIGHT].links[LINK_TIBIA].min_angle   = 0;
     limbs[LIMB_CENTER_RIGHT].links[LINK_TIBIA].max_angle   = 120;
     
+    //
+	// LIMB_REAR_RIGHT
+	//
+    limbs[LIMB_REAR_RIGHT].current_pos.x = 100;
+    limbs[LIMB_REAR_RIGHT].current_pos.y = 0;
+    limbs[LIMB_REAR_RIGHT].current_pos.z = -100;
 	
-    limbs[LIMB_REAR_RIGHT].current_pos.x = 150;
-    limbs[LIMB_REAR_RIGHT].current_pos.y = -50;
-    limbs[LIMB_REAR_RIGHT].current_pos.z = 0;
+	limbs[LIMB_REAR_RIGHT].begin_position.x = 0;
+    limbs[LIMB_REAR_RIGHT].begin_position.y = 0;
+    limbs[LIMB_REAR_RIGHT].begin_position.z = 0;
    
     limbs[LIMB_REAR_RIGHT].links[LINK_COXA].length      = 45;
-    limbs[LIMB_REAR_RIGHT].links[LINK_COXA].zero_rotate = 0/*-45*/;
+    limbs[LIMB_REAR_RIGHT].links[LINK_COXA].zero_rotate = -45;
     limbs[LIMB_REAR_RIGHT].links[LINK_COXA].min_angle   = -90;
     limbs[LIMB_REAR_RIGHT].links[LINK_COXA].max_angle   = 90;
     
@@ -407,21 +447,21 @@ static bool kinematic_calculate_angles(limb_info_t* info) {
     // Translate coordinates of destination point to relative limb begin
     //
     // Move to (X*, Y*, Z*) coordinate system - offset
-    float x = info->current_pos.x - info->begin_position.x;
-    float y = info->current_pos.y - info->begin_position.y;
-    float z = info->current_pos.z - info->begin_position.z;
+    float x = info->current_pos.x + info->begin_position.x;
+    float y = info->current_pos.y + info->begin_position.y;
+    float z = info->current_pos.z + info->begin_position.z;
 
     // Move to (X*, Y*, Z*) coordinate system - rotate
     float coxa_zero_rotate_rad = DEG_TO_RAD(coxa_zero_rotate_deg);
-    x = x * cos(coxa_zero_rotate_rad) + z * sin(coxa_zero_rotate_rad);
-    y = y;
-    z = -x * sin(coxa_zero_rotate_rad) + z * cos(coxa_zero_rotate_rad);
+    float x1 = x * cos(coxa_zero_rotate_rad) + z * sin(coxa_zero_rotate_rad);
+    float y1 = y;
+    float z1 = -x * sin(coxa_zero_rotate_rad) + z * cos(coxa_zero_rotate_rad);
 
 
     //
     // Calculate COXA angle
     //
-    float coxa_angle_rad = atan2(z, x);
+    float coxa_angle_rad = atan2(z1, x1);
     info->links[LINK_COXA].angle = RAD_TO_DEG(coxa_angle_rad);
 
 
@@ -429,16 +469,16 @@ static bool kinematic_calculate_angles(limb_info_t* info) {
     // Prepare for calculation FEMUR and TIBIA angles
     //
     // Move to (X*, Y*) coordinate system (rotate on axis Y)
-    x = x * cos(coxa_angle_rad) + z * sin(coxa_angle_rad);
+    x1 = x1 * cos(coxa_angle_rad) + z1 * sin(coxa_angle_rad);
 
     // Move to (X**, Y**) coordinate system (remove coxa from calculations)
-    x = x - coxa_length;
+    x1 = x1 - coxa_length;
     
     // Calculate angle between axis X and destination point
-    float fi = atan2(y, x);
+    float fi = atan2(y1, x1);
 
     // Calculate distance to destination point
-    float d = sqrt(x * x + y * y);
+    float d = sqrt(x1 * x1 + y1 * y1);
     if (d > femur_length + tibia_length) {
         return false; // Point not attainable
     }

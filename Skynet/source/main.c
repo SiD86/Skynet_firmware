@@ -39,12 +39,12 @@ int main(void) {
 	veeprom_init();
 	modbus_init();
 	wireless_modbus_init();
-	monitoring_init();
-	multimedia_init();
+	//monitoring_init();
+	//multimedia_init();
 	led_init();
     
     servo_driver_init();
-    //limbs_driver_init();
+    limbs_driver_init();
 	//movement_driver_init();
     
     while (1)  {
@@ -59,13 +59,15 @@ int main(void) {
 		if (callback_is_any_error_set() == true) {
             led_enable(YELLOW_LED);
         }
-		
+		else {
+			led_enable(GREEN_LED);;
+		}
         
 		//
 		// NORMAL MODE PROCESS
 		//
         servo_driver_process();
-        //limbs_driver_process();
+        limbs_driver_process();
         //movement_driver_process();
 		
         
@@ -73,7 +75,7 @@ int main(void) {
 		modbus_process();
 		scr_process();
         
-        monitoring_process();
+       // monitoring_process();
 	}
 }
 
@@ -83,7 +85,7 @@ static void enter_to_emergency_loop(void) {
 		
 		modbus_process();
 		wireless_modbus_process();
-		monitoring_process();
+		//monitoring_process();
 		scr_process();
 	}
 }
