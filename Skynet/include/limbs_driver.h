@@ -18,13 +18,17 @@ typedef struct {
 	float z;
 } point_3d_t;
 
+typedef enum {
+	PATH_LINEAR,
+	PATH_ELLIPTICAL,
+} path_type_t;
+
 
 extern void limbs_driver_init(void);
-extern void limbs_driver_start_move(point_3d_t* point_list);
+extern void limbs_driver_start_move(const point_3d_t* point_list, const path_type_t* path_type_list);
 extern void limbs_driver_stop_move(void);
 extern void limbs_driver_process(void);
 extern bool limbs_driver_is_move_complete(void);
-extern void limbs_driver_set_movement_iteration_count(uint32_t count);
 
 
 #endif /* LIMB_H_ */

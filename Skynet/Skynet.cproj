@@ -311,6 +311,9 @@
     <Compile Include="source\limbs_driver.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="source\main.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="source\modbus.c">
       <SubType>compile</SubType>
     </Compile>
@@ -327,9 +330,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="source\servo_driver.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="source\main.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="source\syscalls.c">
