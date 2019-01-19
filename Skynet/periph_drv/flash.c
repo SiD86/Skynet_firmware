@@ -12,6 +12,8 @@
 uint8_t flash_ram_buffer[FLASH_PAGE_SIZE] = {0};
 
 
+__attribute__((__noinline__))
+__attribute__((section(".ramfunc")))
 static bool flash_execute_cmd(uint32_t cmd, uint16_t arg);
 
 
@@ -209,9 +211,11 @@ bool flash_write_bytes(uint32_t flash_address, const uint8_t* data, uint32_t siz
 
 
 
+
+
 //  ***************************************************************************
 /// @brief  Execute FLASH command
-/// @note    This function should be execute from RAM
+/// @note   This function should be execute from RAM
 /// @param  cmd: flash command
 /// @param  arg: command argument
 /// @return true - execute success, false - fail

@@ -26,10 +26,10 @@
 
 
 // Base addresses for servos configuration
-#define SERVO_ZERO_OFFSET_EE_ADDRESS				(0x0100)	///< U8 Servo zero offset
+#define SERVO_TYPE_EE_ADDRESS				        (0x0100)	///< U8 Servo type
 #define SERVO_ROTATE_DIRECTION_EE_ADDRESS			(0x0101)	///< U8 Servo rotate direction
-#define SERVO_TYPE_EE_ADDRESS                       (0x0102)    ///< U8 Servo type
-#define SERVO_START_ANGLE_EE_ADDRESS				(0x0103)	///< U8 Servo start angle
+#define SERVO_PHYSIC_ZERO_TRIM_EE_ADDRESS           (0x0102)    ///< U8 Physic zero trim
+#define SERVO_START_LOGICAL_ZERO_EE_ADDRESS		    (0x0103)	///< U8 Start logical zero
 #define SERVO_CONFIGURATION_SIZE					(8)
 
 #endif /* VEEPROM_MAP_H_ */

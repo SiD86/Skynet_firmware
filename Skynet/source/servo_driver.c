@@ -37,11 +37,11 @@ typedef enum {
 
 // Servo information
 typedef struct {
-    float        angle;					// Current servo angle, [degree]
-	uint32_t     physic_zero_offset;    // Servo physic zero offset, [degree]
-    uint32_t     logic_zero_offset;		// Servo logic zero offset, [degree]
-    direction_t  direction;				// Move direction
+    float        angle;					// Current servo angle, [degree] 
     servo_type_t type;					// Servo type
+    direction_t  direction;				// Servo rotate direction
+	uint32_t     physic_zero_trim;      // Servo physic zero trim, [degree]
+    uint32_t     start_logical_zero;    // Servo logic zero, [degree]
 } servo_info_t;
 
 // Servo driver states
@@ -100,7 +100,7 @@ void servo_driver_move(uint32_t ch, float angle) {
     }
 	
     // Calculate servo angle
-    servo_channels[ch].angle = servo_channels[ch].physic_zero_offset + servo_channels[ch].logic_zero_offset + angle;
+    servo_channels[ch].angle = servo_channels[ch].start_logical_zero + angle;
 	
 	// Check angle
 	if (servo_channels[ch].angle < 0) {
@@ -112,6 +112,9 @@ void servo_driver_move(uint32_t ch, float angle) {
 	else if (servo_channels[ch].type == SERVO_TYPE_DS3218 && servo_channels[ch].angle > DS3218_MAX_SERVO_ANGLE) {
         callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
     }
+    
+    // Apply physic zero trim
+    servo_channels[ch].angle += servo_channels[ch].physic_zero_trim;
 }
 
 //  ***************************************************************************
@@ -155,7 +158,7 @@ void servo_driver_process(void) {
 				
 				// Override servo angle process
 				if (ram_servo_angle_override[i] != OVERRIDE_DISABLE_VALUE) {
-					servo_channels[i].angle = servo_channels[i].physic_zero_offset + servo_channels[i].logic_zero_offset + ram_servo_angle_override[i];
+					servo_channels[i].angle = servo_channels[i].start_logical_zero + ram_servo_angle_override[i] + servo_channels[i].physic_zero_trim;
 				}
 					
 				// Calculate and load pulse width
@@ -191,9 +194,9 @@ static bool read_configuration(void) {
         
         uint32_t base_address = i * SERVO_CONFIGURATION_SIZE;
         
-        // Read servo zero offset
-        uint8_t servo_zero_offset = veeprom_read_8(base_address + SERVO_ZERO_OFFSET_EE_ADDRESS);
-        if (servo_zero_offset > MG996R_MAX_SERVO_ANGLE) {
+        // Read servo type
+        uint8_t servo_type = veeprom_read_8(base_address + SERVO_TYPE_EE_ADDRESS);
+        if (servo_type != SERVO_TYPE_MG996R && servo_type != SERVO_TYPE_DS3218) {
             return false;
         }
         
@@ -203,27 +206,30 @@ static bool read_configuration(void) {
             return false;
         }
         
-        // Read servo type
-        uint8_t servo_type = veeprom_read_8(base_address + SERVO_TYPE_EE_ADDRESS);
-        if (servo_type != SERVO_TYPE_MG996R && servo_type != SERVO_TYPE_DS3218) {
+        // Read physic zero trim
+        uint8_t physic_zero_trim = veeprom_read_8(base_address + SERVO_PHYSIC_ZERO_TRIM_EE_ADDRESS);
+        if (servo_type == SERVO_TYPE_MG996R && physic_zero_trim > MG996R_MAX_SERVO_ANGLE) {
+            return false;
+        }
+        if (servo_type == SERVO_TYPE_DS3218 && physic_zero_trim > DS3218_MAX_SERVO_ANGLE) {
             return false;
         }
         
-        // Read start angle
-        int32_t start_angle = veeprom_read_8(base_address + SERVO_START_ANGLE_EE_ADDRESS);
-        if (servo_type == SERVO_TYPE_MG996R && start_angle > MG996R_MAX_SERVO_ANGLE) {
+        // Read start logical zero
+        int32_t start_logical_zero = veeprom_read_8(base_address + SERVO_START_LOGICAL_ZERO_EE_ADDRESS);
+        if (servo_type == SERVO_TYPE_MG996R && start_logical_zero > MG996R_MAX_SERVO_ANGLE) {
             return false;
         }
-        if (servo_type == SERVO_TYPE_DS3218 && start_angle > DS3218_MAX_SERVO_ANGLE) {
+        if (servo_type == SERVO_TYPE_DS3218 && start_logical_zero > DS3218_MAX_SERVO_ANGLE) {
             return false;
         }
         
         // Fill information
-        servo_channels[i].angle = start_angle;
-		servo_channels[i].physic_zero_offset = start_angle;
-        servo_channels[i].logic_zero_offset = servo_zero_offset;
-        servo_channels[i].direction = direction;
+        servo_channels[i].angle = physic_zero_trim + start_logical_zero;
         servo_channels[i].type = servo_type;
+        servo_channels[i].direction = direction;
+		servo_channels[i].physic_zero_trim = physic_zero_trim;
+        servo_channels[i].start_logical_zero = start_logical_zero;
     }
 
     return true;
