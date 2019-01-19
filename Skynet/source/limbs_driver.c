@@ -104,7 +104,6 @@ void limbs_driver_init(void) {
     }
     
     // Initialization servo driver and set start servo angles
-    servo_driver_init();
     for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
         servo_driver_move(i * 3 + 0, limbs[i].links[LINK_COXA].angle);
         servo_driver_move(i * 3 + 1, limbs[i].links[LINK_FEMUR].angle);

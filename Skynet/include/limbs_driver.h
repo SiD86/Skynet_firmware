@@ -12,6 +12,12 @@
 #define LIMB_NO_MOVE					(0xFFFF)
 
 
+typedef enum {
+	SPEED_FAST,
+	SPEED_NORMAL,
+	SPEED_LOW
+} speed_t;
+
 typedef struct {
 	float x;
 	float y;

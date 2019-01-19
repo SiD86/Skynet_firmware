@@ -22,10 +22,10 @@ void led_init(void) {
 	REG_PIOC_OER  = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
 	REG_PIOC_SODR = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
 
-    // Turn on/off for LED diagnostic
+    /*// Turn on/off for LED diagnostic
 	REG_PIOC_CODR = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
 	delay_ms(500);
-    REG_PIOC_SODR = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
+    REG_PIOC_SODR = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];*/
 }
 
 /// ***************************************************************************

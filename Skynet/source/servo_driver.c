@@ -37,10 +37,11 @@ typedef enum {
 
 // Servo information
 typedef struct {
-    float        angle;			// Current servo angle, [degree]
-    uint32_t     zero_offset;   // Servo zero offset, [degree]
-    direction_t  direction;     // Move direction
-    servo_type_t type;          // Servo type
+    float        angle;					// Current servo angle, [degree]
+	uint32_t     physic_zero_offset;    // Servo physic zero offset, [degree]
+    uint32_t     logic_zero_offset;		// Servo logic zero offset, [degree]
+    direction_t  direction;				// Move direction
+    servo_type_t type;					// Servo type
 } servo_info_t;
 
 // Servo driver states
@@ -99,7 +100,7 @@ void servo_driver_move(uint32_t ch, float angle) {
     }
 	
     // Calculate servo angle
-    servo_channels[ch].angle = servo_channels[ch].zero_offset + angle;
+    servo_channels[ch].angle = servo_channels[ch].physic_zero_offset + servo_channels[ch].logic_zero_offset + angle;
 	
 	// Check angle
 	if (servo_channels[ch].angle < 0) {
@@ -154,7 +155,7 @@ void servo_driver_process(void) {
 				
 				// Override servo angle process
 				if (ram_servo_angle_override[i] != OVERRIDE_DISABLE_VALUE) {
-					servo_channels[i].angle = servo_channels[i].zero_offset + ram_servo_angle_override[i];
+					servo_channels[i].angle = servo_channels[i].physic_zero_offset + servo_channels[i].logic_zero_offset + ram_servo_angle_override[i];
 				}
 					
 				// Calculate and load pulse width
@@ -209,7 +210,7 @@ static bool read_configuration(void) {
         }
         
         // Read start angle
-        int32_t start_angle = servo_zero_offset + veeprom_read_8(base_address + SERVO_START_ANGLE_EE_ADDRESS);
+        int32_t start_angle = veeprom_read_8(base_address + SERVO_START_ANGLE_EE_ADDRESS);
         if (servo_type == SERVO_TYPE_MG996R && start_angle > MG996R_MAX_SERVO_ANGLE) {
             return false;
         }
@@ -219,7 +220,8 @@ static bool read_configuration(void) {
         
         // Fill information
         servo_channels[i].angle = start_angle;
-        servo_channels[i].zero_offset = servo_zero_offset;
+		servo_channels[i].physic_zero_offset = start_angle;
+        servo_channels[i].logic_zero_offset = servo_zero_offset;
         servo_channels[i].direction = direction;
         servo_channels[i].type = servo_type;
     }
