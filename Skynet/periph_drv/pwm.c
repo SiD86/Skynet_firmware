@@ -6,9 +6,9 @@
 #include "pwm.h"
 
 #define PWM_FREQUENCY_HZ                (150)
-#define PWM_PERIOD_TICKS                (SystemCoreClock / 2 / PWM_FREQUENCY_HZ)
-#define PWM_PERIOD_US                   (1000000 / PWM_FREQUENCY_HZ)
-#define PULSE_WIDTH_TO_TICKS(_width)    ((PWM_PERIOD_TICKS / PWM_PERIOD_US) * _width)
+#define TIMER_CLOCK_FREQUENCY			(SystemCoreClock / 2)
+#define PWM_PERIOD_TICKS                (TIMER_CLOCK_FREQUENCY / PWM_FREQUENCY_HZ)
+#define US_TO_TICKS(_width)				((TIMER_CLOCK_FREQUENCY / 1000000) * _width)
 
 #define PWM_CH0_PIN                     (PIO_PC13)
 #define PWM_CH1_PIN                     (PIO_PB21)
@@ -150,7 +150,7 @@ void pwm_set_buffers_state(pwm_buffer_state_t state) {
 //  ***************************************************************************
 void pwm_set_width(uint32_t ch, uint32_t width) {
 
-    pwm_channel_ticks[ch] = PULSE_WIDTH_TO_TICKS(width);
+    pwm_channel_ticks[ch] = US_TO_TICKS(width);
 }
 
 //  ***************************************************************************

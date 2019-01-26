@@ -207,17 +207,17 @@ void move_end(void) {
     point_list_1[2].y = -85;
     point_list_1[2].z = -110;
     
-    point_list_1[3].x = +85;
+    point_list_1[3].x = +88;
     point_list_1[3].y = -85;
-    point_list_1[3].z = +85;
+    point_list_1[3].z = +88;
     
     point_list_1[4].x = 110;
     point_list_1[4].y = -85;
     point_list_1[4].z = -45;
     
-    point_list_1[5].x = +85;
+    point_list_1[5].x = +88;
     point_list_1[5].y = -85;
-    point_list_1[5].z = -85;
+    point_list_1[5].z = -88;
     limbs_driver_start_move(point_list_1, path_type_list);
     
     while (limbs_driver_is_move_complete() == false) {
@@ -237,17 +237,17 @@ void move_end(void) {
     point_list_1[2].y = -40;
     point_list_1[2].z = -110;
     
-    point_list_1[3].x = +85;
+    point_list_1[3].x = +88;
     point_list_1[3].y = -85;
-    point_list_1[3].z = +85;
+    point_list_1[3].z = +88;
     
     point_list_1[4].x = 150;
     point_list_1[4].y = -40;
     point_list_1[4].z = 0;
     
-    point_list_1[5].x = +85;
+    point_list_1[5].x = +88;
     point_list_1[5].y = -85;
-    point_list_1[5].z = -85;
+    point_list_1[5].z = -88;
     limbs_driver_start_move(point_list_1, path_type_list);
     
     while (limbs_driver_is_move_complete() == false) {
@@ -255,29 +255,29 @@ void move_end(void) {
         limbs_driver_process();
     }
     
-    point_list_1[0].x = +85;
+    point_list_1[0].x = +88;
     point_list_1[0].y = -85;
-    point_list_1[0].z = +85;
+    point_list_1[0].z = +88;
     
     point_list_1[1].x = +125;
     point_list_1[1].y = -85;
     point_list_1[1].z = 0;
     
-    point_list_1[2].x = +85;
+    point_list_1[2].x = +88;
     point_list_1[2].y = -85;
-    point_list_1[2].z = -85;
+    point_list_1[2].z = -88;
     
-    point_list_1[3].x = +85;
+    point_list_1[3].x = +88;
     point_list_1[3].y = -85;
-    point_list_1[3].z = +85;
+    point_list_1[3].z = +88;
     
     point_list_1[4].x = +125;
     point_list_1[4].y = -85;
     point_list_1[4].z = 0;
     
-    point_list_1[5].x = +85;
+    point_list_1[5].x = +88;
     point_list_1[5].y = -85;
-    point_list_1[5].z = -85;
+    point_list_1[5].z = -88;
     limbs_driver_start_move(point_list_1, path_type_list); 
     while (limbs_driver_is_move_complete() == false) {
         servo_driver_process();
@@ -540,29 +540,29 @@ void scr_process(void) {
 	switch (scr) {
 		
 		case 0x01:
-			point_list_1[0].x = +85;
+			point_list_1[0].x = +88;
 			point_list_1[0].y = -85;
-			point_list_1[0].z = +85;
+			point_list_1[0].z = +88;
 			
 			point_list_1[1].x = +125;
 			point_list_1[1].y = -85;
 			point_list_1[1].z = 0;
 			
-			point_list_1[2].x = +85;
+			point_list_1[2].x = +88;
 			point_list_1[2].y = -85;
-			point_list_1[2].z = -85;
+			point_list_1[2].z = -88;
 		
-			point_list_1[3].x = +85;
+			point_list_1[3].x = +88;
 			point_list_1[3].y = -85;
-			point_list_1[3].z = +85;
+			point_list_1[3].z = +88;
 			
 			point_list_1[4].x = +125;
 			point_list_1[4].y = -85;
 			point_list_1[4].z = 0;
 			
-			point_list_1[5].x = +85;
+			point_list_1[5].x = +88;
 			point_list_1[5].y = -85;
-			point_list_1[5].z = -85;
+			point_list_1[5].z = -88;
 			limbs_driver_start_move(point_list_1, path_type_list);
 			break;
            
@@ -613,6 +613,20 @@ void scr_process(void) {
             point_list_1[2].z = z;
             limbs_driver_start_move(point_list_1, path_type_list);
             break;
+			
+		case 0x20:
+			for (int32_t i = 0; i < 30; i += 5) {
+				
+				servo_driver_move(0, i);
+				servo_driver_move(6, i);
+				servo_driver_move(12, -i);
+				
+				uint32_t begin_wait = get_time_ms();
+				while (get_time_ms() - begin_wait < 100) {
+					servo_driver_process();
+				}
+			}
+			break;
 			
 		/*case SCR_CMD_CALCULATE_CHECKSUM:
 			veeprom_update_checksum();
