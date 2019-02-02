@@ -129,32 +129,19 @@ void limbs_driver_start_move(const point_3d_t* point_list, const path_type_t* pa
     // Prepare limbs for movement
     for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
         
+        // Prepare limb for movement
+		limbs[i].movement_path.path_type   = path_type_list[i];
+        limbs[i].movement_path.start_point = limbs[i].position;
+		limbs[i].movement_path.dest_point  = point_list[i];
+        
         // Need start movement?
-        if (point_list[i].x == LIMB_NO_MOVE || point_list[i].y == LIMB_NO_MOVE || point_list[i].z == LIMB_NO_MOVE) {
-            continue;
-        }
         if (limbs[i].position.x == point_list[i].x && limbs[i].position.y == point_list[i].y && limbs[i].position.z == point_list[i].z) {
             continue;
         }
         
-        // Prepare limb for movement
-		limbs[i].movement_path.path_type = path_type_list[i];
-        limbs[i].movement_path.start_point = limbs[i].position;
-		limbs[i].movement_path.dest_point = point_list[i];
-        
 		current_movement_iteration = 0;
         driver_state = STATE_CALC;
     }
-}
-
-//  ***************************************************************************
-/// @brief  Stop limbs movement
-/// @param  none
-/// @return none
-//  ***************************************************************************
-void limbs_driver_stop_move(void) {
-    
-    driver_state = STATE_IDLE;
 }
 
 //  ***************************************************************************
@@ -188,7 +175,6 @@ void limbs_driver_process(void) {
 				driver_state = STATE_IDLE;
 				break;
 			}
-				
             for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
 				path_calculate_point(&limbs[i].movement_path, current_movement_iteration, &limbs[i].position);
                 kinematic_calculate_angles(&limbs[i]);
@@ -266,8 +252,8 @@ static bool read_configuration(void) {
 		}
 		
 		// Read coxa, femur and tibia angle ranges
-		limbs[i].links[LINK_COXA].min_angle = (int8_t)veeprom_read_8(base_address + LIMB_COXA_MIN_ANGLE_EE_ADDRESS);
-		limbs[i].links[LINK_COXA].max_angle = (int8_t)veeprom_read_8(base_address + LIMB_COXA_MAX_ANGLE_EE_ADDRESS);
+		limbs[i].links[LINK_COXA].min_angle  = (int8_t)veeprom_read_8(base_address + LIMB_COXA_MIN_ANGLE_EE_ADDRESS);
+		limbs[i].links[LINK_COXA].max_angle  = (int8_t)veeprom_read_8(base_address + LIMB_COXA_MAX_ANGLE_EE_ADDRESS);
 		limbs[i].links[LINK_FEMUR].min_angle = (int8_t)veeprom_read_8(base_address + LIMB_FEMUR_MIN_ANGLE_EE_ADDRESS);
 		limbs[i].links[LINK_FEMUR].max_angle = (int8_t)veeprom_read_8(base_address + LIMB_FEMUR_MAX_ANGLE_EE_ADDRESS);
 		limbs[i].links[LINK_TIBIA].min_angle = (int8_t)veeprom_read_8(base_address + LIMB_TIBIA_MIN_ANGLE_EE_ADDRESS);
@@ -294,20 +280,42 @@ static void path_calculate_point(const path_3d_t* info, uint32_t current_iterati
 	float t_max = RAD_TO_DEG(M_PI); // [0; Pi]
 	float t = current_iteration * (t_max / TOTAL_ITERATION_COUNT) + 1; // iter_index * dt
 
-	switch (info->path_type) {
-		
-		case PATH_LINEAR:
-			point->x = t * (info->dest_point.x - info->start_point.x) / t_max + info->start_point.x;
-			point->y = t * (info->dest_point.y - info->start_point.y) / t_max + info->start_point.y;
-			point->z = t * (info->dest_point.z - info->start_point.z) / t_max + info->start_point.z;
-			break;
-			
-		case PATH_ELLIPTICAL:
-			// Not supported
-			
-		default:
-			callback_set_internal_error(ERROR_MODULE_LIMBS_DRIVER);
-			break;
+	float x0 = info->start_point.x;
+	float y0 = info->start_point.y;
+	float z0 = info->start_point.z;
+	float x1 = info->dest_point.x;
+	float y1 = info->dest_point.y;
+	float z1 = info->dest_point.z;
+
+
+	if (info->path_type == PATH_LINEAR) {
+    	point->x = t * (x1 - x0) / t_max + x0;
+    	point->y = t * (y1 - y0) / t_max + y0;
+    	point->z = t * (z1 - z0) / t_max + z0;
+	}
+
+	if (info->path_type == PATH_XZ_CIRCLE_Y_LINEAR) {
+
+    	float R = sqrt((x1 - x0) * (x1 - x0)) / 2.0f;
+    	float atan0 = RAD_TO_DEG(atan2(z0, x0));
+    	float atan1 = RAD_TO_DEG(atan2(z1, x1));
+
+    	float t_mapped_rad = DEG_TO_RAD(t * (atan0 - atan1) / t_max + atan1);
+    	point->x = R * cos(t_mapped_rad);
+    	point->y = t * (info->dest_point.y - info->start_point.y) / t_max + info->start_point.y;
+    	point->z = R * sin(t_mapped_rad);
+	}
+
+	if (info->path_type == PATH_XZ_CIRCLE_Y_SINUS) {
+
+    	float R = sqrt((x1 - x0) * (x1 - x0)) / 2.0f;
+    	float atan0 = RAD_TO_DEG(atan2(z0, x0));
+    	float atan1 = RAD_TO_DEG(atan2(z1, x1));
+
+    	float t_mapped_rad = DEG_TO_RAD(t * (atan0 - atan1) / t_max + atan1);
+    	point->x = R * cos(t_mapped_rad);
+    	point->y = R * sin(t_mapped_rad);
+    	point->z = R * sin(t_mapped_rad);
 	}
 }
 

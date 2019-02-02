@@ -28,10 +28,11 @@ int16_t x = 0;
 int16_t y = 0;
 int16_t z = 0;
 
-path_type_t path_type_list[6] = { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR };
+path_type_t path_type_list[6] = { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, 
+                                  PATH_LINEAR, PATH_LINEAR, PATH_LINEAR };
 
-point_3d_t point_list_1[6] = { { LIMB_NO_MOVE, LIMB_NO_MOVE, LIMB_NO_MOVE}, {LIMB_NO_MOVE, LIMB_NO_MOVE, LIMB_NO_MOVE}, {LIMB_NO_MOVE, LIMB_NO_MOVE, LIMB_NO_MOVE},
-							   { LIMB_NO_MOVE, LIMB_NO_MOVE, LIMB_NO_MOVE}, {LIMB_NO_MOVE, LIMB_NO_MOVE, LIMB_NO_MOVE}, {LIMB_NO_MOVE, LIMB_NO_MOVE, LIMB_NO_MOVE}};
+point_3d_t point_list_1[6] = { { 0, 0, 0}, {0, 0, 0}, {0, 0, 0},
+							   { 0, 0, 0}, {0, 0, 0}, {0, 0, 0} };
 
 //  ***************************************************************************
 /// @brief	Special command register process
@@ -594,9 +595,10 @@ void scr_process(void) {
             break;
 			
 		case 0x10:
-			point_list_1[0].x = x;
-			point_list_1[0].y = y;
-			point_list_1[0].z = z;
+			point_list_1[1].x = x;
+			point_list_1[1].y = y;
+			point_list_1[1].z = z;
+            path_type_list[1] = PATH_XZ_CIRCLE_Y_LINEAR;
 			limbs_driver_start_move(point_list_1, path_type_list);
 			break;
 		
@@ -604,6 +606,7 @@ void scr_process(void) {
 			point_list_1[1].x = x;
 			point_list_1[1].y = y;
 			point_list_1[1].z = z;
+            path_type_list[1] = PATH_XZ_CIRCLE_Y_LINEAR;
 			limbs_driver_start_move(point_list_1, path_type_list);
 			break;
             

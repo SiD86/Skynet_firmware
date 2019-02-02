@@ -9,14 +9,7 @@
 #include <stdbool.h>
 
 #define SUPPORT_LIMB_COUNT				(6)
-#define LIMB_NO_MOVE					(0xFFFF)
 
-
-typedef enum {
-	SPEED_FAST,
-	SPEED_NORMAL,
-	SPEED_LOW
-} speed_t;
 
 typedef struct {
 	float x;
@@ -26,13 +19,13 @@ typedef struct {
 
 typedef enum {
 	PATH_LINEAR,
-	PATH_ELLIPTICAL,
+	PATH_XZ_CIRCLE_Y_LINEAR,
+    PATH_XZ_CIRCLE_Y_SINUS
 } path_type_t;
 
 
 extern void limbs_driver_init(void);
 extern void limbs_driver_start_move(const point_3d_t* point_list, const path_type_t* path_type_list);
-extern void limbs_driver_stop_move(void);
 extern void limbs_driver_process(void);
 extern bool limbs_driver_is_move_complete(void);
 
