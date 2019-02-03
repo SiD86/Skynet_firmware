@@ -171,7 +171,7 @@ void limbs_driver_process(void) {
             break;
         
         case STATE_CALC:
-            if (current_movement_iteration >= TOTAL_ITERATION_COUNT) {
+            if (current_movement_iteration > TOTAL_ITERATION_COUNT) {
 				driver_state = STATE_IDLE;
 				break;
 			}
@@ -271,14 +271,14 @@ static bool read_configuration(void) {
 //  ***************************************************************************
 /// @brief  Calculate path point
 /// @param  info: path info @ref path_3d_t
-/// @param  current_iteration: current iteration index [0; TOTAL_ITERATION_COUNT - 1]
+/// @param  current_iteration: current iteration index [0; TOTAL_ITERATION_COUNT]
 /// @param  point: calculated point
 /// @retval point
 //  ***************************************************************************
 static void path_calculate_point(const path_3d_t* info, uint32_t current_iteration, point_3d_t* point) {
 
 	float t_max = RAD_TO_DEG(M_PI); // [0; Pi]
-	float t = current_iteration * (t_max / TOTAL_ITERATION_COUNT) + 1; // iter_index * dt
+	float t = current_iteration * (t_max / TOTAL_ITERATION_COUNT); // iter_index * dt
 
 	float x0 = info->start_point.x;
 	float y0 = info->start_point.y;
@@ -296,26 +296,14 @@ static void path_calculate_point(const path_3d_t* info, uint32_t current_iterati
 
 	if (info->path_type == PATH_XZ_CIRCLE_Y_LINEAR) {
 
-    	float R = sqrt((x1 - x0) * (x1 - x0)) / 2.0f;
-    	float atan0 = RAD_TO_DEG(atan2(z0, x0));
-    	float atan1 = RAD_TO_DEG(atan2(z1, x1));
+    	float R = sqrt(x0 * x0 + z0 * z0);
+    	float atan0 = RAD_TO_DEG(atan2(x0, z0));
+    	float atan1 = RAD_TO_DEG(atan2(x1, z1));
 
-    	float t_mapped_rad = DEG_TO_RAD(t * (atan0 - atan1) / t_max + atan1);
-    	point->x = R * cos(t_mapped_rad);
+    	float t_mapped_rad = DEG_TO_RAD(t * (atan1 - atan0) / t_max + atan0);
+    	point->x = R * sin(t_mapped_rad); // Circle Y
     	point->y = t * (info->dest_point.y - info->start_point.y) / t_max + info->start_point.y;
-    	point->z = R * sin(t_mapped_rad);
-	}
-
-	if (info->path_type == PATH_XZ_CIRCLE_Y_SINUS) {
-
-    	float R = sqrt((x1 - x0) * (x1 - x0)) / 2.0f;
-    	float atan0 = RAD_TO_DEG(atan2(z0, x0));
-    	float atan1 = RAD_TO_DEG(atan2(z1, x1));
-
-    	float t_mapped_rad = DEG_TO_RAD(t * (atan0 - atan1) / t_max + atan1);
-    	point->x = R * cos(t_mapped_rad);
-    	point->y = R * sin(t_mapped_rad);
-    	point->z = R * sin(t_mapped_rad);
+    	point->z = R * cos(t_mapped_rad); // Circle X
 	}
 }
 

@@ -595,18 +595,18 @@ void scr_process(void) {
             break;
 			
 		case 0x10:
-			point_list_1[1].x = x;
-			point_list_1[1].y = y;
-			point_list_1[1].z = z;
-            path_type_list[1] = PATH_XZ_CIRCLE_Y_LINEAR;
+			point_list_1[4].x = x;
+			point_list_1[4].y = y;
+			point_list_1[4].z = z;
+            path_type_list[4] = PATH_LINEAR;
 			limbs_driver_start_move(point_list_1, path_type_list);
 			break;
 		
 		case 0x11:
-			point_list_1[1].x = x;
-			point_list_1[1].y = y;
-			point_list_1[1].z = z;
-            path_type_list[1] = PATH_XZ_CIRCLE_Y_LINEAR;
+			point_list_1[4].x = x;
+			point_list_1[4].y = y;
+			point_list_1[4].z = z;
+            path_type_list[4] = PATH_XZ_CIRCLE_Y_LINEAR;
 			limbs_driver_start_move(point_list_1, path_type_list);
 			break;
             
