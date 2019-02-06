@@ -13,7 +13,7 @@
 #define RAD_TO_DEG(rad)                ((rad) * 180 / M_PI)
 #define DEG_TO_RAD(deg)                ((deg) * M_PI / 180)
 
-#define TOTAL_ITERATION_COUNT		   (15)
+#define TOTAL_ITERATION_COUNT		   (180)
 #define DELAY_BETWEEN_ITERATIONS       (10)
 
 
@@ -304,6 +304,17 @@ static void path_calculate_point(const path_3d_t* info, uint32_t current_iterati
     	point->x = R * sin(t_mapped_rad); // Circle Y
     	point->y = t * (info->dest_point.y - info->start_point.y) / t_max + info->start_point.y;
     	point->z = R * cos(t_mapped_rad); // Circle X
+	}
+	
+	if (info->path_type == PATH_XZ_ELLIPTICAL_Y_SINUS) {
+
+		float a = (z1 - z0) / 2.0f;
+		float b = (x1 - x0);
+		float c = (y1 - y0);
+
+		point->x = b * sin(DEG_TO_RAD(t_max - t)) + x0; // circle Y
+		point->y = c * sin(DEG_TO_RAD(t)) + y0;
+		point->z = a * cos(DEG_TO_RAD(t_max - t)) + z0 + a;
 	}
 }
 

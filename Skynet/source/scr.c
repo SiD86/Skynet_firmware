@@ -606,30 +606,17 @@ void scr_process(void) {
 			point_list_1[4].x = x;
 			point_list_1[4].y = y;
 			point_list_1[4].z = z;
-            path_type_list[4] = PATH_XZ_CIRCLE_Y_LINEAR;
+            path_type_list[4] = PATH_XZ_ELLIPTICAL_Y_SINUS;
 			limbs_driver_start_move(point_list_1, path_type_list);
 			break;
-            
-        case 0x12:
-            point_list_1[2].x = x;
-            point_list_1[2].y = y;
-            point_list_1[2].z = z;
-            limbs_driver_start_move(point_list_1, path_type_list);
-            break;
 			
-		case 0x20:
-			for (int32_t i = 0; i < 30; i += 5) {
-				
-				servo_driver_move(0, i);
-				servo_driver_move(6, i);
-				servo_driver_move(12, -i);
-				
-				uint32_t begin_wait = get_time_ms();
-				while (get_time_ms() - begin_wait < 100) {
-					servo_driver_process();
-				}
-			}
-			break;
+        case 0x12:
+           point_list_1[4].x = x;
+           point_list_1[4].y = y;
+           point_list_1[4].z = z;
+           path_type_list[4] = PATH_XZ_CIRCLE_Y_LINEAR;
+           limbs_driver_start_move(point_list_1, path_type_list);
+           break;
 			
 		/*case SCR_CMD_CALCULATE_CHECKSUM:
 			veeprom_update_checksum();
