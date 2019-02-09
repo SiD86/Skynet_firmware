@@ -19,8 +19,8 @@ typedef struct {
 
 typedef enum {
 	PATH_LINEAR,
-	PATH_XZ_CIRCLE_Y_LINEAR,
-    PATH_XZ_ELLIPTICAL_Y_SINUS,
+	PATH_XZ_ARC_Y_LINEAR,
+    PATH_XZ_ARC_Y_SINUS,
 } path_type_t;
 
 

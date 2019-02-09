@@ -13,7 +13,7 @@
 #define RAD_TO_DEG(rad)                ((rad) * 180 / M_PI)
 #define DEG_TO_RAD(deg)                ((deg) * M_PI / 180)
 
-#define TOTAL_ITERATION_COUNT		   (180)
+#define TOTAL_ITERATION_COUNT		   (15)
 #define DELAY_BETWEEN_ITERATIONS       (10)
 
 
@@ -294,7 +294,7 @@ static void path_calculate_point(const path_3d_t* info, uint32_t current_iterati
     	point->z = t * (z1 - z0) / t_max + z0;
 	}
 
-	if (info->path_type == PATH_XZ_CIRCLE_Y_LINEAR) {
+	if (info->path_type == PATH_XZ_ARC_Y_LINEAR) {
 
     	float R = sqrt(x0 * x0 + z0 * z0);
     	float atan0 = RAD_TO_DEG(atan2(x0, z0));
@@ -306,7 +306,20 @@ static void path_calculate_point(const path_3d_t* info, uint32_t current_iterati
     	point->z = R * cos(t_mapped_rad); // Circle X
 	}
 	
-	if (info->path_type == PATH_XZ_ELLIPTICAL_Y_SINUS) {
+	if (info->path_type == PATH_XZ_ARC_Y_SINUS) {
+		
+		float R = sqrt(x0 * x0 + z0 * z0);
+		float atan0 = RAD_TO_DEG(atan2(x0, z0));
+		float atan1 = RAD_TO_DEG(atan2(x1, z1));
+
+		float t_mapped_rad = DEG_TO_RAD(t * (atan1 - atan0) / t_max + atan0);
+
+		point->x = R * sin(t_mapped_rad); // circle Y
+		point->y = (y1 - y0) * sin(DEG_TO_RAD(t)) + y0;
+		point->z = R * cos(t_mapped_rad); // circle X
+	}
+	
+	/*if (info->path_type == PATH_XZ_ELLIPTICAL_Y_SINUS) {
 
 		float a = (z1 - z0) / 2.0f;
 		float b = (x1 - x0);
@@ -315,7 +328,7 @@ static void path_calculate_point(const path_3d_t* info, uint32_t current_iterati
 		point->x = b * sin(DEG_TO_RAD(t_max - t)) + x0; // circle Y
 		point->y = c * sin(DEG_TO_RAD(t)) + y0;
 		point->z = a * cos(DEG_TO_RAD(t_max - t)) + z0 + a;
-	}
+	}*/
 }
 
 //  ***************************************************************************
