@@ -319,7 +319,7 @@ static void path_calculate_point(const path_3d_t* info, uint32_t current_iterati
 		point->z = R * cos(t_mapped_rad); // circle X
 	}
 	
-	/*if (info->path_type == PATH_XZ_ELLIPTICAL_Y_SINUS) {
+	if (info->path_type == PATH_XZ_ELLIPTICAL_Y_SINUS) {
 
 		float a = (z1 - z0) / 2.0f;
 		float b = (x1 - x0);
@@ -328,7 +328,7 @@ static void path_calculate_point(const path_3d_t* info, uint32_t current_iterati
 		point->x = b * sin(DEG_TO_RAD(t_max - t)) + x0; // circle Y
 		point->y = c * sin(DEG_TO_RAD(t)) + y0;
 		point->z = a * cos(DEG_TO_RAD(t_max - t)) + z0 + a;
-	}*/
+	}
 }
 
 //  ***************************************************************************

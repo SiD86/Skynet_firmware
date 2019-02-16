@@ -288,29 +288,35 @@ void move_end(void) {
 
 void direct() {
 	
-	point_list_1[0].x = 150;
+	path_type_list[0] = PATH_XZ_ELLIPTICAL_Y_SINUS;
+	point_list_1[0].x = 130;
 	point_list_1[0].y = -65;
-	point_list_1[0].z = 65;
+	point_list_1[0].z = 110;
 	
+	path_type_list[1] = PATH_LINEAR;
 	point_list_1[1].x = 110;
 	point_list_1[1].y = -85;
-	point_list_1[1].z = 0;
+	point_list_1[1].z = -45;
 	
-	point_list_1[2].x = 150;
+	path_type_list[2] = PATH_XZ_ELLIPTICAL_Y_SINUS;
+	point_list_1[2].x = 130;
 	point_list_1[2].y = -65;
-	point_list_1[2].z = -65;
+	point_list_1[2].z = -20;
 	
+	path_type_list[3] = PATH_LINEAR;
 	point_list_1[3].x = 110;
 	point_list_1[3].y = -85;
-	point_list_1[3].z = 65;
+	point_list_1[3].z = 20;
 	
-	point_list_1[4].x = 150;
+	path_type_list[4] = PATH_XZ_ELLIPTICAL_Y_SINUS;
+	point_list_1[4].x = 130;
 	point_list_1[4].y = -65;
-	point_list_1[4].z = 0;
+	point_list_1[4].z = 45;
 	
+	path_type_list[5] = PATH_LINEAR;
 	point_list_1[5].x = 110;
 	point_list_1[5].y = -85;
-	point_list_1[5].z = -65;
+	point_list_1[5].z = -110;
 	limbs_driver_start_move(point_list_1, path_type_list);
 	
 	while (limbs_driver_is_move_complete() == false) {
@@ -319,7 +325,7 @@ void direct() {
 	}
 	
 	
-	point_list_1[0].x = 110;
+	/*point_list_1[0].x = 110;
 	point_list_1[0].y = -85;
 	point_list_1[0].z = 110;
 	
@@ -347,10 +353,10 @@ void direct() {
 	while (limbs_driver_is_move_complete() == false) {
 		servo_driver_process();
 		limbs_driver_process();
-	}
+	}*/
 	
 	
-	point_list_1[0].x = 110;
+	/*point_list_1[0].x = 110;
 	point_list_1[0].y = -85;
 	point_list_1[0].z = 65;
 	
@@ -378,30 +384,36 @@ void direct() {
 	while (limbs_driver_is_move_complete() == false) {
 		servo_driver_process();
 		limbs_driver_process();
-	}
-    
+	}*/
+	
+    path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 110;
     point_list_1[0].y = -85;
     point_list_1[0].z = 20;
     
-    point_list_1[1].x = 110;
-    point_list_1[1].y = -85;
+	path_type_list[1] = PATH_XZ_ELLIPTICAL_Y_SINUS;
+    point_list_1[1].x = 130;
+    point_list_1[1].y = -65;
     point_list_1[1].z = 45;
     
+	path_type_list[2] = PATH_LINEAR;
     point_list_1[2].x = 110;
     point_list_1[2].y = -85;
     point_list_1[2].z = -110;
     
-    point_list_1[3].x = 110;
-    point_list_1[3].y = -85;
+	path_type_list[3] = PATH_XZ_ELLIPTICAL_Y_SINUS;
+    point_list_1[3].x = 130;
+    point_list_1[3].y = -65;
     point_list_1[3].z = 110;
     
+	path_type_list[4] = PATH_LINEAR;
     point_list_1[4].x = 110;
     point_list_1[4].y = -85;
     point_list_1[4].z = -45;
     
-    point_list_1[5].x = 110;
-    point_list_1[5].y = -85;
+	path_type_list[5] = PATH_XZ_ELLIPTICAL_Y_SINUS;
+    point_list_1[5].x = 130;
+    point_list_1[5].y = -65;
     point_list_1[5].z = -20;
     limbs_driver_start_move(point_list_1, path_type_list);
     
