@@ -41,26 +41,32 @@ point_3d_t point_list_1[6] = { { 0, 0, 0}, {0, 0, 0}, {0, 0, 0},
 
 void move_prepare(void) {
 	
+	path_type_list[0] = PATH_LINEAR;
 	point_list_1[0].x = 110;
 	point_list_1[0].y = -40;
 	point_list_1[0].z = 110;
 	
+	path_type_list[1] = PATH_LINEAR;
 	point_list_1[1].x = +125;
 	point_list_1[1].y = -85;
 	point_list_1[1].z = 0;
 	
+	path_type_list[2] = PATH_LINEAR;
 	point_list_1[2].x = 110;
 	point_list_1[2].y = -40;
 	point_list_1[2].z = -110;
 	
+	path_type_list[3] = PATH_LINEAR;
 	point_list_1[3].x = +85;
 	point_list_1[3].y = -85;
 	point_list_1[3].z = +85;
 	
+	path_type_list[4] = PATH_LINEAR;
 	point_list_1[4].x = 150;
 	point_list_1[4].y = -40;
 	point_list_1[4].z = 0;
-	
+
+	path_type_list[5] = PATH_LINEAR;
 	point_list_1[5].x = +85;
 	point_list_1[5].y = -85;
 	point_list_1[5].z = -85;
@@ -71,26 +77,32 @@ void move_prepare(void) {
 		limbs_driver_process();
 	}
 	
+	path_type_list[0] = PATH_LINEAR;
 	point_list_1[0].x = 110;
 	point_list_1[0].y = -85;
 	point_list_1[0].z = 20;
 	
+	path_type_list[1] = PATH_LINEAR;
 	point_list_1[1].x = +125;
 	point_list_1[1].y = -85;
 	point_list_1[1].z = 0;
 	
+	path_type_list[2] = PATH_LINEAR;
 	point_list_1[2].x = 110;
 	point_list_1[2].y = -85;
 	point_list_1[2].z = -110;
 	
+	path_type_list[3] = PATH_LINEAR;
 	point_list_1[3].x = +85;
 	point_list_1[3].y = -85;
 	point_list_1[3].z = +85;
 	
+	path_type_list[4] = PATH_LINEAR;
 	point_list_1[4].x = 110;
 	point_list_1[4].y = -85;
 	point_list_1[4].z = -45;
 	
+	path_type_list[5] = PATH_LINEAR;
 	point_list_1[5].x = +85;
 	point_list_1[5].y = -85;
 	point_list_1[5].z = -85;
@@ -101,27 +113,32 @@ void move_prepare(void) {
 		limbs_driver_process();
 	}
 	
-	
+	path_type_list[0] = PATH_LINEAR;
 	point_list_1[0].x = 110;
 	point_list_1[0].y = -85;
 	point_list_1[0].z = 20;
 	
+	path_type_list[1] = PATH_LINEAR;
 	point_list_1[1].x = 150;
 	point_list_1[1].y = -40;
 	point_list_1[1].z = 0;
 	
+	path_type_list[2] = PATH_LINEAR;
 	point_list_1[2].x = 110;
 	point_list_1[2].y = -85;
 	point_list_1[2].z = -110;
 	
+	path_type_list[3] = PATH_LINEAR;
 	point_list_1[3].x = 110;
 	point_list_1[3].y = -40;
 	point_list_1[3].z = 110;
 	
+	path_type_list[4] = PATH_LINEAR;
 	point_list_1[4].x = 110;
 	point_list_1[4].y = -85;
 	point_list_1[4].z = -45;
 	
+	path_type_list[5] = PATH_LINEAR;
 	point_list_1[5].x = 110;
 	point_list_1[5].y = -40;
 	point_list_1[5].z = -110;
@@ -132,26 +149,32 @@ void move_prepare(void) {
 		limbs_driver_process();
 	}
 	
+	path_type_list[0] = PATH_LINEAR;
 	point_list_1[0].x = 110;
 	point_list_1[0].y = -85;
 	point_list_1[0].z = 20;
 	
+	path_type_list[1] = PATH_LINEAR;
 	point_list_1[1].x = 110;
 	point_list_1[1].y = -85;
 	point_list_1[1].z = 45;
 	
+	path_type_list[2] = PATH_LINEAR;
 	point_list_1[2].x = 110;
 	point_list_1[2].y = -85;
 	point_list_1[2].z = -110;
 	
+	path_type_list[3] = PATH_LINEAR;
 	point_list_1[3].x = 110;
 	point_list_1[3].y = -85;
 	point_list_1[3].z = 110;
 	
+	path_type_list[4] = PATH_LINEAR;
 	point_list_1[4].x = 110;
 	point_list_1[4].y = -85;
 	point_list_1[4].z = -45;
 	
+	path_type_list[5] = PATH_LINEAR;
 	point_list_1[5].x = 110;
 	point_list_1[5].y = -85;
 	point_list_1[5].z = -20;
@@ -166,26 +189,32 @@ void move_prepare(void) {
 
 void move_end(void) {
     
+	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 110;
     point_list_1[0].y = -85;
     point_list_1[0].z = 20;
     
+	path_type_list[1] = PATH_LINEAR;
     point_list_1[1].x = 150;
     point_list_1[1].y = -40;
     point_list_1[1].z = 0;
     
+	path_type_list[2] = PATH_LINEAR;
     point_list_1[2].x = 110;
     point_list_1[2].y = -85;
     point_list_1[2].z = -110;
     
+	path_type_list[3] = PATH_LINEAR;
     point_list_1[3].x = 110;
     point_list_1[3].y = -40;
     point_list_1[3].z = 110;
     
+	path_type_list[4] = PATH_LINEAR;
     point_list_1[4].x = 110;
     point_list_1[4].y = -85;
     point_list_1[4].z = -45;
     
+	path_type_list[5] = PATH_LINEAR;
     point_list_1[5].x = 110;
     point_list_1[5].y = -40;
     point_list_1[5].z = -110;
@@ -196,26 +225,32 @@ void move_end(void) {
         limbs_driver_process();
     }
     
+	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 110;
     point_list_1[0].y = -85;
     point_list_1[0].z = 20;
     
+	path_type_list[1] = PATH_LINEAR;
     point_list_1[1].x = +125;
     point_list_1[1].y = -85;
     point_list_1[1].z = 0;
     
+	path_type_list[2] = PATH_LINEAR;
     point_list_1[2].x = 110;
     point_list_1[2].y = -85;
     point_list_1[2].z = -110;
     
+	path_type_list[3] = PATH_LINEAR;
     point_list_1[3].x = +88;
     point_list_1[3].y = -85;
     point_list_1[3].z = +88;
     
+	path_type_list[4] = PATH_LINEAR;
     point_list_1[4].x = 110;
     point_list_1[4].y = -85;
     point_list_1[4].z = -45;
     
+	path_type_list[5] = PATH_LINEAR;
     point_list_1[5].x = +88;
     point_list_1[5].y = -85;
     point_list_1[5].z = -88;
@@ -226,26 +261,32 @@ void move_end(void) {
         limbs_driver_process();
     }
     
+	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 110;
     point_list_1[0].y = -40;
     point_list_1[0].z = 110;
     
+	path_type_list[1] = PATH_LINEAR;
     point_list_1[1].x = +125;
     point_list_1[1].y = -85;
     point_list_1[1].z = 0;
     
+	path_type_list[2] = PATH_LINEAR;
     point_list_1[2].x = 110;
     point_list_1[2].y = -40;
     point_list_1[2].z = -110;
     
+	path_type_list[3] = PATH_LINEAR;
     point_list_1[3].x = +88;
     point_list_1[3].y = -85;
     point_list_1[3].z = +88;
     
+	path_type_list[4] = PATH_LINEAR;
     point_list_1[4].x = 150;
     point_list_1[4].y = -40;
     point_list_1[4].z = 0;
     
+	path_type_list[5] = PATH_LINEAR;
     point_list_1[5].x = +88;
     point_list_1[5].y = -85;
     point_list_1[5].z = -88;
@@ -256,26 +297,32 @@ void move_end(void) {
         limbs_driver_process();
     }
     
+	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = +88;
     point_list_1[0].y = -85;
     point_list_1[0].z = +88;
     
+	path_type_list[1] = PATH_LINEAR;
     point_list_1[1].x = +125;
     point_list_1[1].y = -85;
     point_list_1[1].z = 0;
     
+	path_type_list[2] = PATH_LINEAR;
     point_list_1[2].x = +88;
     point_list_1[2].y = -85;
     point_list_1[2].z = -88;
     
+	path_type_list[3] = PATH_LINEAR;
     point_list_1[3].x = +88;
     point_list_1[3].y = -85;
     point_list_1[3].z = +88;
     
+	path_type_list[4] = PATH_LINEAR;
     point_list_1[4].x = +125;
     point_list_1[4].y = -85;
     point_list_1[4].z = 0;
     
+	path_type_list[5] = PATH_LINEAR;
     point_list_1[5].x = +88;
     point_list_1[5].y = -85;
     point_list_1[5].z = -88;
@@ -425,26 +472,32 @@ void direct() {
 
 void reverse() {
     
+	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 110;
     point_list_1[0].y = -85;
     point_list_1[0].z = 65;
     
+	path_type_list[1] = PATH_LINEAR;
     point_list_1[1].x = 150;
     point_list_1[1].y = -40;
     point_list_1[1].z = 0;
     
+	path_type_list[2] = PATH_LINEAR;
     point_list_1[2].x = 110;
     point_list_1[2].y = -85;
     point_list_1[2].z = -65;
     
+	path_type_list[3] = PATH_LINEAR;
     point_list_1[3].x = 150;
     point_list_1[3].y = -40;
     point_list_1[3].z = 65;
     
+	path_type_list[4] = PATH_LINEAR;
     point_list_1[4].x = 110;
     point_list_1[4].y = -85;
     point_list_1[4].z = 0;
     
+	path_type_list[5] = PATH_LINEAR;
     point_list_1[5].x = 150;
     point_list_1[5].y = -40;
     point_list_1[5].z = -65;
@@ -456,26 +509,32 @@ void reverse() {
     }
     
     
+	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 110;
     point_list_1[0].y = -85;
     point_list_1[0].z = 110;
     
+	path_type_list[1] = PATH_LINEAR;
     point_list_1[1].x = 110;
     point_list_1[1].y = -85;
     point_list_1[1].z = -45;
     
+	path_type_list[2] = PATH_LINEAR;
     point_list_1[2].x = 110;
     point_list_1[2].y = -85;
     point_list_1[2].z = -20;
     
+	path_type_list[3] = PATH_LINEAR;
     point_list_1[3].x = 110;
     point_list_1[3].y = -85;
     point_list_1[3].z = 20;
     
+	path_type_list[4] = PATH_LINEAR;
     point_list_1[4].x = 110;
     point_list_1[4].y = -85;
     point_list_1[4].z = 45;
     
+	path_type_list[5] = PATH_LINEAR;
     point_list_1[5].x = 110;
     point_list_1[5].y = -85;
     point_list_1[5].z = -110;
@@ -487,26 +546,32 @@ void reverse() {
     }
     
     
+	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 150;
     point_list_1[0].y = -40;
     point_list_1[0].z = 65;
     
+	path_type_list[1] = PATH_LINEAR;
     point_list_1[1].x = 110;
     point_list_1[1].y = -85;
     point_list_1[1].z = 0;
     
+	path_type_list[2] = PATH_LINEAR;
     point_list_1[2].x = 150;
     point_list_1[2].y = -40;
     point_list_1[2].z = -65;
     
+	path_type_list[3] = PATH_LINEAR;
     point_list_1[3].x = 110;
     point_list_1[3].y = -85;
     point_list_1[3].z = 65;
     
+	path_type_list[4] = PATH_LINEAR;
     point_list_1[4].x = 150;
     point_list_1[4].y = -40;
     point_list_1[4].z = 0;
     
+	path_type_list[5] = PATH_LINEAR;
     point_list_1[5].x = 110;
     point_list_1[5].y = -85;
     point_list_1[5].z = -65;
@@ -517,26 +582,32 @@ void reverse() {
         limbs_driver_process();
     }
     
+	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 110;
     point_list_1[0].y = -85;
     point_list_1[0].z = 20;
     
+	path_type_list[1] = PATH_LINEAR;
     point_list_1[1].x = 110;
     point_list_1[1].y = -85;
     point_list_1[1].z = 45;
     
+	path_type_list[2] = PATH_LINEAR;
     point_list_1[2].x = 110;
     point_list_1[2].y = -85;
     point_list_1[2].z = -110;
     
+	path_type_list[3] = PATH_LINEAR;
     point_list_1[3].x = 110;
     point_list_1[3].y = -85;
     point_list_1[3].z = 110;
     
+	path_type_list[4] = PATH_LINEAR;
     point_list_1[4].x = 110;
     point_list_1[4].y = -85;
     point_list_1[4].z = -45;
     
+	path_type_list[5] = PATH_LINEAR;
     point_list_1[5].x = 110;
     point_list_1[5].y = -85;
     point_list_1[5].z = -20;

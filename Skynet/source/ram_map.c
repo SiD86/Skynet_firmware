@@ -7,7 +7,6 @@
 #include "ram_map.h"
 #include "servo_driver.h"
 #include "scr.h"
-#include "multimedia.h"
 #include "error_handling.h"
         
 #define RAM_PUT_BYTE(ram_addr, var)  .data[ram_addr] = (uint8_t*)&(var)
@@ -32,7 +31,6 @@ typedef struct {
 static const ram_map_t ram_map = {
     
 	RAM_PUT_DWORD(0x0000, error_status),
-    RAM_PUT_BYTE (0x0004, ram_multimedia_state),
 	
 	RAM_PUT_WORD (0x0040, x),
 	RAM_PUT_WORD (0x0042, y),

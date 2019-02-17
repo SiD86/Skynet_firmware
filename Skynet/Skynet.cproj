@@ -197,9 +197,6 @@
     <Compile Include="include\monitoring.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="include\multimedia.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="include\veeprom_map.h">
       <SubType>compile</SubType>
     </Compile>
@@ -318,9 +315,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="source\monitoring.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="source\multimedia.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="source\ram_map.c">

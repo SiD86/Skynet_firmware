@@ -15,7 +15,6 @@
 #include "modbus.h"
 #include "scr.h"
 #include "led.h"
-#include "multimedia.h"
 #include "error_handling.h"
 #include "vc0706.h"
 
@@ -40,7 +39,6 @@ int main(void) {
 	modbus_init();
 	wireless_modbus_init();
 	//monitoring_init();
-	//multimedia_init();
 	led_init();
     
     servo_driver_init();

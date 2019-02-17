@@ -6,7 +6,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include "wireless_modbus.h"
-#include "multimedia.h"
 #include "ram_map.h"
 #include "systimer.h"
 #include "usart3_pdc.h"
@@ -23,8 +22,6 @@ static wireless_frame_t wireless_frame = {0};
 static bool is_wireless_modbus_frame_detected(const uint8_t* data, uint32_t data_size);
 static void read_ram_command_handler(wireless_frame_t* frame);
 static void write_ram_command_handler(wireless_frame_t* frame);
-static void read_multimedia_data_size_command_handler(wireless_frame_t* frame);
-static void read_multimedia_data_command_handler(wireless_frame_t* frame);
 static uint16_t calculate_crc16(const uint8_t* frame, uint32_t size);
 
 
@@ -82,14 +79,6 @@ void wireless_modbus_process(void) {
 		
 		case WIRELESS_MODBUS_CMD_READ_RAM:
 			read_ram_command_handler(&wireless_frame);
-			break;
-		
-		case WIRELESS_MODBUS_CMD_READ_MULTIMEDIA_DATA_SIZE:
-			read_multimedia_data_size_command_handler(&wireless_frame);
-			break;
-			
-		case WIRELESS_MODBUS_CMD_READ_MULTIMEDIA_DATA:
-			read_multimedia_data_command_handler(&wireless_frame);
 			break;
 		
 		default:
@@ -188,43 +177,7 @@ static void write_ram_command_handler(wireless_frame_t* frame) {
 	memset(frame->data, 0x00, WIRELESS_MODBUS_FRAME_SIZE);
 }
 
-//  ***************************************************************************
-/// @brief  Function for processing ModBus read multimedia data size command
-/// @param  frame: pointer to wireless frame
-/// @retval frame
-//  ***************************************************************************
-static void read_multimedia_data_size_command_handler(wireless_frame_t* frame) {
 
-	// Check request parameters
-	if (frame->bytes_count != 2) {
-		frame->function_code |= WIRELESS_MODBUS_EXCEPTION;
-		return;
-	}
-	
-	// Process command
-	uint16_t image_size = multimedia_get_image_size();
-	memcpy(frame->data, &image_size, frame->bytes_count);
-}
-
-//  ***************************************************************************
-/// @brief  Function for processing ModBus read multimedia data command
-/// @param  frame: pointer to wireless frame
-/// @retval frame
-//  ***************************************************************************
-static void read_multimedia_data_command_handler(wireless_frame_t* frame) {
-	
-	// Check request parameters
-	if (frame->bytes_count == 0 || frame->bytes_count > WIRELESS_MODBUS_FRAME_DATA_SIZE) {
-		frame->function_code |= WIRELESS_MODBUS_EXCEPTION;
-		return;
-	}
-	
-	// Process command
-	if (multimedia_read_image_data(frame->address, frame->data, frame->bytes_count) == false) {
-		frame->function_code |= WIRELESS_MODBUS_EXCEPTION;
-		return;
-	}
-}
 
 //  ***************************************************************************
 /// @brief  Calculate frame CRC16
