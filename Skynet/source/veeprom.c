@@ -8,7 +8,7 @@
 #include "error_handling.h"
 #define VEEPROM_BEGIN_ADDRESS           (0x0000)
 #define VEEPROM_PAGE_SIZE               (FLASH_PAGE_SIZE)
-#define VEEPROM_PAGE_COUNT              (2)
+#define VEEPROM_PAGE_COUNT              (10)
 #define VEEPROM_SIZE                    (VEEPROM_PAGE_SIZE * VEEPROM_PAGE_COUNT)    // bytes
 #define VEEPROM_END_ADDRESS             (VEEPROM_BEGIN_ADDRESS + VEEPROM_SIZE + 1)
 

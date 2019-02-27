@@ -10,38 +10,25 @@
 #include "veeprom_map.h"
 #include "error_handling.h"
 
+#define SERVO_DIRECTION_CW						(0x00)
+#define SERVO_DIRECTION_CCW						(0x01)
+#define SERVO_BIDIRECTIONAL_MODE_DISABLE		(0x00)
+#define SERVO_BIDIRECTIONAL_MODE_ENABLE			(0x02)
+
 #define DISABLE_PULSE_WIDTH						(0)
-
-#define MG996R_MIN_PULSE_WIDTH                  (880)
-#define MG996R_MAX_PULSE_WIDTH                  (2280)
-#define MG996R_MAX_SERVO_ANGLE                  (150)
-
-#define DS3218_MIN_PULSE_WIDTH                  (500)
-#define DS3218_MAX_PULSE_WIDTH                  (2500)
-#define DS3218_MAX_SERVO_ANGLE                  (270)
+#define CALIBRATION_TABLE_MAX_SIZE              (27)
+#define CALIBRATION_TABLE_STEP_SIZE             (10)
 
 #define OVERRIDE_DISABLE_VALUE                  (0x7F)
 
-
-// Servo direction
-typedef enum {
-    DIRECTION_DIRECT,    // MAX -> MIN
-    DIRECTION_REVERSE    // MIN -> MAX
-} direction_t;
-
-// Servo type
-typedef enum {
-    SERVO_TYPE_MG996R,
-    SERVO_TYPE_DS3218
-} servo_type_t;
-
 // Servo information
 typedef struct {
-    float        angle;					// Current servo angle, [degree] 
-    servo_type_t type;					// Servo type
-    direction_t  direction;				// Servo rotate direction
-	uint32_t     physic_zero_trim;      // Servo physic zero trim, [degree]
-    uint32_t     start_logical_zero;    // Servo logic zero, [degree]
+    float    physic_angle;			// Current servo physic angle, [degree] 
+    uint32_t config;			    // Servo configuration
+	uint32_t angle_currection;    	// Servo angle correction, [degree]
+    uint32_t min_physic_angle;      // Servo min physic angle, [degree]
+    uint32_t max_physic_angle;      // Servo max physic angle, [degree]
+    uint16_t calibration_table[27]; // Calibration table
 } servo_info_t;
 
 // Servo driver states
@@ -99,22 +86,29 @@ void servo_driver_move(uint32_t ch, float angle) {
         return;
     }
 	
-    // Calculate servo angle
-    servo_channels[ch].angle = servo_channels[ch].start_logical_zero + angle;
+	servo_info_t* servo_info = &servo_channels[ch];
 	
-	// Check angle
-	if (servo_channels[ch].angle < 0) {
-		callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
+    // Calculate servo logical zero
+	uint32_t logical_zero = 0;
+	if ((servo_info->config & SERVO_CONFIG_BIDIRECTIONAL_MODE_MASK) == SERVO_BIDIRECTIONAL_MODE_ENABLE) {
+		logical_zero = servo_info->max_physic_angle / 2;
 	}
-    if (servo_channels[ch].type == SERVO_TYPE_MG996R && servo_channels[ch].angle > MG996R_MAX_SERVO_ANGLE) {
-        callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
+	
+	// Calculate physic servo angle
+    servo_info->physic_angle = logical_zero + angle;
+	
+	// Constrain physic servo angle
+	if (servo_info->physic_angle < servo_info->min_physic_angle) {
+		servo_info->physic_angle = servo_info->min_physic_angle;
+	}
+	
+	// Apply angle correction
+	servo_info->physic_angle += servo_info->angle_currection;
+	
+	// Constrain physic servo angle
+	if (servo_info->physic_angle > servo_info->max_physic_angle) {
+        servo_info->physic_angle = servo_info->max_physic_angle;
     }
-	else if (servo_channels[ch].type == SERVO_TYPE_DS3218 && servo_channels[ch].angle > DS3218_MAX_SERVO_ANGLE) {
-        callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
-    }
-    
-    // Apply physic zero trim
-    servo_channels[ch].angle += servo_channels[ch].physic_zero_trim;
 }
 
 //  ***************************************************************************
@@ -158,14 +152,14 @@ void servo_driver_process(void) {
 				
 				// Override servo angle process
 				if (ram_servo_angle_override[i] != OVERRIDE_DISABLE_VALUE) {
-					servo_channels[i].angle = servo_channels[i].start_logical_zero + ram_servo_angle_override[i] + servo_channels[i].physic_zero_trim;
+					servo_driver_move(i, ram_servo_angle_override[i]);
 				}
 					
 				// Calculate and load pulse width
 				pwm_set_width(i, convert_angle_to_pulse_width(&servo_channels[i]));
 				
 				// Update RAM variable
-				ram_servo_angle[i] = servo_channels[i].angle;
+				ram_servo_angle[i] = servo_channels[i].physic_angle;
             }
             pwm_set_buffers_state(PWM_BUFFERS_UNLOCK);
 			
@@ -190,46 +184,39 @@ void servo_driver_process(void) {
 //  ***************************************************************************
 static bool read_configuration(void) {
     
-    for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
+    for (uint32_t servo_index = 0; servo_index < SUPPORT_SERVO_COUNT; ++servo_index) {
         
-        uint32_t base_address = i * SERVO_CONFIGURATION_SIZE;
+        uint32_t base_address = servo_index * SERVO_CONFIGURATION_SIZE;
         
-        // Read servo type
-        uint8_t servo_type = veeprom_read_8(base_address + SERVO_TYPE_EE_ADDRESS);
-        if (servo_type != SERVO_TYPE_MG996R && servo_type != SERVO_TYPE_DS3218) {
+        // Read servo configuration
+        uint8_t config = veeprom_read_8(base_address + SERVO_CONFIG_EE_ADDRESS);
+        if (config == 0xFF) {
             return false;
         }
         
-        // Read servo rotate direction
-        uint8_t direction = veeprom_read_8(base_address + SERVO_ROTATE_DIRECTION_EE_ADDRESS);
-        if (direction != DIRECTION_DIRECT && direction != DIRECTION_REVERSE) {
+        // Read angle correction
+        uint32_t angle_correction = veeprom_read_8(base_address + SERVO_ANGLE_CORRECTION_EE_ADDRESS);
+
+		// Read max physic angle
+        uint32_t max_physic_angle = veeprom_read_16(base_address + SERVO_MAX_PHYSIC_ANGLE_EE_ADDRESS);
+        if (max_physic_angle == 0xFFFF || angle_correction > max_physic_angle) {
             return false;
         }
-        
-        // Read physic zero trim
-        uint8_t physic_zero_trim = veeprom_read_8(base_address + SERVO_PHYSIC_ZERO_TRIM_EE_ADDRESS);
-        if (servo_type == SERVO_TYPE_MG996R && physic_zero_trim > MG996R_MAX_SERVO_ANGLE) {
-            return false;
-        }
-        if (servo_type == SERVO_TYPE_DS3218 && physic_zero_trim > DS3218_MAX_SERVO_ANGLE) {
-            return false;
-        }
-        
-        // Read start logical zero
-        int32_t start_logical_zero = veeprom_read_8(base_address + SERVO_START_LOGICAL_ZERO_EE_ADDRESS);
-        if (servo_type == SERVO_TYPE_MG996R && start_logical_zero > MG996R_MAX_SERVO_ANGLE) {
-            return false;
-        }
-        if (servo_type == SERVO_TYPE_DS3218 && start_logical_zero > DS3218_MAX_SERVO_ANGLE) {
-            return false;
-        }
-        
-        // Fill information
-        servo_channels[i].angle = physic_zero_trim + start_logical_zero;
-        servo_channels[i].type = servo_type;
-        servo_channels[i].direction = direction;
-		servo_channels[i].physic_zero_trim = physic_zero_trim;
-        servo_channels[i].start_logical_zero = start_logical_zero;
+		
+        // Fill main information
+        servo_channels[servo_index].physic_angle = 0;
+        servo_channels[servo_index].config = config;
+		servo_channels[servo_index].angle_currection = angle_correction;
+        servo_channels[servo_index].max_physic_angle = max_physic_angle;
+
+		// Read calibration table
+		uint32_t max_table_point = max_physic_angle / CALIBRATION_TABLE_STEP_SIZE;
+		for (uint32_t i = 0; i <= max_table_point; ++i) {
+			servo_channels[servo_index].calibration_table[i] = veeprom_read_16(base_address + SERVO_CALIBRATION_TABLE_EE_ADDRESS + i * 2);
+		}
+		
+		// Move servo to start position
+		servo_driver_move(servo_index, 0);
     }
 
     return true;
@@ -243,23 +230,21 @@ static bool read_configuration(void) {
 //  ***************************************************************************
 static uint32_t convert_angle_to_pulse_width(const servo_info_t* servo_info) {
     
-    if (servo_info->type == SERVO_TYPE_MG996R) {
-    
-        uint32_t pulse_width = servo_info->angle * (MG996R_MAX_PULSE_WIDTH - MG996R_MIN_PULSE_WIDTH) / MG996R_MAX_SERVO_ANGLE + MG996R_MIN_PULSE_WIDTH;
-        if (servo_info->direction == DIRECTION_REVERSE) {
-            pulse_width = MG996R_MAX_PULSE_WIDTH - (pulse_width - MG996R_MIN_PULSE_WIDTH);
-        }
-        return pulse_width;
-    }  
-    else if (servo_info->type == SERVO_TYPE_DS3218) {
-        
-        uint32_t pulse_width = servo_info->angle * (DS3218_MAX_PULSE_WIDTH - DS3218_MIN_PULSE_WIDTH) / DS3218_MAX_SERVO_ANGLE + DS3218_MIN_PULSE_WIDTH;
-        if (servo_info->direction == DIRECTION_REVERSE) {
-            pulse_width = DS3218_MAX_PULSE_WIDTH - (pulse_width - DS3218_MIN_PULSE_WIDTH);
-        }
-        return pulse_width;
+    float angle = servo_info->physic_angle;
+    if ((servo_info->config & SERVO_CONFIG_ROTATE_DIRECTION_MASK) == SERVO_DIRECTION_CCW) {
+        angle = servo_info->max_physic_angle - angle;
     }
     
-    callback_set_internal_error(ERROR_MODULE_SERVO_DRIVER);
-    return DISABLE_PULSE_WIDTH;
+    uint32_t table_index = angle / CALIBRATION_TABLE_STEP_SIZE;
+
+    if (angle < servo_info->max_physic_angle) {
+        
+        float first_value = servo_info->calibration_table[table_index];
+        float second_value = servo_info->calibration_table[table_index + 1];
+        
+        float step = (second_value - first_value) / CALIBRATION_TABLE_STEP_SIZE;
+        return first_value + step * ((uint32_t)angle % 10);
+    }
+	
+	return servo_info->calibration_table[table_index];
 }

@@ -13,7 +13,9 @@
 #define RAD_TO_DEG(rad)                ((rad) * 180 / M_PI)
 #define DEG_TO_RAD(deg)                ((deg) * M_PI / 180)
 
-#define TOTAL_ITERATION_COUNT		   (15)
+uint32_t iter_count = 15;
+
+#define TOTAL_ITERATION_COUNT		   (iter_count)
 #define DELAY_BETWEEN_ITERATIONS       (10)
 
 

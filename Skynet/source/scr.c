@@ -28,6 +28,8 @@ int16_t x = 0;
 int16_t y = 0;
 int16_t z = 0;
 
+extern uint32_t iter_count;
+
 path_type_t path_type_list[6] = { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, 
                                   PATH_LINEAR, PATH_LINEAR, PATH_LINEAR };
 
@@ -40,6 +42,8 @@ point_3d_t point_list_1[6] = { { 0, 0, 0}, {0, 0, 0}, {0, 0, 0},
 //  ***************************************************************************
 
 void move_prepare(void) {
+	
+	iter_count = 15;
 	
 	path_type_list[0] = PATH_LINEAR;
 	point_list_1[0].x = 110;
@@ -189,6 +193,8 @@ void move_prepare(void) {
 
 void move_end(void) {
     
+	iter_count = 15;
+	
 	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 110;
     point_list_1[0].y = -85;
@@ -335,6 +341,8 @@ void move_end(void) {
 
 void direct() {
 	
+	iter_count = 30;
+	
 	path_type_list[0] = PATH_XZ_ELLIPTICAL_Y_SINUS;
 	point_list_1[0].x = 130;
 	point_list_1[0].y = -65;
@@ -409,6 +417,8 @@ void direct() {
 }
 
 void reverse() {
+	
+	iter_count = 15;
     
 	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 110;
@@ -559,6 +569,8 @@ void reverse() {
 
 void rotate() {
 	
+	iter_count = 30;
+	
 	path_type_list[0] = PATH_XZ_ARC_Y_SINUS;
 	point_list_1[0].x = +123;
 	point_list_1[0].y = -65;
@@ -636,6 +648,8 @@ void scr_process(void) {
 	switch (scr) {
 		
 		case 0x01:
+			iter_count = 15;
+		
 			point_list_1[0].x = +88;
 			point_list_1[0].y = -85;
 			point_list_1[0].z = +88;
