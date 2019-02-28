@@ -16,9 +16,8 @@
 #include "scr.h"
 #include "led.h"
 #include "error_handling.h"
-#include "vc0706.h"
 
-
+ 
 static void enter_to_emergency_loop(void);
 
 

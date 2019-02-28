@@ -13,10 +13,8 @@
 #define RAD_TO_DEG(rad)                ((rad) * 180 / M_PI)
 #define DEG_TO_RAD(deg)                ((deg) * M_PI / 180)
 
-uint32_t iter_count = 15;
-
-#define TOTAL_ITERATION_COUNT		   (iter_count)
-#define DELAY_BETWEEN_ITERATIONS       (10)
+#define SMOOTH_DEFAULT_TOTAL_POINT_COUNT			(15)
+#define SMOOTH_DEFAULT_TIME_BETWEEN_POINTS			(10)
 
 
 // Servo driver states
@@ -33,15 +31,6 @@ typedef enum {
     LINK_FEMUR,
     LINK_TIBIA
 } link_id_t;
-
-typedef enum {
-    LIMB_FRONT_LEFT,
-    LIMB_CENTER_LEFT,
-    LIMB_REAR_LEFT,
-    LIMB_FRONT_RIGHT,
-    LIMB_CENTER_RIGHT,
-    LIMB_REAR_RIGHT,
-} limb_id_t;
 
 typedef struct {
     
@@ -76,11 +65,13 @@ typedef struct {
 
 static driver_state_t driver_state = STATE_NOINIT;
 static limb_info_t    limbs[SUPPORT_LIMB_COUNT] = {0};
-static uint32_t		  current_movement_iteration = 0;
+static uint32_t       smooth_time_between_points = SMOOTH_DEFAULT_TIME_BETWEEN_POINTS;
+static uint32_t		  smooth_total_point_count = SMOOTH_DEFAULT_TOTAL_POINT_COUNT;
+static uint32_t		  smooth_current_point = 0;
 
 
 static bool read_configuration(void);
-static void path_calculate_point(const path_3d_t* info, uint32_t current_iteration, point_3d_t* point);
+static void path_calculate_point(const path_3d_t* info, point_3d_t* point);
 static bool kinematic_calculate_angles(limb_info_t* info);
 
 
@@ -117,6 +108,21 @@ void limbs_driver_init(void) {
 }
 
 //  ***************************************************************************
+/// @brief  Start smooth algorithm configuration
+/// @param  point_count: smooth point count
+/// @param  time_between_points: delay between points [ms]
+//  ***************************************************************************
+void limbs_driver_set_smooth_config(uint32_t point_count, uint32_t time_between_points) {
+	
+	smooth_total_point_count = point_count;
+	smooth_time_between_points = time_between_points;
+	
+	if (smooth_total_point_count == 0) {
+		callback_set_internal_error(ERROR_MODULE_LIMBS_DRIVER);
+	}
+}
+
+//  ***************************************************************************
 /// @brief  Start limb move
 /// @param  point_list: destination point list
 /// @param  path_type_list: path type list
@@ -141,7 +147,7 @@ void limbs_driver_start_move(const point_3d_t* point_list, const path_type_t* pa
             continue;
         }
         
-		current_movement_iteration = 0;
+		smooth_current_point = 0;
         driver_state = STATE_CALC;
     }
 }
@@ -173,16 +179,21 @@ void limbs_driver_process(void) {
             break;
         
         case STATE_CALC:
-            if (current_movement_iteration > TOTAL_ITERATION_COUNT) {
+            if (smooth_current_point > smooth_total_point_count) {
 				driver_state = STATE_IDLE;
 				break;
 			}
             for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
-				path_calculate_point(&limbs[i].movement_path, current_movement_iteration, &limbs[i].position);
-                kinematic_calculate_angles(&limbs[i]);
+				
+				path_calculate_point(&limbs[i].movement_path, &limbs[i].position);
+                
+				if (kinematic_calculate_angles(&limbs[i]) == false) {
+					callback_set_out_of_range_error(ERROR_MODULE_LIMBS_DRIVER);
+					return;
+				}
             }
 			
-			++current_movement_iteration;
+			++smooth_current_point;
 			driver_state = STATE_LOAD;
             break;
             
@@ -198,7 +209,7 @@ void limbs_driver_process(void) {
             break;
 
         case STATE_WAIT:
-            if (get_time_ms() - begin_wait_time >= DELAY_BETWEEN_ITERATIONS) {
+            if (get_time_ms() - begin_wait_time >= smooth_time_between_points) {
                 driver_state = STATE_CALC;
             }
             break;
@@ -273,14 +284,13 @@ static bool read_configuration(void) {
 //  ***************************************************************************
 /// @brief  Calculate path point
 /// @param  info: path info @ref path_3d_t
-/// @param  current_iteration: current iteration index [0; TOTAL_ITERATION_COUNT]
 /// @param  point: calculated point
 /// @retval point
 //  ***************************************************************************
-static void path_calculate_point(const path_3d_t* info, uint32_t current_iteration, point_3d_t* point) {
+static void path_calculate_point(const path_3d_t* info, point_3d_t* point) {
 
 	float t_max = RAD_TO_DEG(M_PI); // [0; Pi]
-	float t = current_iteration * (t_max / TOTAL_ITERATION_COUNT); // iter_index * dt
+	float t = smooth_current_point * (t_max / smooth_total_point_count); // iter_index * dt
 
 	float x0 = info->start_point.x;
 	float y0 = info->start_point.y;

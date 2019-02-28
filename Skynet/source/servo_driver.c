@@ -21,12 +21,12 @@
 
 #define OVERRIDE_DISABLE_VALUE                  (0x7F)
 
+
 // Servo information
 typedef struct {
     float    physic_angle;			// Current servo physic angle, [degree] 
     uint32_t config;			    // Servo configuration
 	uint32_t angle_currection;    	// Servo angle correction, [degree]
-    uint32_t min_physic_angle;      // Servo min physic angle, [degree]
     uint32_t max_physic_angle;      // Servo max physic angle, [degree]
     uint16_t calibration_table[27]; // Calibration table
 } servo_info_t;
@@ -98,8 +98,9 @@ void servo_driver_move(uint32_t ch, float angle) {
     servo_info->physic_angle = logical_zero + angle;
 	
 	// Constrain physic servo angle
-	if (servo_info->physic_angle < servo_info->min_physic_angle) {
-		servo_info->physic_angle = servo_info->min_physic_angle;
+	if (servo_info->physic_angle < 0) {
+		callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
+		//servo_info->physic_angle = servo_info->min_physic_angle;
 	}
 	
 	// Apply angle correction
@@ -107,7 +108,8 @@ void servo_driver_move(uint32_t ch, float angle) {
 	
 	// Constrain physic servo angle
 	if (servo_info->physic_angle > servo_info->max_physic_angle) {
-        servo_info->physic_angle = servo_info->max_physic_angle;
+		callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
+        //servo_info->physic_angle = servo_info->max_physic_angle;
     }
 }
 
@@ -196,7 +198,10 @@ static bool read_configuration(void) {
         
         // Read angle correction
         uint32_t angle_correction = veeprom_read_8(base_address + SERVO_ANGLE_CORRECTION_EE_ADDRESS);
-
+		if (angle_correction == 0xFF) {
+			return false;
+		}
+		
 		// Read max physic angle
         uint32_t max_physic_angle = veeprom_read_16(base_address + SERVO_MAX_PHYSIC_ANGLE_EE_ADDRESS);
         if (max_physic_angle == 0xFFFF || angle_correction > max_physic_angle) {
@@ -212,7 +217,12 @@ static bool read_configuration(void) {
 		// Read calibration table
 		uint32_t max_table_point = max_physic_angle / CALIBRATION_TABLE_STEP_SIZE;
 		for (uint32_t i = 0; i <= max_table_point; ++i) {
+			
 			servo_channels[servo_index].calibration_table[i] = veeprom_read_16(base_address + SERVO_CALIBRATION_TABLE_EE_ADDRESS + i * 2);
+			
+			if (servo_channels[servo_index].calibration_table[i] == 0xFFFF) {
+				return false;
+			}
 		}
 		
 		// Move servo to start position
@@ -224,7 +234,6 @@ static bool read_configuration(void) {
 
 //  ***************************************************************************
 /// @brief  Convert servo angle to PWM pulse width
-/// @note   This is Arduino map function
 /// @param  servo_info: servo info @ref servo_info_t
 /// @return PWM pulse width
 //  ***************************************************************************
@@ -238,13 +247,16 @@ static uint32_t convert_angle_to_pulse_width(const servo_info_t* servo_info) {
     uint32_t table_index = angle / CALIBRATION_TABLE_STEP_SIZE;
 
     if (angle < servo_info->max_physic_angle) {
-        
+		
+		// Read pulse width for linear interpolate
         float first_value = servo_info->calibration_table[table_index];
         float second_value = servo_info->calibration_table[table_index + 1];
         
+		// Linear interpolate
         float step = (second_value - first_value) / CALIBRATION_TABLE_STEP_SIZE;
         return first_value + step * ((uint32_t)angle % 10);
     }
 	
+	// Servo has max angle - set max pulse width
 	return servo_info->calibration_table[table_index];
 }

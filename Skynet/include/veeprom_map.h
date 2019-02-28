@@ -30,7 +30,6 @@
 #define		SERVO_CONFIG_ROTATE_DIRECTION_MASK		(0x01)
 #define 	SERVO_CONFIG_BIDIRECTIONAL_MODE_MASK	(0x02)
 #define SERVO_ANGLE_CORRECTION_EE_ADDRESS			(0x0101)	///< U8  Servo rotate direction
-#define SERVO_MIN_PHYSIC_ANGLE_EE_ADDRESS		    (0x0102)	///< U16 Start min physic angle
 #define SERVO_MAX_PHYSIC_ANGLE_EE_ADDRESS		    (0x0104)	///< U16 Start max physic angle
 #define SERVO_CALIBRATION_TABLE_EE_ADDRESS	        (0x0108)	///< U16 First calibration table value
 #define SERVO_CONFIGURATION_SIZE					(64)

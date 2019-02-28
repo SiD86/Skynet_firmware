@@ -293,12 +293,6 @@
     <Compile Include="periph_drv\usart3_pdc.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="periph_drv\vc0706.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="periph_drv\vc0706.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="source\error_handling.c">
       <SubType>compile</SubType>
     </Compile>

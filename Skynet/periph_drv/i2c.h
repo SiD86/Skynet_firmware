@@ -26,14 +26,14 @@ void         i2c_force_reset_error_status(void);
 
 bool         i2c_write_byte(uint8_t dev_addr, uint32_t internal_addr, uint8_t data);
 bool         i2c_write_bytes(uint8_t dev_addr, uint32_t internal_addr, uint8_t* data, uint32_t size);
-bool         i2c_async_write_bytes(uint8_t dev_addr, uint32_t internal_addr, uint32_t size);
+bool         i2c_async_write_bytes(uint8_t dev_addr, uint32_t internal_addr, uint8_t* data, uint32_t size);
 bool		 i2c_write_bits(uint8_t dev_addr, uint8_t internal_addr, uint8_t mask, uint8_t bits);
-uint8_t*     i2c_async_get_tx_buffer_address(void);
+uint8_t*     i2c_async_get_internal_tx_buffer_address(void);
 
 bool         i2c_read_byte(uint8_t dev_addr, uint32_t internal_addr, uint8_t* data);
 bool         i2c_read_bytes(uint8_t dev_addr, uint32_t internal_addr, uint8_t* data, uint32_t size);
-bool         i2c_async_read_bytes(uint8_t dev_addr, uint32_t internal_addr, uint32_t size);
-uint8_t*     i2c_async_get_rx_buffer_address(void);
+bool         i2c_async_read_bytes(uint8_t dev_addr, uint32_t internal_addr, uint8_t* buffer, uint32_t size);
+uint8_t*     i2c_async_get_internal_rx_buffer_address(void);
 
 
 #endif // I2C_H_
