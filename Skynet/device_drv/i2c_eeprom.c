@@ -21,8 +21,6 @@
 //  ***************************************************************************
 bool i2c_eeprom_read_bytes(uint32_t ee_address, uint8_t* data, uint32_t bytes_count) {
 
-	i2c_set_internal_address_length(2);
-
 	while (bytes_count != 0) {
 
 		// Make block size
@@ -35,7 +33,7 @@ bool i2c_eeprom_read_bytes(uint32_t ee_address, uint8_t* data, uint32_t bytes_co
 		}
 
 		// Read block from EEPROM
-		if (i2c_read_bytes(I2C_EEPROM_ADDRESS, ee_address, data, block_size) == false) {
+		if (i2c_read_bytes(I2C_EEPROM_ADDRESS, ee_address, 2, data, block_size) == false) {
 			return false;
 		}
 
@@ -56,8 +54,6 @@ bool i2c_eeprom_read_bytes(uint32_t ee_address, uint8_t* data, uint32_t bytes_co
 //  ***************************************************************************
 bool eeprom_write_bytes(uint32_t ee_address, uint8_t* data, uint32_t bytes_count) {
 
-	i2c_set_internal_address_length(2);
-
 	while (bytes_count != 0) {
 
 		// Make block size
@@ -70,7 +66,7 @@ bool eeprom_write_bytes(uint32_t ee_address, uint8_t* data, uint32_t bytes_count
 		}
 		
 		// Write block to EEPROM
-		if (i2c_write_bytes(I2C_EEPROM_ADDRESS, ee_address, data, block_size) == false) {
+		if (i2c_write_bytes(I2C_EEPROM_ADDRESS, ee_address, 2, data, block_size) == false) {
 			return false;
 		}
 

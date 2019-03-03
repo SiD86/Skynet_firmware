@@ -2,9 +2,10 @@
 /// @file    servo_driver.c
 /// @author  NeoProg
 //  ***************************************************************************
+#include "servo_driver.h"
+
 #include <sam.h>
 #include <stdbool.h>
-#include "servo_driver.h"
 #include "pwm.h"
 #include "veeprom.h"
 #include "veeprom_map.h"
@@ -99,8 +100,8 @@ void servo_driver_move(uint32_t ch, float angle) {
 	
 	// Constrain physic servo angle
 	if (servo_info->physic_angle < 0) {
-		callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
-		//servo_info->physic_angle = servo_info->min_physic_angle;
+		//callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
+		servo_info->physic_angle = 0;
 	}
 	
 	// Apply angle correction
@@ -108,8 +109,8 @@ void servo_driver_move(uint32_t ch, float angle) {
 	
 	// Constrain physic servo angle
 	if (servo_info->physic_angle > servo_info->max_physic_angle) {
-		callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
-        //servo_info->physic_angle = servo_info->max_physic_angle;
+		//callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
+        servo_info->physic_angle = servo_info->max_physic_angle;
     }
 }
 
@@ -118,7 +119,7 @@ void servo_driver_move(uint32_t ch, float angle) {
 /// @note   Call from main loop
 //  ***************************************************************************
 void servo_driver_process(void) {
-    
+	
     if (callback_is_servo_driver_error_set() == true) {
         pwm_disable();
         return; // Module disabled

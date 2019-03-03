@@ -6,8 +6,11 @@
 #ifndef SCR_H_
 #define SCR_H_
 
+#include <stdint.h>
+
 
 extern uint8_t scr;
+
 
 void scr_process(void);
 

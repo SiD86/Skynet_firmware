@@ -15,9 +15,11 @@
 #include "modbus.h"
 #include "scr.h"
 #include "led.h"
+#include "i2c.h"
+#include "gui.h"
 #include "error_handling.h"
 
- 
+
 static void enter_to_emergency_loop(void);
 
 
@@ -31,13 +33,20 @@ int main(void) {
     // Initialize SAM system
     SystemInit();
 	WDT->WDT_MR = WDT_MR_WDDIS;
-    
+
+	/*REG_PIOC_PER = PIO_PC22 | PIO_PC21 | PIO_PC29;
+	REG_PIOC_OER = PIO_PC22 | PIO_PC21 | PIO_PC29;
+	REG_PIOC_SODR = PIO_PC22 | PIO_PC21 | PIO_PC29;*/
+	
+
 	// Initialize FW
 	systimer_init();
+	i2c_init(I2C_SPEED_400KHZ);
+	gui_init();
 	veeprom_init();
 	modbus_init();
 	wireless_modbus_init();
-	//monitoring_init();
+	monitoring_init();
 	led_init();
     
     servo_driver_init();
@@ -50,29 +59,24 @@ int main(void) {
 		// CHECK SYSTEM STATUS
 		//
 		if (callback_is_emergency_mode_active() == true) {
-            led_enable(RED_LED);
 			enter_to_emergency_loop();
-		}
-		if (callback_is_any_error_set() == true) {
-            led_enable(YELLOW_LED);
-        }
-		else {
-			led_enable(GREEN_LED);;
 		}
         
 		//
 		// NORMAL MODE PROCESS
 		//
+		gui_process();
+		led_process();
+		
         servo_driver_process();
         limbs_driver_process();
         //movement_driver_process();
 		
-        
         wireless_modbus_process();
 		modbus_process();
 		scr_process();
         
-       // monitoring_process();
+        monitoring_process();
 	}
 }
 
@@ -80,9 +84,13 @@ static void enter_to_emergency_loop(void) {
     
 	while (1)  {
 		
-		modbus_process();
+		gui_process();
+		led_process();
+		
 		wireless_modbus_process();
-		//monitoring_process();
+		modbus_process();
 		scr_process();
+		
+		monitoring_process();
 	}
 }

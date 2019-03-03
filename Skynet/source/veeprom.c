@@ -2,10 +2,12 @@
 /// @file    veeprom.c
 /// @author  NeoProg
 //  ***************************************************************************
-#include <sam.h>
 #include "veeprom.h"
+
+#include <sam.h>
 #include "flash.h"
 #include "error_handling.h"
+
 #define VEEPROM_BEGIN_ADDRESS           (0x0000)
 #define VEEPROM_PAGE_SIZE               (FLASH_PAGE_SIZE)
 #define VEEPROM_PAGE_COUNT              (10)

@@ -1,13 +1,14 @@
 //  ***************************************************************************
-/// @file    version.h
+/// @file    gui.h
 /// @author  NeoProg
-/// @brief   Firmware version information
+/// @brief   GUI controller
 //  ***************************************************************************
-#ifndef VERSION_H_
-#define VERSION_H_
+#ifndef GUI_H_
+#define GUI_H_
 
 
-#define VERSION_STR				"v0.00.069"
+void gui_init(void);
+void gui_process(void);
 
 
-#endif // VERSION_H_
+#endif /* GUI_H_ */

@@ -2,9 +2,10 @@
 /// @file    ram_map.c
 /// @author  NeoProg
 //  ***************************************************************************
+#include "ram_map.h"
+
 #include <sam.h>
 #include <stdlib.h>
-#include "ram_map.h"
 #include "servo_driver.h"
 #include "scr.h"
 #include "error_handling.h"

@@ -2,9 +2,10 @@
 /// @file    limbs_driver.c
 /// @author  NeoProg
 //  ***************************************************************************
+#include "limbs_driver.h"
+
 #include <sam.h>
 #include <fastmath.h>
-#include "limbs_driver.h"
 #include "servo_driver.h"
 #include "veeprom.h"
 #include "veeprom_map.h"
@@ -167,7 +168,7 @@ bool limbs_driver_is_move_complete(void) {
 /// @note   Call from main loop
 //  ***************************************************************************
 void limbs_driver_process(void) {
-    
+	
     if (callback_is_limbs_driver_error_set() == true) return;  // Module disabled
 
 
@@ -288,7 +289,7 @@ static bool read_configuration(void) {
 /// @retval point
 //  ***************************************************************************
 static void path_calculate_point(const path_3d_t* info, point_3d_t* point) {
-
+	
 	float t_max = RAD_TO_DEG(M_PI); // [0; Pi]
 	float t = smooth_current_point * (t_max / smooth_total_point_count); // iter_index * dt
 
@@ -349,7 +350,7 @@ static void path_calculate_point(const path_3d_t* info, point_3d_t* point) {
 /// @return true - calculation success, false - no
 //  ***************************************************************************
 static bool kinematic_calculate_angles(limb_info_t* info) {
-
+	
     int32_t coxa_zero_rotate_deg = info->links[LINK_COXA].zero_rotate;
     int32_t femur_zero_rotate_deg = info->links[LINK_FEMUR].zero_rotate;
     int32_t tibia_zero_rotate_deg = info->links[LINK_TIBIA].zero_rotate;
@@ -415,7 +416,7 @@ static bool kinematic_calculate_angles(limb_info_t* info) {
 	//
 	// Check angles
 	//
-	if (info->links[LINK_COXA].angle < info->links[LINK_COXA].min_angle || info->links[LINK_COXA].angle > info->links[LINK_COXA].max_angle) {
+	/*if (info->links[LINK_COXA].angle < info->links[LINK_COXA].min_angle || info->links[LINK_COXA].angle > info->links[LINK_COXA].max_angle) {
 		return false;
 	}
 	if (info->links[LINK_FEMUR].angle < info->links[LINK_FEMUR].min_angle || info->links[LINK_FEMUR].angle > info->links[LINK_FEMUR].max_angle) {
@@ -423,7 +424,6 @@ static bool kinematic_calculate_angles(limb_info_t* info) {
 	}
 	if (info->links[LINK_TIBIA].angle < info->links[LINK_TIBIA].min_angle || info->links[LINK_TIBIA].angle > info->links[LINK_TIBIA].max_angle) {
 		return false;
-	}
-
+	}*/
     return true;
 }

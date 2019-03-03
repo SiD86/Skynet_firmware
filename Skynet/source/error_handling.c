@@ -2,8 +2,8 @@
 /// @file    error_handling.c
 /// @author  NeoProg
 //  ***************************************************************************
-#include <sam.h>
 #include "error_handling.h"
+#include <sam.h>
 
 #define EMERGENCY_MODE_MASK				(0x0001)
 #define INTERNAL_ERROR_MASK				(0x0002)
@@ -11,7 +11,7 @@
 #define MEMORY_ERROR_MASK				(0x0008)
 #define SYNC_ERROR_MASK					(0x0010)
 #define OOR_ERROR_MASK					(0x0020)
-#define HARDWARE_ERROR_MASK             (0x0040)
+#define I2C_ERROR_MASK					(0x0040)
 
 
 uint32_t error_status = 0;
@@ -58,11 +58,11 @@ bool callback_is_monitoring_error_set(void) {
 }
 
 //  ***************************************************************************
-/// @brief  Callback function for check error - Multimedia error
+/// @brief  Callback function for check error - OLED GL error
 /// @return true - error bit set, false - no
 //  ***************************************************************************
-bool callback_is_multimedia_error_set(void) {
-    return error_status & ERROR_MODULE_MULTIMEDIA;
+bool callback_is_oled_gl_error_set(void) {
+    return error_status & ERROR_MODULE_OLED_GL;
 }
 
 
@@ -108,11 +108,11 @@ void callback_set_out_of_range_error(error_module_name_t module) {
 }
 
 /// ***************************************************************************
-/// @brief  Callback function for set error - Hardware Error
+/// @brief  Callback function for set error - I2C Error
 /// @param  @ref error_module_name_t
 //  ***************************************************************************
-void callback_set_hardware_error(error_module_name_t module) {
-    error_status |= (module | HARDWARE_ERROR_MASK);
+void callback_set_i2c_error(error_module_name_t module) {
+    error_status |= (module | I2C_ERROR_MASK);
 }
 
 

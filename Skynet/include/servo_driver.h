@@ -6,6 +6,8 @@
 #ifndef SERVO_DRIVER_H_
 #define SERVO_DRIVER_H_
 
+#include <stdint.h>
+
 
 #define SUPPORT_SERVO_COUNT						(18)
 

@@ -6,6 +6,7 @@
 #ifndef VEEPROM_H_
 #define VEEPROM_H_
 
+#include <stdint.h>
 #include <stdbool.h>
 
 

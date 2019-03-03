@@ -3,23 +3,29 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include <sam.h>
+#include <stdlib.h>
+#include <stdint.h>
 #include <stdbool.h>
-#include <string.h>
 #include "i2c.h"
 #include "systimer.h"
 #define IS_BIT_SET(_status, _bit)			(((_status) & (_bit)) == (_bit))
 #define SDA_PIN								(PIO_PB12)
 #define SCK_PIN								(PIO_PB13)
-#define MAX_BUFFER_SIZE						(16)
-#define I2C_TIMEOUT_MS						(5)
+#define MAX_BUFFER_SIZE						(150)
+#define I2C_TIMEOUT_MS						(50)
+
+typedef enum {
+	I2C_DRIVER_NO_ERROR,
+	I2C_DRIVER_BUSY,
+	I2C_DRIVER_ERROR
+} driver_status_t;
 
 
 static uint8_t tx_buffer[MAX_BUFFER_SIZE] = { 0 };
 static uint8_t rx_buffer[MAX_BUFFER_SIZE] = { 0 };
 
-static uint32_t internal_address_length = 1;
 static uint32_t start_operation_time = 0;
-static volatile i2c_status_t driver_status = I2C_DRIVER_NO_ERROR;
+static volatile driver_status_t driver_status = I2C_DRIVER_NO_ERROR;
 
 
 static void stop_communication(void);
@@ -68,20 +74,11 @@ void i2c_init(i2c_speed_t speed) {
 }
 
 //  ***************************************************************************
-/// @brief	Set internal address length
-/// @param	length: 0 - no internal address, [1,2,3] byte address length
-/// @return	none
+/// @brief	Check asynchronous operation complete
+/// @param	none
+/// @return	true - operation complete, false - operation in progress
 //  ***************************************************************************
-void i2c_set_internal_address_length(uint32_t length) {
-	internal_address_length = length;
-}
-
-//  ***************************************************************************
-/// @brief	Get current driver state
-/// @note	This function update driver status
-/// @return	Current driver status
-//  ***************************************************************************
-i2c_status_t i2c_get_status() {
+bool i2c_is_async_operation_complete(void) {
 	
 	if (driver_status == I2C_DRIVER_BUSY) {
 		
@@ -90,70 +87,89 @@ i2c_status_t i2c_get_status() {
 			driver_status = I2C_DRIVER_ERROR;
 		}
 	}
+
+	return driver_status != I2C_DRIVER_BUSY;
+}
+
+//  ***************************************************************************
+/// @brief	Check asynchronous operation status
+/// @param	none
+/// @return	true - operation successfully complete, false - error
+//  ***************************************************************************
+bool i2c_get_async_operation_status(void) {
 	
-	return driver_status;
+	return driver_status == I2C_DRIVER_NO_ERROR;
 }
 
-//  ***************************************************************************
-/// @brief	Reset error state
-/// @return	none
-//  ***************************************************************************
-void i2c_force_reset_error_status() {
 
-	if (driver_status == I2C_DRIVER_ERROR) {
-		driver_status = I2C_DRIVER_NO_ERROR;
+
+//  ***************************************************************************
+/// @brief	Write bits to register
+/// @param	dev_addr: I2C device address
+/// @param	reg_addr: internal register address on I2C device
+/// @param	mask: bits mask
+/// @param	bits: bits for written
+/// @retval	true - no error, false - error
+//  ***************************************************************************
+bool i2c_write_bits(uint8_t dev_addr, uint32_t internal_addr, uint8_t internal_addr_length, uint8_t mask, uint8_t bits) {
+
+	uint8_t reg_data = 0;
+	if (i2c_read_byte(dev_addr, internal_addr, internal_addr_length, &reg_data) == false) {
+		return false;
 	}
+
+	reg_data &= ~mask;	// Clear bits
+	reg_data |= bits;	// Write new bits
+
+	return i2c_write_byte(dev_addr, internal_addr, internal_addr_length, reg_data);
 }
-
-
 
 //  ***************************************************************************
 /// @brief	Synchronous write byte
-/// @note	This wrappers for asynchronous mode functions
 /// @param	dev_addr: I2C device address
 /// @param	internal_addr: internal register address on I2C device
 /// @param	data: byte for write
 /// @return	true - no error, false - error
 //  ***************************************************************************
-bool i2c_write_byte(uint8_t dev_addr, uint32_t internal_addr, uint8_t data) {
+bool i2c_write_byte(uint8_t dev_addr, uint32_t internal_addr, uint8_t internal_addr_length, uint8_t data) {
 	
-	return i2c_write_bytes(dev_addr, internal_addr, &data, 1);
+	return i2c_write_bytes(dev_addr, internal_addr, internal_addr_length, &data, 1);
 }
 
 //  ***************************************************************************
 /// @brief	Synchronous write data
-/// @note	This wrappers for asynchronous mode functions
 /// @param	dev_addr: I2C device address
-/// @param	internal_addr: internal register address on I2C device
-/// @param	data: data for write
+/// @param	internal_addr: internal address on I2C device
+/// @param  internal_addr_length: internal address length
+/// @param	data: pointer to data for write. If NULL - using internal TX buffer
 /// @return	true - no error, false - error
 //  ***************************************************************************
-bool i2c_write_bytes(uint8_t dev_addr, uint32_t internal_addr, uint8_t* data, uint32_t size) {
+bool i2c_write_bytes(uint8_t dev_addr, uint32_t internal_addr, uint8_t internal_addr_length, uint8_t* data, uint32_t bytes_count) {
 
-	// Disable all current I2C communications
+	// Disable all current I2C communications and reset driver status
 	stop_communication();
 	driver_status = I2C_DRIVER_NO_ERROR;
 
-	// Start send data and wait complete communication
-	i2c_async_write_bytes(dev_addr, internal_addr, data, size);
-	while (i2c_get_status() == I2C_DRIVER_BUSY);
+	// Start transmit data and wait communication complete
+	i2c_async_write_bytes(dev_addr, internal_addr, internal_addr_length, data, bytes_count);
+	while (i2c_is_async_operation_complete() == false);
 
-	return (driver_status == I2C_DRIVER_NO_ERROR);
+	// Return operation status
+	return i2c_get_async_operation_status();
 }
 
 //  ***************************************************************************
 /// @brief	Start asynchronous write data
-/// @note	This functions use PDC
 /// @param	dev_addr: I2C device address
 /// @param	internal_addr: internal register address on I2C device
 /// @param	data: pointer to data for write (if == NULL, then using internal buffer)
 /// @param	size: byte for write
 /// @retval	true - operation start success, false - operation start fail
 //  ***************************************************************************
-bool i2c_async_write_bytes(uint8_t dev_addr, uint32_t internal_addr, uint8_t* data, uint32_t size) {
+bool i2c_async_write_bytes(uint8_t dev_addr, uint32_t internal_addr, uint8_t internal_addr_length, uint8_t* data, uint32_t bytes_count) {
 
-	// Check driver state and timeout operation
-	if (driver_status == I2C_DRIVER_BUSY) {
+	// Check driver state
+	if (i2c_is_async_operation_complete() == false) {
 		return false;
 	}
 
@@ -161,16 +177,11 @@ bool i2c_async_write_bytes(uint8_t dev_addr, uint32_t internal_addr, uint8_t* da
 	REG_TWI1_IDR = 0xFFFFFFFF;
 
 	// Configure TX PDC channel
-	if (data == NULL) {
-		REG_TWI1_TPR = (uint32_t)tx_buffer;
-	}
-	else {
-		REG_TWI1_TPR = (uint32_t)data;
-	}
-	REG_TWI1_TCR = size;
+	REG_TWI1_TPR = ((data == NULL) ? (uint32_t)tx_buffer : (uint32_t)data);
+	REG_TWI1_TCR = bytes_count;
 
 	// Configure Master mode (DADR | write mode | internal address length)
-	REG_TWI1_MMR = (dev_addr << 16) | (0 << 12) | (internal_address_length << 8);
+	REG_TWI1_MMR = (dev_addr << 16) | (0 << 12) | (internal_addr_length << 8);
 	REG_TWI1_IADR = internal_addr;
 
 	// Enable transmitter
@@ -184,53 +195,18 @@ bool i2c_async_write_bytes(uint8_t dev_addr, uint32_t internal_addr, uint8_t* da
 	return true;
 }
 
-//  ***************************************************************************
-/// @brief	Write bits to register
-/// @param	dev_addr: I2C device address
-/// @param	reg_addr: internal register address on I2C device
-/// @param	mask: bits mask
-/// @param	bits: bits for written
-/// @param	timeout: timeout [ms]
-/// @retval	true - no error, false - error
-//  ***************************************************************************
-bool i2c_write_bits(uint8_t dev_addr, uint8_t internal_addr, uint8_t mask, uint8_t bits) {
-
-	uint8_t reg_data = 0;
-	if (i2c_read_byte(dev_addr, internal_addr, &reg_data) == false) {
-		return false;
-	}
-
-	reg_data &= ~mask;	// Clear bits
-	reg_data |= bits;	// Write new bits
-
-	return i2c_write_byte(dev_addr, internal_addr, reg_data);
-}
-
-//  ***************************************************************************
-/// @brief  Get TX buffer address
-/// @return	Buffer address
-//  ***************************************************************************
-uint8_t* i2c_async_get_internal_tx_buffer_address(void) {
-	
-	return tx_buffer;
-}
 
 
-
-//
-// RX
-//
 //  ***************************************************************************
 /// @brief	Synchronous read byte
-/// @note	This wrappers for asynchronous mode functions
 /// @param	dev_addr: I2C device address
 /// @param	internal_addr: internal register address on I2C device
 /// @param	data: pointer to receive buffer
 /// @retval	Byte value
 //  ***************************************************************************
-bool i2c_read_byte(uint8_t dev_addr, uint32_t internal_addr, uint8_t* data) {
+bool i2c_read_byte(uint8_t dev_addr, uint32_t internal_addr, uint8_t internal_addr_length, uint8_t* buffer) {
 	
-	return i2c_read_bytes(dev_addr, internal_addr, data, 1);
+	return i2c_read_bytes(dev_addr, internal_addr, internal_addr_length, buffer, 1);
 }
 
 //  ***************************************************************************
@@ -242,21 +218,18 @@ bool i2c_read_byte(uint8_t dev_addr, uint32_t internal_addr, uint8_t* data) {
 /// @size	data: bytes count for read
 /// @retval	true - no error, false - error
 //  ***************************************************************************
-bool i2c_read_bytes(uint8_t dev_addr, uint32_t internal_addr, uint8_t* data, uint32_t size) {
+bool i2c_read_bytes(uint8_t dev_addr, uint32_t internal_addr, uint8_t internal_addr_length, uint8_t* buffer, uint32_t bytes_count) {
 
 	// Disable all current I2C communications
 	stop_communication();
 	driver_status = I2C_DRIVER_NO_ERROR;
 
-	i2c_async_read_bytes(dev_addr, internal_addr, data, size);
-	while (i2c_get_status() == I2C_DRIVER_BUSY);
+	// Start receive data and wait communication complete
+	i2c_async_read_bytes(dev_addr, internal_addr, internal_addr_length, buffer, bytes_count);
+	while (i2c_is_async_operation_complete() == false);
 
-	// Check driver status
-	if (driver_status == I2C_DRIVER_ERROR) {
-		return false;
-	}
-
-	return true;
+	// Return operation status
+	return i2c_get_async_operation_status();
 }
 
 //  ***************************************************************************
@@ -268,7 +241,7 @@ bool i2c_read_bytes(uint8_t dev_addr, uint32_t internal_addr, uint8_t* data, uin
 /// @size	data: bytes count for read
 /// @retval	true - operation start success, false - operation start fail
 //  ***************************************************************************
-bool i2c_async_read_bytes(uint8_t dev_addr, uint32_t internal_addr, uint8_t* buffer, uint32_t size) {
+bool i2c_async_read_bytes(uint8_t dev_addr, uint32_t internal_addr, uint8_t internal_addr_length, uint8_t* buffer, uint32_t bytes_count) {
 
 	// Check driver state
 	if (driver_status == I2C_DRIVER_BUSY) {
@@ -279,16 +252,11 @@ bool i2c_async_read_bytes(uint8_t dev_addr, uint32_t internal_addr, uint8_t* buf
 	REG_TWI1_IDR = 0xFFFFFFFF;
 	
 	// Configure RX PDC channel
-	if (buffer != NULL) {
-		REG_TWI1_RPR = (uint32_t)rx_buffer;
-	}
-	else {
-		REG_TWI1_RPR = (uint32_t)buffer;
-	}
-	REG_TWI1_RCR = size - 1; // Without last byte (for send STOP)
+	REG_TWI1_RPR = ((buffer == NULL) ? (uint32_t)tx_buffer : (uint32_t)buffer);
+	REG_TWI1_RCR = bytes_count - 1; // Without last byte (for send STOP)
 
 	// Configure Master mode (DADR | read mode | internal address length)
-	REG_TWI1_MMR = (dev_addr << 16) | TWI_MMR_MREAD | (internal_address_length << 8);
+	REG_TWI1_MMR = (dev_addr << 16) | TWI_MMR_MREAD | (internal_addr_length << 8);
 	REG_TWI1_IADR = internal_addr;
 
 	// Enable receiver
@@ -305,11 +273,23 @@ bool i2c_async_read_bytes(uint8_t dev_addr, uint32_t internal_addr, uint8_t* buf
 	return true;
 }
 
+
+
 //  ***************************************************************************
-/// @brief  Get RX buffer address
+/// @brief  Get internal TX buffer address
 /// @return	Buffer address
 //  ***************************************************************************
-uint8_t* i2c_async_get_internal_rx_buffer_address(void) {
+uint8_t* i2c_get_internal_tx_buffer_address(void) {
+	
+	return tx_buffer;
+}
+
+//  ***************************************************************************
+/// @brief  Get internal RX buffer address
+/// @return	Buffer address
+//  ***************************************************************************
+uint8_t* i2c_get_internal_rx_buffer_address(void) {
+	
 	return rx_buffer;
 }
 

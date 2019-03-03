@@ -2,17 +2,17 @@
 /// @file    wireless_modbus.c
 /// @author  NeoProg
 //  ***************************************************************************
+#include "wireless_modbus.h"
+
 #include <sam.h>
 #include <stdbool.h>
 #include <string.h>
-#include "wireless_modbus.h"
 #include "ram_map.h"
 #include "systimer.h"
 #include "usart3_pdc.h"
 #include "error_handling.h"
 
 #define USART_BAUD_RATE                         (500000)
-
 #define CRC16_POLYNOM							(0xA001)
 
 

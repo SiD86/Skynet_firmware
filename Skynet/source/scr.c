@@ -2,13 +2,16 @@
 /// @file    src.c
 /// @author  NeoProg
 //  ***************************************************************************
-#include <sam.h>
 #include "scr.h"
+
+#include <sam.h>
 #include "movement_driver.h"
 #include "limbs_driver.h"
 #include "servo_driver.h"
 #include "veeprom.h"
-#include "multimedia.h"
+#include "gui.h"
+#include "led.h"
+#include "monitoring.h"
 
 #define SCR_CMD_CALCULATE_CHECKSUM				(0x01)
 
@@ -38,6 +41,25 @@ point_3d_t point_list_1[6] = { { 0, 0, 0}, {0, 0, 0}, {0, 0, 0},
 /// @brief	Special command register process
 /// @return	none
 //  ***************************************************************************
+
+// 20 10 - fast
+// 35 5 - normal
+// 45 5 - lower
+
+void dummy_loop(void) {
+	
+	while (limbs_driver_is_move_complete() == false) {
+		
+		gui_process();
+		led_process();
+		
+		servo_driver_process();
+		limbs_driver_process();
+		
+		monitoring_process();
+	}
+}
+
 void get_up(void) {
 	
 	limbs_driver_set_smooth_config(15, 10);
@@ -73,18 +95,15 @@ void get_up(void) {
 	point_list_1[5].z = -88;
 	
 	limbs_driver_start_move(point_list_1, path_type_list);
-	while (limbs_driver_is_move_complete() == false) {
-		servo_driver_process();
-		limbs_driver_process();
-	}
+	dummy_loop();
 	
 	//
 	// Up 0, 2, 4 legs
 	//
 	path_type_list[0] = PATH_LINEAR;
-	point_list_1[0].x = +88;
-	point_list_1[0].y = -65;
-	point_list_1[0].z = +88;
+	point_list_1[0].x = +95;
+	point_list_1[0].y = -55;
+	point_list_1[0].z = +95;
 	
 	path_type_list[1] = PATH_LINEAR;
 	point_list_1[1].x = +125;
@@ -92,9 +111,9 @@ void get_up(void) {
 	point_list_1[1].z = 0;
 	
 	path_type_list[2] = PATH_LINEAR;
-	point_list_1[2].x = +88;
-	point_list_1[2].y = -65;
-	point_list_1[2].z = -88;
+	point_list_1[2].x = +95;
+	point_list_1[2].y = -55;
+	point_list_1[2].z = -95;
 	
 	path_type_list[3] = PATH_LINEAR;
 	point_list_1[3].x = +88;
@@ -102,8 +121,8 @@ void get_up(void) {
 	point_list_1[3].z = +88;
 	
 	path_type_list[4] = PATH_LINEAR;
-	point_list_1[4].x = +125;
-	point_list_1[4].y = -65;
+	point_list_1[4].x = +135;
+	point_list_1[4].y = -55;
 	point_list_1[4].z = 0;
 	
 	path_type_list[5] = PATH_LINEAR;
@@ -112,10 +131,7 @@ void get_up(void) {
 	point_list_1[5].z = -88;
 	
 	limbs_driver_start_move(point_list_1, path_type_list);
-	while (limbs_driver_is_move_complete() == false) {
-		servo_driver_process();
-		limbs_driver_process();
-	}
+	dummy_loop();
 	
 	//
 	// Down 0, 2, 4 legs
@@ -151,10 +167,7 @@ void get_up(void) {
 	point_list_1[5].z = -88;
 	
 	limbs_driver_start_move(point_list_1, path_type_list);
-	while (limbs_driver_is_move_complete() == false) {
-		servo_driver_process();
-		limbs_driver_process();
-	}
+	dummy_loop();
 	
 	//
 	// Up 1, 3, 5 legs
@@ -165,8 +178,8 @@ void get_up(void) {
 	point_list_1[0].z = +88;
 	
 	path_type_list[1] = PATH_LINEAR;
-	point_list_1[1].x = +125;
-	point_list_1[1].y = -65;
+	point_list_1[1].x = +135;
+	point_list_1[1].y = -55;
 	point_list_1[1].z = 0;
 	
 	path_type_list[2] = PATH_LINEAR;
@@ -175,9 +188,9 @@ void get_up(void) {
 	point_list_1[2].z = -88;
 	
 	path_type_list[3] = PATH_LINEAR;
-	point_list_1[3].x = +88;
-	point_list_1[3].y = -65;
-	point_list_1[3].z = +88;
+	point_list_1[3].x = +95;
+	point_list_1[3].y = -55;
+	point_list_1[3].z = +95;
 	
 	path_type_list[4] = PATH_LINEAR;
 	point_list_1[4].x = +125;
@@ -185,15 +198,12 @@ void get_up(void) {
 	point_list_1[4].z = 0;
 	
 	path_type_list[5] = PATH_LINEAR;
-	point_list_1[5].x = +88;
-	point_list_1[5].y = -65;
-	point_list_1[5].z = -88;
+	point_list_1[5].x = +95;
+	point_list_1[5].y = -55;
+	point_list_1[5].z = -95;
 	
 	limbs_driver_start_move(point_list_1, path_type_list);
-	while (limbs_driver_is_move_complete() == false) {
-		servo_driver_process();
-		limbs_driver_process();
-	}
+	dummy_loop();
 	
 	//
 	// Up 1, 3, 5 legs
@@ -229,10 +239,7 @@ void get_up(void) {
 	point_list_1[5].z = -88;
 	
 	limbs_driver_start_move(point_list_1, path_type_list);
-	while (limbs_driver_is_move_complete() == false) {
-		servo_driver_process();
-		limbs_driver_process();
-	}
+	dummy_loop();
 }
 
 void get_down(void) {
@@ -270,19 +277,16 @@ void get_down(void) {
 	point_list_1[5].z = -110;
 	
 	limbs_driver_start_move(point_list_1, path_type_list);
-	while (limbs_driver_is_move_complete() == false) {
-		servo_driver_process();
-		limbs_driver_process();
-	}
+	dummy_loop();
 }
 
 void move_prepare(void) {
 	
-	limbs_driver_set_smooth_config(15, 10);
+	limbs_driver_set_smooth_config(10, 10);
 	
 	path_type_list[0] = PATH_LINEAR;
 	point_list_1[0].x = 110;
-	point_list_1[0].y = -40;
+	point_list_1[0].y = -55;
 	point_list_1[0].z = 110;
 	
 	path_type_list[1] = PATH_LINEAR;
@@ -292,7 +296,7 @@ void move_prepare(void) {
 	
 	path_type_list[2] = PATH_LINEAR;
 	point_list_1[2].x = 110;
-	point_list_1[2].y = -40;
+	point_list_1[2].y = -55;
 	point_list_1[2].z = -110;
 	
 	path_type_list[3] = PATH_LINEAR;
@@ -302,7 +306,7 @@ void move_prepare(void) {
 	
 	path_type_list[4] = PATH_LINEAR;
 	point_list_1[4].x = 150;
-	point_list_1[4].y = -40;
+	point_list_1[4].y = -55;
 	point_list_1[4].z = 0;
 
 	path_type_list[5] = PATH_LINEAR;
@@ -311,10 +315,7 @@ void move_prepare(void) {
 	point_list_1[5].z = -85;
 	
 	limbs_driver_start_move(point_list_1, path_type_list);
-	while (limbs_driver_is_move_complete() == false) {
-		servo_driver_process();
-		limbs_driver_process();
-	}
+	dummy_loop();
 	
 	path_type_list[0] = PATH_LINEAR;
 	point_list_1[0].x = 110;
@@ -347,10 +348,7 @@ void move_prepare(void) {
 	point_list_1[5].z = -85;
 	
 	limbs_driver_start_move(point_list_1, path_type_list);
-	while (limbs_driver_is_move_complete() == false) {
-		servo_driver_process();
-		limbs_driver_process();
-	}
+	dummy_loop();
 	
 	path_type_list[0] = PATH_LINEAR;
 	point_list_1[0].x = 110;
@@ -359,7 +357,7 @@ void move_prepare(void) {
 	
 	path_type_list[1] = PATH_LINEAR;
 	point_list_1[1].x = 150;
-	point_list_1[1].y = -40;
+	point_list_1[1].y = -55;
 	point_list_1[1].z = 0;
 	
 	path_type_list[2] = PATH_LINEAR;
@@ -369,7 +367,7 @@ void move_prepare(void) {
 	
 	path_type_list[3] = PATH_LINEAR;
 	point_list_1[3].x = 110;
-	point_list_1[3].y = -40;
+	point_list_1[3].y = -55;
 	point_list_1[3].z = 110;
 	
 	path_type_list[4] = PATH_LINEAR;
@@ -379,14 +377,11 @@ void move_prepare(void) {
 	
 	path_type_list[5] = PATH_LINEAR;
 	point_list_1[5].x = 110;
-	point_list_1[5].y = -40;
+	point_list_1[5].y = -55;
 	point_list_1[5].z = -110;
 	
 	limbs_driver_start_move(point_list_1, path_type_list);
-	while (limbs_driver_is_move_complete() == false) {
-		servo_driver_process();
-		limbs_driver_process();
-	}
+	dummy_loop();
 	
 	path_type_list[0] = PATH_LINEAR;
 	point_list_1[0].x = 110;
@@ -419,16 +414,12 @@ void move_prepare(void) {
 	point_list_1[5].z = -20;
 	
 	limbs_driver_start_move(point_list_1, path_type_list);
-	while (limbs_driver_is_move_complete() == false) {
-		servo_driver_process();
-		limbs_driver_process();
-	}
-	
+	dummy_loop();
 }
 
 void move_end(void) {
     
-	limbs_driver_set_smooth_config(15, 10);
+	limbs_driver_set_smooth_config(10, 10);
 	
 	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 110;
@@ -437,7 +428,7 @@ void move_end(void) {
     
 	path_type_list[1] = PATH_LINEAR;
     point_list_1[1].x = 150;
-    point_list_1[1].y = -40;
+    point_list_1[1].y = -55;
     point_list_1[1].z = 0;
     
 	path_type_list[2] = PATH_LINEAR;
@@ -447,7 +438,7 @@ void move_end(void) {
     
 	path_type_list[3] = PATH_LINEAR;
     point_list_1[3].x = 110;
-    point_list_1[3].y = -40;
+    point_list_1[3].y = -55;
     point_list_1[3].z = 110;
     
 	path_type_list[4] = PATH_LINEAR;
@@ -457,14 +448,12 @@ void move_end(void) {
     
 	path_type_list[5] = PATH_LINEAR;
     point_list_1[5].x = 110;
-    point_list_1[5].y = -40;
+    point_list_1[5].y = -55;
     point_list_1[5].z = -110;
 	
     limbs_driver_start_move(point_list_1, path_type_list);
-    while (limbs_driver_is_move_complete() == false) {
-        servo_driver_process();
-        limbs_driver_process();
-    }
+    dummy_loop();
+	
     
 	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 110;
@@ -497,14 +486,12 @@ void move_end(void) {
     point_list_1[5].z = -88;
 	
     limbs_driver_start_move(point_list_1, path_type_list);
-    while (limbs_driver_is_move_complete() == false) {
-        servo_driver_process();
-        limbs_driver_process();
-    }
+    dummy_loop();
+	
     
 	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 110;
-    point_list_1[0].y = -40;
+    point_list_1[0].y = -55;
     point_list_1[0].z = 110;
     
 	path_type_list[1] = PATH_LINEAR;
@@ -514,7 +501,7 @@ void move_end(void) {
     
 	path_type_list[2] = PATH_LINEAR;
     point_list_1[2].x = 110;
-    point_list_1[2].y = -40;
+    point_list_1[2].y = -55;
     point_list_1[2].z = -110;
     
 	path_type_list[3] = PATH_LINEAR;
@@ -524,7 +511,7 @@ void move_end(void) {
     
 	path_type_list[4] = PATH_LINEAR;
     point_list_1[4].x = 150;
-    point_list_1[4].y = -40;
+    point_list_1[4].y = -55;
     point_list_1[4].z = 0;
     
 	path_type_list[5] = PATH_LINEAR;
@@ -533,10 +520,8 @@ void move_end(void) {
     point_list_1[5].z = -88;
 	
     limbs_driver_start_move(point_list_1, path_type_list);
-    while (limbs_driver_is_move_complete() == false) {
-        servo_driver_process();
-        limbs_driver_process();
-    }
+    dummy_loop();
+	
     
 	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = +88;
@@ -569,19 +554,16 @@ void move_end(void) {
     point_list_1[5].z = -88;
 	
     limbs_driver_start_move(point_list_1, path_type_list); 
-    while (limbs_driver_is_move_complete() == false) {
-        servo_driver_process();
-        limbs_driver_process();
-    }  
+    dummy_loop();
 }
 
 void direct() {
 	
-	limbs_driver_set_smooth_config(25, 10);
+	limbs_driver_set_smooth_config(35, 5);
 	
 	path_type_list[0] = PATH_XZ_ELLIPTICAL_Y_SINUS;
 	point_list_1[0].x = 130;
-	point_list_1[0].y = -65;
+	point_list_1[0].y = -55;
 	point_list_1[0].z = 110;
 	
 	path_type_list[1] = PATH_LINEAR;
@@ -591,7 +573,7 @@ void direct() {
 	
 	path_type_list[2] = PATH_XZ_ELLIPTICAL_Y_SINUS;
 	point_list_1[2].x = 130;
-	point_list_1[2].y = -65;
+	point_list_1[2].y = -55;
 	point_list_1[2].z = -20;
 	
 	path_type_list[3] = PATH_LINEAR;
@@ -601,7 +583,7 @@ void direct() {
 	
 	path_type_list[4] = PATH_XZ_ELLIPTICAL_Y_SINUS;
 	point_list_1[4].x = 130;
-	point_list_1[4].y = -65;
+	point_list_1[4].y = -55;
 	point_list_1[4].z = 45;
 	
 	path_type_list[5] = PATH_LINEAR;
@@ -610,10 +592,8 @@ void direct() {
 	point_list_1[5].z = -110;
 	
 	limbs_driver_start_move(point_list_1, path_type_list);
-	while (limbs_driver_is_move_complete() == false) {
-		servo_driver_process();
-		limbs_driver_process();
-	}
+	dummy_loop();
+	
 	
     path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 110;
@@ -622,7 +602,7 @@ void direct() {
     
 	path_type_list[1] = PATH_XZ_ELLIPTICAL_Y_SINUS;
     point_list_1[1].x = 130;
-    point_list_1[1].y = -65;
+    point_list_1[1].y = -55;
     point_list_1[1].z = 45;
     
 	path_type_list[2] = PATH_LINEAR;
@@ -632,7 +612,7 @@ void direct() {
     
 	path_type_list[3] = PATH_XZ_ELLIPTICAL_Y_SINUS;
     point_list_1[3].x = 130;
-    point_list_1[3].y = -65;
+    point_list_1[3].y = -55;
     point_list_1[3].z = 110;
     
 	path_type_list[4] = PATH_LINEAR;
@@ -642,14 +622,11 @@ void direct() {
     
 	path_type_list[5] = PATH_XZ_ELLIPTICAL_Y_SINUS;
     point_list_1[5].x = 130;
-    point_list_1[5].y = -65;
+    point_list_1[5].y = -55;
     point_list_1[5].z = -20;
 	
     limbs_driver_start_move(point_list_1, path_type_list);
-    while (limbs_driver_is_move_complete() == false) {
-        servo_driver_process();
-        limbs_driver_process();
-    }
+    dummy_loop();
 }
 
 void reverse() {
@@ -663,7 +640,7 @@ void reverse() {
     
 	path_type_list[1] = PATH_LINEAR;
     point_list_1[1].x = 150;
-    point_list_1[1].y = -40;
+    point_list_1[1].y = -55;
     point_list_1[1].z = 0;
     
 	path_type_list[2] = PATH_LINEAR;
@@ -673,7 +650,7 @@ void reverse() {
     
 	path_type_list[3] = PATH_LINEAR;
     point_list_1[3].x = 150;
-    point_list_1[3].y = -40;
+    point_list_1[3].y = -55;
     point_list_1[3].z = 65;
     
 	path_type_list[4] = PATH_LINEAR;
@@ -683,14 +660,11 @@ void reverse() {
     
 	path_type_list[5] = PATH_LINEAR;
     point_list_1[5].x = 150;
-    point_list_1[5].y = -40;
+    point_list_1[5].y = -55;
     point_list_1[5].z = -65;
 	
     limbs_driver_start_move(point_list_1, path_type_list);
-    while (limbs_driver_is_move_complete() == false) {
-        servo_driver_process();
-        limbs_driver_process();
-    }
+    dummy_loop();
     
     
 	path_type_list[0] = PATH_LINEAR;
@@ -724,15 +698,12 @@ void reverse() {
     point_list_1[5].z = -110;
 	
     limbs_driver_start_move(point_list_1, path_type_list);
-    while (limbs_driver_is_move_complete() == false) {
-        servo_driver_process();
-        limbs_driver_process();
-    }
+    dummy_loop();
     
     
 	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 150;
-    point_list_1[0].y = -40;
+    point_list_1[0].y = -55;
     point_list_1[0].z = 65;
     
 	path_type_list[1] = PATH_LINEAR;
@@ -742,7 +713,7 @@ void reverse() {
     
 	path_type_list[2] = PATH_LINEAR;
     point_list_1[2].x = 150;
-    point_list_1[2].y = -40;
+    point_list_1[2].y = -55;
     point_list_1[2].z = -65;
     
 	path_type_list[3] = PATH_LINEAR;
@@ -752,7 +723,7 @@ void reverse() {
     
 	path_type_list[4] = PATH_LINEAR;
     point_list_1[4].x = 150;
-    point_list_1[4].y = -40;
+    point_list_1[4].y = -55;
     point_list_1[4].z = 0;
     
 	path_type_list[5] = PATH_LINEAR;
@@ -761,10 +732,8 @@ void reverse() {
     point_list_1[5].z = -65;
 	
     limbs_driver_start_move(point_list_1, path_type_list);
-    while (limbs_driver_is_move_complete() == false) {
-        servo_driver_process();
-        limbs_driver_process();
-    }
+    dummy_loop();
+	
     
 	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 110;
@@ -797,51 +766,46 @@ void reverse() {
     point_list_1[5].z = -20;
 	
     limbs_driver_start_move(point_list_1, path_type_list);
-    while (limbs_driver_is_move_complete() == false) {
-        servo_driver_process();
-        limbs_driver_process();
-    }
+    dummy_loop();
 }
 
 void rotate_left() {
 	
-	limbs_driver_set_smooth_config(25, 10);
+	limbs_driver_set_smooth_config(35, 5);
 	
 	path_type_list[0] = PATH_XZ_ARC_Y_SINUS;
-	point_list_1[0].x = +123;
-	point_list_1[0].y = -65;
-	point_list_1[0].z = +20;
+	point_list_1[0].x = +121;
+	point_list_1[0].y = -55;
+	point_list_1[0].z = +32;
 	
 	path_type_list[1] = PATH_XZ_ARC_Y_LINEAR;
-	point_list_1[1].x = +101;
+	point_list_1[1].x = +108;
 	point_list_1[1].y = -85;
-	point_list_1[1].z = +73;
+	point_list_1[1].z = +62;
 	
 	path_type_list[2] = PATH_XZ_ARC_Y_SINUS;
-	point_list_1[2].x = +20;
-	point_list_1[2].y = -65;
-	point_list_1[2].z = -123;
+	point_list_1[2].x = +32;
+	point_list_1[2].y = -55;
+	point_list_1[2].z = -121;
 	
 	path_type_list[3] = PATH_XZ_ARC_Y_LINEAR;
-	point_list_1[3].x = +123;
+	point_list_1[3].x = +121;
 	point_list_1[3].y = -85;
-	point_list_1[3].z = +20;
+	point_list_1[3].z = +32;
 	
 	path_type_list[4] = PATH_XZ_ARC_Y_SINUS;
-	point_list_1[4].x = +101;
-	point_list_1[4].y = -65;
-	point_list_1[4].z = +73;
+	point_list_1[4].x = +108;
+	point_list_1[4].y = -55;
+	point_list_1[4].z = +62;
 	
 	path_type_list[5] = PATH_XZ_ARC_Y_LINEAR;
-	point_list_1[5].x = +20;
+	point_list_1[5].x = +32;
 	point_list_1[5].y = -85;
-	point_list_1[5].z = -123;
+	point_list_1[5].z = -121;
 	
 	limbs_driver_start_move(point_list_1, path_type_list);
-	while (limbs_driver_is_move_complete() == false) {
-		servo_driver_process();
-		limbs_driver_process();
-	}
+	dummy_loop();
+	
 	
 	path_type_list[0] = PATH_XZ_ARC_Y_LINEAR;
 	point_list_1[0].x = +88;
@@ -850,7 +814,7 @@ void rotate_left() {
 	
 	path_type_list[1] = PATH_XZ_ARC_Y_SINUS;
 	point_list_1[1].x = +125;
-	point_list_1[1].y = -65;
+	point_list_1[1].y = -55;
 	point_list_1[1].z = +0;
 	
 	path_type_list[2] = PATH_XZ_ARC_Y_LINEAR;
@@ -860,7 +824,7 @@ void rotate_left() {
 	
 	path_type_list[3] = PATH_XZ_ARC_Y_SINUS;
 	point_list_1[3].x = +88;
-	point_list_1[3].y = -65;
+	point_list_1[3].y = -55;
 	point_list_1[3].z = +88;
 	
 	path_type_list[4] = PATH_XZ_ARC_Y_LINEAR;
@@ -870,55 +834,50 @@ void rotate_left() {
 	
 	path_type_list[5] = PATH_XZ_ARC_Y_SINUS;
 	point_list_1[5].x = +88;
-	point_list_1[5].y = -65;
+	point_list_1[5].y = -55;
 	point_list_1[5].z = -88;
 	
 	limbs_driver_start_move(point_list_1, path_type_list);
-	while (limbs_driver_is_move_complete() == false) {
-		servo_driver_process();
-		limbs_driver_process();
-	}
+	dummy_loop();
 }
 
 void rotate_right() {
 	
-	limbs_driver_set_smooth_config(25, 10);
+	limbs_driver_set_smooth_config(35, 5);
 	
 	path_type_list[0] = PATH_XZ_ARC_Y_SINUS;
-	point_list_1[0].x = +20;
-	point_list_1[0].y = -65;
-	point_list_1[0].z = +123;
+	point_list_1[0].x = +32;
+	point_list_1[0].y = -55;
+	point_list_1[0].z = +121;
 	
 	path_type_list[1] = PATH_XZ_ARC_Y_LINEAR;
-	point_list_1[1].x = +101;
+	point_list_1[1].x = +108;
 	point_list_1[1].y = -85;
-	point_list_1[1].z = -73;
+	point_list_1[1].z = -62;
 	
 	path_type_list[2] = PATH_XZ_ARC_Y_SINUS;
-	point_list_1[2].x = +123;
-	point_list_1[2].y = -65;
-	point_list_1[2].z = -20;
+	point_list_1[2].x = +121;
+	point_list_1[2].y = -55;
+	point_list_1[2].z = -32;
 	
 	path_type_list[3] = PATH_XZ_ARC_Y_LINEAR;
-	point_list_1[3].x = +20;
+	point_list_1[3].x = +32;
 	point_list_1[3].y = -85;
-	point_list_1[3].z = +123;
+	point_list_1[3].z = +121;
 	
 	path_type_list[4] = PATH_XZ_ARC_Y_SINUS;
-	point_list_1[4].x = +101;
-	point_list_1[4].y = -65;
-	point_list_1[4].z = -73;
+	point_list_1[4].x = +108;
+	point_list_1[4].y = -55;
+	point_list_1[4].z = -62;
 	
 	path_type_list[5] = PATH_XZ_ARC_Y_LINEAR;
-	point_list_1[5].x = +123;
+	point_list_1[5].x = +121;
 	point_list_1[5].y = -85;
-	point_list_1[5].z = -20;
+	point_list_1[5].z = -32;
 	
 	limbs_driver_start_move(point_list_1, path_type_list);
-	while (limbs_driver_is_move_complete() == false) {
-		servo_driver_process();
-		limbs_driver_process();
-	}
+	dummy_loop();
+	
 	
 	path_type_list[0] = PATH_XZ_ARC_Y_LINEAR;
 	point_list_1[0].x = +88;
@@ -927,7 +886,7 @@ void rotate_right() {
 	
 	path_type_list[1] = PATH_XZ_ARC_Y_SINUS;
 	point_list_1[1].x = +125;
-	point_list_1[1].y = -65;
+	point_list_1[1].y = -55;
 	point_list_1[1].z = +0;
 	
 	path_type_list[2] = PATH_XZ_ARC_Y_LINEAR;
@@ -937,7 +896,7 @@ void rotate_right() {
 	
 	path_type_list[3] = PATH_XZ_ARC_Y_SINUS;
 	point_list_1[3].x = +88;
-	point_list_1[3].y = -65;
+	point_list_1[3].y = -55;
 	point_list_1[3].z = +88;
 	
 	path_type_list[4] = PATH_XZ_ARC_Y_LINEAR;
@@ -947,14 +906,11 @@ void rotate_right() {
 	
 	path_type_list[5] = PATH_XZ_ARC_Y_SINUS;
 	point_list_1[5].x = +88;
-	point_list_1[5].y = -65;
+	point_list_1[5].y = -55;
 	point_list_1[5].z = -88;
 	
 	limbs_driver_start_move(point_list_1, path_type_list);
-	while (limbs_driver_is_move_complete() == false) {
-		servo_driver_process();
-		limbs_driver_process();
-	}
+	dummy_loop();
 }
 
 void scr_process(void) {

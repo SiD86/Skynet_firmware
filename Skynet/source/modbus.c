@@ -2,9 +2,10 @@
 /// @file    ModBus.c
 /// @author  NeoProg
 //  ***************************************************************************
+#include "modbus.h"
+
 #include <sam.h>
 #include <string.h>
-#include "modbus.h"
 #include "ram_map.h"
 #include "veeprom.h"
 #include "usart0_pdc.h"

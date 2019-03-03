@@ -7,15 +7,8 @@
 #define LED_H_
 
 
-typedef enum {
-	GREEN_LED,
-    YELLOW_LED,
-    RED_LED
-} led_id;
-
-
 void led_init(void);
-void led_enable(led_id id);
+void led_process(void);
 
 
 #endif /* LED_H_ */

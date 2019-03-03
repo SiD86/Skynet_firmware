@@ -6,6 +6,7 @@
 #ifndef LIMB_H_
 #define LIMB_H_
 
+#include <stdint.h>
 #include <stdbool.h>
 
 #define SUPPORT_LIMB_COUNT				(6)

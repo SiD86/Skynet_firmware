@@ -6,8 +6,8 @@
 #ifndef RAM_MAP_H_
 #define RAM_MAP_H_
 
+#include <stdint.h>
 #include <stdbool.h>
-
 
 #define RAM_MAP_SIZE				(512)
 #define RAM_MAP_BEGIN_ADDRESS		(0x0000)

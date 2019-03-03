@@ -6,6 +6,8 @@
 #ifndef WIRELESS_MODBUS_H_
 #define WIRELESS_MODBUS_H_
 
+#include <stdint.h>
+
 
 #define WIRELESS_MODBUS_FRAME_SIZE						(sizeof(wireless_frame_t))
 #define WIRELESS_MODBUS_FRAME_DATA_SIZE					(1017)
