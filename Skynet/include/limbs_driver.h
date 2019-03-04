@@ -1,7 +1,7 @@
 //  ***************************************************************************
 /// @file    limbs_driver.h
 /// @author  NeoProg
-/// @brief   Hexapod limbs control
+/// @brief   Hexapod limbs driver
 //  ***************************************************************************
 #ifndef LIMB_H_
 #define LIMB_H_
@@ -26,8 +26,12 @@ typedef enum {
 } path_type_t;
 
 
+extern int8_t ram_link_angles_override[SUPPORT_LIMB_COUNT * 3];	// Write only
+extern int8_t ram_link_angles[SUPPORT_LIMB_COUNT * 3];			// Read only
+
+
 extern void limbs_driver_init(void);
-extern void limbs_driver_set_smooth_config(uint32_t point_count, uint32_t time_between_points);
+extern void limbs_driver_set_smooth_config(uint32_t point_count);
 extern void limbs_driver_start_move(const point_3d_t* point_list, const path_type_t* path_type_list);
 extern void limbs_driver_process(void);
 extern bool limbs_driver_is_move_complete(void);

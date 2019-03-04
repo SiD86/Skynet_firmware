@@ -9,18 +9,21 @@
 
 #define PWM_DISABLE_CHANNEL_VALUE			(0x0000)
 
+
 typedef enum {
-	PWM_BUFFERS_LOCK,
-	PWM_BUFFERS_UNLOCK
-} pwm_buffer_state_t;
+	PWM_UPDATE_DISABLE,
+	PWM_UPDATE_ENABLE
+} pwm_update_state_t;
+
+
+extern volatile uint32_t synchro;
 
 
 extern void pwm_init(void);
 extern void pwm_enable(void);
 extern void pwm_disable(void);
-extern void pwm_set_buffers_state(pwm_buffer_state_t state);
+extern void pwm_set_update_state(pwm_update_state_t state);
 extern void pwm_set_width(uint32_t ch, uint32_t width);
-extern uint32_t pwm_get_counter();
 
 
 #endif // PWM_H_

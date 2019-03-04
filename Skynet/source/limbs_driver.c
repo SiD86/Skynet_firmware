@@ -10,21 +10,21 @@
 #include "veeprom.h"
 #include "veeprom_map.h"
 #include "systimer.h"
+#include "pwm.h"
 #include "error_handling.h"
 #define RAD_TO_DEG(rad)                ((rad) * 180 / M_PI)
 #define DEG_TO_RAD(deg)                ((deg) * M_PI / 180)
 
 #define SMOOTH_DEFAULT_TOTAL_POINT_COUNT			(15)
-#define SMOOTH_DEFAULT_TIME_BETWEEN_POINTS			(10)
+#define OVERRIDE_DISABLE_VALUE						(0x7F)
 
 
 // Servo driver states
 typedef enum {
     STATE_NOINIT,
     STATE_IDLE,
-    STATE_CALC,
-    STATE_LOAD,
-    STATE_WAIT
+	STATE_WAIT,
+    STATE_CALC
 } driver_state_t;
 
 typedef enum {
@@ -64,9 +64,11 @@ typedef struct {
 } limb_info_t;
 
 
+int8_t ram_link_angles_override[SUPPORT_LIMB_COUNT * 3] = {0};	// Write only
+int8_t ram_link_angles[SUPPORT_LIMB_COUNT * 3] = {0};			// Read only
+
 static driver_state_t driver_state = STATE_NOINIT;
 static limb_info_t    limbs[SUPPORT_LIMB_COUNT] = {0};
-static uint32_t       smooth_time_between_points = SMOOTH_DEFAULT_TIME_BETWEEN_POINTS;
 static uint32_t		  smooth_total_point_count = SMOOTH_DEFAULT_TOTAL_POINT_COUNT;
 static uint32_t		  smooth_current_point = 0;
 
@@ -87,6 +89,11 @@ void limbs_driver_init(void) {
         callback_set_config_error(ERROR_MODULE_LIMBS_DRIVER);
         return;
     }
+	
+	// Initialization override variables
+	for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT * 3; ++i) {
+		ram_link_angles_override[i] = OVERRIDE_DISABLE_VALUE;
+	}
     
     // Calculate start link angles
     for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
@@ -97,11 +104,16 @@ void limbs_driver_init(void) {
         }
     }
     
-    // Initialization servo driver and set start servo angles
+    // Set start servo angles
     for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
+		
         servo_driver_move(i * 3 + 0, limbs[i].links[LINK_COXA].angle);
         servo_driver_move(i * 3 + 1, limbs[i].links[LINK_FEMUR].angle);
         servo_driver_move(i * 3 + 2, limbs[i].links[LINK_TIBIA].angle);
+		
+		ram_link_angles[i * 3 + 0] = limbs[i].links[LINK_COXA].angle;
+		ram_link_angles[i * 3 + 1] = limbs[i].links[LINK_FEMUR].angle;
+		ram_link_angles[i * 3 + 2] = limbs[i].links[LINK_TIBIA].angle;
     }
     
     // Initialization driver state
@@ -111,13 +123,11 @@ void limbs_driver_init(void) {
 //  ***************************************************************************
 /// @brief  Start smooth algorithm configuration
 /// @param  point_count: smooth point count
-/// @param  time_between_points: delay between points [ms]
 //  ***************************************************************************
-void limbs_driver_set_smooth_config(uint32_t point_count, uint32_t time_between_points) {
+void limbs_driver_set_smooth_config(uint32_t point_count) {
 	
 	smooth_total_point_count = point_count;
-	smooth_time_between_points = time_between_points;
-	
+
 	if (smooth_total_point_count == 0) {
 		callback_set_internal_error(ERROR_MODULE_LIMBS_DRIVER);
 	}
@@ -149,7 +159,7 @@ void limbs_driver_start_move(const point_3d_t* point_list, const path_type_t* pa
         }
         
 		smooth_current_point = 0;
-        driver_state = STATE_CALC;
+        driver_state = STATE_WAIT;
     }
 }
 
@@ -170,49 +180,68 @@ bool limbs_driver_is_move_complete(void) {
 void limbs_driver_process(void) {
 	
     if (callback_is_limbs_driver_error_set() == true) return;  // Module disabled
+	
 
-
-    static uint32_t begin_wait_time = 0;
+	static uint32_t prev_synchro_value = 0;
     
     switch (driver_state) {
         
         case STATE_IDLE:
+			prev_synchro_value = synchro;
             break;
+			
+		case STATE_WAIT:
+			if (synchro != prev_synchro_value) {
+				
+				if (synchro - prev_synchro_value > 1) {
+					callback_set_sync_error(ERROR_MODULE_LIMBS_DRIVER);
+				}
+				driver_state = STATE_CALC;
+			}
+			break;
         
         case STATE_CALC:
             if (smooth_current_point > smooth_total_point_count) {
 				driver_state = STATE_IDLE;
 				break;
 			}
+			servo_driver_set_update_state(SERVO_DRIVER_UPDATE_DISABLE);
             for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
 				
+				// Calculate next point
 				path_calculate_point(&limbs[i].movement_path, &limbs[i].position);
                 
+				// Calculate angles for point
 				if (kinematic_calculate_angles(&limbs[i]) == false) {
 					callback_set_out_of_range_error(ERROR_MODULE_LIMBS_DRIVER);
 					return;
 				}
+				
+				// Override process
+				if (ram_link_angles_override[i * 3 + 0] != OVERRIDE_DISABLE_VALUE) {
+					limbs[i].links[LINK_COXA].angle = ram_link_angles_override[i * 3 + 0];
+				}
+				if (ram_link_angles_override[i * 3 + 1] != OVERRIDE_DISABLE_VALUE) {
+					limbs[i].links[LINK_COXA].angle = ram_link_angles_override[i * 3 + 1];
+				}
+				if (ram_link_angles_override[i * 3 + 2] != OVERRIDE_DISABLE_VALUE) {
+					limbs[i].links[LINK_COXA].angle = ram_link_angles_override[i * 3 + 2];
+				}
+								
+				// Move servos to destination angles
+				servo_driver_move(i * 3 + 0, limbs[i].links[LINK_COXA].angle);
+				servo_driver_move(i * 3 + 1, limbs[i].links[LINK_FEMUR].angle);
+				servo_driver_move(i * 3 + 2, limbs[i].links[LINK_TIBIA].angle);
+				
+				// Update RAM variables
+				ram_link_angles[i * 3 + 0] = limbs[i].links[LINK_COXA].angle;
+				ram_link_angles[i * 3 + 1] = limbs[i].links[LINK_FEMUR].angle;
+				ram_link_angles[i * 3 + 2] = limbs[i].links[LINK_TIBIA].angle;
             }
+			servo_driver_set_update_state(SERVO_DRIVER_UPDATE_ENABLE);
 			
 			++smooth_current_point;
-			driver_state = STATE_LOAD;
-            break;
-            
-        case STATE_LOAD:
-            for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
-                servo_driver_move(i * 3 + 0, limbs[i].links[LINK_COXA].angle);
-                servo_driver_move(i * 3 + 1, limbs[i].links[LINK_FEMUR].angle);
-                servo_driver_move(i * 3 + 2, limbs[i].links[LINK_TIBIA].angle);
-            }
-            
-            begin_wait_time = get_time_ms();
-            driver_state = STATE_WAIT;
-            break;
-
-        case STATE_WAIT:
-            if (get_time_ms() - begin_wait_time >= smooth_time_between_points) {
-                driver_state = STATE_CALC;
-            }
+			driver_state = STATE_WAIT;
             break;
         
         case STATE_NOINIT:

@@ -11,11 +11,14 @@
 
 #define SUPPORT_SERVO_COUNT						(18)
 
+typedef enum {
+	SERVO_DRIVER_UPDATE_DISABLE,
+	SERVO_DRIVER_UPDATE_ENABLE
+} servo_driver_update_state_t;
 
-extern int8_t ram_servo_angle_override[SUPPORT_SERVO_COUNT];	// Write only
-extern int8_t ram_servo_angle[SUPPORT_SERVO_COUNT];				// Read only
 
 extern void servo_driver_init(void); 
+extern void servo_driver_set_update_state(servo_driver_update_state_t state);
 extern void servo_driver_move(uint32_t ch, float angle);
 extern void servo_driver_process(void);
 

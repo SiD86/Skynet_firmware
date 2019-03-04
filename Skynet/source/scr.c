@@ -62,7 +62,7 @@ void dummy_loop(void) {
 
 void get_up(void) {
 	
-	limbs_driver_set_smooth_config(15, 10);
+	limbs_driver_set_smooth_config(15);
 	
 	path_type_list[0] = PATH_LINEAR;
 	point_list_1[0].x = +88;
@@ -244,7 +244,7 @@ void get_up(void) {
 
 void get_down(void) {
 	
-	limbs_driver_set_smooth_config(60, 10);
+	limbs_driver_set_smooth_config(60);
 	
 	path_type_list[0] = PATH_LINEAR;
 	point_list_1[0].x = +110;
@@ -282,7 +282,7 @@ void get_down(void) {
 
 void move_prepare(void) {
 	
-	limbs_driver_set_smooth_config(10, 10);
+	limbs_driver_set_smooth_config(10);
 	
 	path_type_list[0] = PATH_LINEAR;
 	point_list_1[0].x = 110;
@@ -419,7 +419,7 @@ void move_prepare(void) {
 
 void move_end(void) {
     
-	limbs_driver_set_smooth_config(10, 10);
+	limbs_driver_set_smooth_config(10);
 	
 	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 110;
@@ -559,7 +559,7 @@ void move_end(void) {
 
 void direct() {
 	
-	limbs_driver_set_smooth_config(35, 5);
+	limbs_driver_set_smooth_config(35);
 	
 	path_type_list[0] = PATH_XZ_ELLIPTICAL_Y_SINUS;
 	point_list_1[0].x = 130;
@@ -631,7 +631,7 @@ void direct() {
 
 void reverse() {
 	
-	limbs_driver_set_smooth_config(15, 10);
+	limbs_driver_set_smooth_config(15);
     
 	path_type_list[0] = PATH_LINEAR;
     point_list_1[0].x = 110;
@@ -771,7 +771,7 @@ void reverse() {
 
 void rotate_left() {
 	
-	limbs_driver_set_smooth_config(35, 5);
+	limbs_driver_set_smooth_config(35);
 	
 	path_type_list[0] = PATH_XZ_ARC_Y_SINUS;
 	point_list_1[0].x = +121;
@@ -843,7 +843,7 @@ void rotate_left() {
 
 void rotate_right() {
 	
-	limbs_driver_set_smooth_config(35, 5);
+	limbs_driver_set_smooth_config(35);
 	
 	path_type_list[0] = PATH_XZ_ARC_Y_SINUS;
 	point_list_1[0].x = +32;

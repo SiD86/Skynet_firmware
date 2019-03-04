@@ -16,11 +16,8 @@
 #define SERVO_BIDIRECTIONAL_MODE_DISABLE		(0x00)
 #define SERVO_BIDIRECTIONAL_MODE_ENABLE			(0x02)
 
-#define DISABLE_PULSE_WIDTH						(0)
 #define CALIBRATION_TABLE_MAX_SIZE              (27)
 #define CALIBRATION_TABLE_STEP_SIZE             (10)
-
-#define OVERRIDE_DISABLE_VALUE                  (0x7F)
 
 
 // Servo information
@@ -32,19 +29,7 @@ typedef struct {
     uint16_t calibration_table[27]; // Calibration table
 } servo_info_t;
 
-// Servo driver states
-typedef enum {
-    STATE_NOINIT,
-    STATE_STARTUP,
-	STATE_WAIT_NEXT_PWM_PERIOD,
-    STATE_LOAD_PULSE_WIDTH
-} driver_state_t;
 
-
-int8_t ram_servo_angle_override[SUPPORT_SERVO_COUNT] = {0};	// Write only
-int8_t ram_servo_angle[SUPPORT_SERVO_COUNT] = {0};			// Read only
-    
-static driver_state_t driver_state = STATE_NOINIT;
 static servo_info_t   servo_channels[SUPPORT_SERVO_COUNT] = { 0 };
 
 
@@ -62,16 +47,24 @@ void servo_driver_init(void) {
         callback_set_config_error(ERROR_MODULE_SERVO_DRIVER);
         return;
     }
-	
-	// Initialization servo channels
-    for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
-        ram_servo_angle_override[i] = OVERRIDE_DISABLE_VALUE;
-    }
 
     pwm_init();
     pwm_enable();
-    
-    driver_state = STATE_STARTUP;
+}
+
+//  ***************************************************************************
+/// @brief  Set servo angles update state
+/// @param  state: update state
+/// @return none
+//  ***************************************************************************
+void servo_driver_set_update_state(servo_driver_update_state_t state) {
+	
+	if (state == SERVO_DRIVER_UPDATE_ENABLE) {
+		pwm_set_update_state(PWM_UPDATE_ENABLE);
+	}
+	else {
+		pwm_set_update_state(PWM_UPDATE_DISABLE);
+	}
 }
 
 //  ***************************************************************************
@@ -81,7 +74,10 @@ void servo_driver_init(void) {
 /// @return none
 //  ***************************************************************************
 void servo_driver_move(uint32_t ch, float angle) {
-    
+	
+	if (callback_is_servo_driver_error_set() == true) return;
+		
+		
     if (ch >= SUPPORT_SERVO_COUNT) {
         callback_set_internal_error(ERROR_MODULE_SERVO_DRIVER);
         return;
@@ -112,6 +108,10 @@ void servo_driver_move(uint32_t ch, float angle) {
 		//callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
         servo_info->physic_angle = servo_info->max_physic_angle;
     }
+	
+	// Calculate and load pulse width
+	uint32_t pulse_width = convert_angle_to_pulse_width(servo_info);
+	pwm_set_width(ch, pulse_width);
 }
 
 //  ***************************************************************************
@@ -122,57 +122,6 @@ void servo_driver_process(void) {
 	
     if (callback_is_servo_driver_error_set() == true) {
         pwm_disable();
-        return; // Module disabled
-    }
-	
-
-    static uint32_t prev_counter_value = 0;
-    uint32_t counter_value = pwm_get_counter();
-    
-    switch (driver_state) {
-        
-        case STATE_STARTUP:
-            prev_counter_value = counter_value;
-            driver_state = STATE_WAIT_NEXT_PWM_PERIOD;
-            break;
-			
-		case STATE_WAIT_NEXT_PWM_PERIOD:
-			if (prev_counter_value != counter_value) {
-			
-				if (counter_value - prev_counter_value > 1) {
-					// We skipped PWM period. Very long time between servo_driver_process() function calls
-					callback_set_sync_error(ERROR_MODULE_SERVO_DRIVER);
-				}
-			
-				prev_counter_value = counter_value;
-				driver_state = STATE_LOAD_PULSE_WIDTH;
-			}
-			break;
-
-        case STATE_LOAD_PULSE_WIDTH:
-			pwm_set_buffers_state(PWM_BUFFERS_LOCK);
-            for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
-				
-				// Override servo angle process
-				if (ram_servo_angle_override[i] != OVERRIDE_DISABLE_VALUE) {
-					servo_driver_move(i, ram_servo_angle_override[i]);
-				}
-					
-				// Calculate and load pulse width
-				pwm_set_width(i, convert_angle_to_pulse_width(&servo_channels[i]));
-				
-				// Update RAM variable
-				ram_servo_angle[i] = servo_channels[i].physic_angle;
-            }
-            pwm_set_buffers_state(PWM_BUFFERS_UNLOCK);
-			
-            driver_state = STATE_WAIT_NEXT_PWM_PERIOD;
-            break;
-            
-        case STATE_NOINIT:
-        default:
-            callback_set_internal_error(ERROR_MODULE_SERVO_DRIVER);
-            break;
     }
 }
 
