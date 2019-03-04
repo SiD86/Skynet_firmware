@@ -164,7 +164,7 @@ void TC0_Handler(void) {
     uint32_t status = REG_TC0_SR0;
 
     if (status & TC_SR_CPCS) {
-		
+        
 		++synchro;
         
         // Connect all pins to VCC (reset state)
