@@ -12,8 +12,8 @@
 #include "systimer.h"
 #include "pwm.h"
 #include "error_handling.h"
-#define RAD_TO_DEG(rad)                ((rad) * 180 / M_PI)
-#define DEG_TO_RAD(deg)                ((deg) * M_PI / 180)
+#define RAD_TO_DEG(rad)                ((rad) * 180.0f / M_PI)
+#define DEG_TO_RAD(deg)                ((deg) * M_PI / 180.0f)
 
 #define SMOOTH_DEFAULT_TOTAL_POINT_COUNT			(15)
 #define OVERRIDE_DISABLE_VALUE						(0x7F)
@@ -433,8 +433,8 @@ static bool kinematic_calculate_angles(limb_info_t* info) {
     float b = femur_length;
     float c = d;
 
-    float alpha = acos( (b * b + c * c - a * a) / (2 * b * c) );
-    float gamma = acos( (a * a + b * b - c * c) / (2 * a * b) );
+    float alpha = acos( (b * b + c * c - a * a) / (2.0f * b * c) );
+    float gamma = acos( (a * a + b * b - c * c) / (2.0f * a * b) );
 
 
     //

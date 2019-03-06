@@ -2,9 +2,10 @@
 /// @file    movement_driver.c
 /// @author  NeoProg
 //  ***************************************************************************
+#include "movement_driver.h"
+
 #include <sam.h>
 #include <stdlib.h>
-#include "movement_driver.h"
 #include "limbs_driver.h"
 #include "gait_sequences.h"
 #include "error_handling.h"
@@ -13,21 +14,28 @@
 
 typedef enum {
     STATE_NOINIT,           // Module not initialized
+    STATE_IDLE,
     STATE_MOVE,             // Process step of current gait
     STATE_WAIT,             // Wait limbs movement complete
-    STATE_DELAY,            // Delay between iterations
     STATE_NEXT_ITERATION,   // Select next step of current gait
+    STATE_NEXT_STAGE,
     STATE_CHANGE_SEQUENCE   // Change current sequence (if needed)
 } driver_state_t;
+
+typedef enum {
+	SEQUENCE_STAGE_PREPARE,
+	SEQUENCE_STAGE_MAIN,
+	SEQUENCE_STAGE_FINALIZE
+} sequence_stage_t;
 
 
 static driver_state_t driver_state = STATE_NOINIT;
 
-static sequence_t current_sequence = SEQUENCE_DOWN;
-static const sequence_info_t* current_sequence_info = &sequence_down;
+static sequence_id_t current_sequence = SEQUENCE_NONE;
+static const sequence_info_t* current_sequence_info = NULL;
 
-static sequence_t next_sequence = SEQUENCE_DOWN;
-static const sequence_info_t* next_sequence_info = &sequence_down;
+static sequence_id_t next_sequence = SEQUENCE_NONE;
+static const sequence_info_t* next_sequence_info = NULL;
 
 
 static bool read_configuration(void);
@@ -41,16 +49,12 @@ static bool read_configuration(void);
 void movement_driver_init(void) {
     
     if (read_configuration() == false) {
-        callback_set_config_error(ERROR_MODULE_GAITS_ENGINE);
+        callback_set_config_error(ERROR_MODULE_MOVEMENT_ENGINE);
         return;
     }
-
-    current_sequence      = SEQUENCE_DOWN;
-    next_sequence         = SEQUENCE_DOWN;
-    current_sequence_info = &sequence_down;
-    next_sequence_info    = &sequence_down;
-    
-    driver_state = STATE_MOVE;
+	
+    movement_driver_select_sequence(SEQUENCE_DOWN);
+    driver_state = STATE_IDLE;
 }
 
 //  ***************************************************************************
@@ -60,60 +64,93 @@ void movement_driver_init(void) {
 //  ***************************************************************************
 void movement_driver_process(void) {
     
-    if (callback_is_gaits_engine_error_set() == true) return; // Module disabled
+    if (callback_is_movement_engine_error_set() == true) return; // Module disabled
     
-    
+
+    static sequence_stage_t sequence_stage = SEQUENCE_STAGE_PREPARE;
     static uint32_t current_iteration = 0;
-    static uint32_t start_delay_time = 0;
-    
+
     switch (driver_state) {
         
+        case STATE_IDLE:
+			if (current_sequence != next_sequence) {
+                current_sequence      = next_sequence;
+                current_sequence_info = next_sequence_info;
+                current_iteration     = 0;
+                sequence_stage        = SEQUENCE_STAGE_PREPARE;
+                driver_state = STATE_MOVE;
+            }
+			break;
+        
         case STATE_MOVE:
-            for (uint32_t i = 0; i < 6; ++i) {
-                /*limbs_driver_start_move(i, current_sequence_info->iteration_list[current_iteration].coxa[i],
-                                           current_sequence_info->iteration_list[current_iteration].femur[i],
-                                           current_sequence_info->iteration_list[current_iteration].tibia[i],
-                                           100);*/
+			limbs_driver_set_smooth_config(current_sequence_info->iteration_list[current_iteration].smooth_point_count);
+            for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
+                limbs_driver_start_move(current_sequence_info->iteration_list[current_iteration].point_list, 
+									    current_sequence_info->iteration_list[current_iteration].path_list);
             }
             driver_state = STATE_WAIT;
             break;
         
         case STATE_WAIT:
             if (limbs_driver_is_move_complete() == true) {
-                start_delay_time = get_time_ms();
-                driver_state = STATE_DELAY;
-            }
-            break;
-            
-        case STATE_DELAY:
-            if (get_time_ms() - start_delay_time >= 100) {
                 driver_state = STATE_NEXT_ITERATION;
             }
             break;
             
         case STATE_NEXT_ITERATION:
-            ++current_iteration;
-            if (current_iteration >= current_sequence_info->iteration_count) {
-                current_iteration = current_sequence_info->begin_loop_iteration;
-                driver_state = STATE_CHANGE_SEQUENCE;
-            }
-			else {
-				driver_state = STATE_MOVE;
+			
+			++current_iteration;
+            driver_state = STATE_MOVE;
+			
+			if (sequence_stage == SEQUENCE_STAGE_PREPARE && current_iteration >= current_sequence_info->main_sequence_begin) {
+                current_iteration = current_sequence_info->main_sequence_begin;
+                sequence_stage = SEQUENCE_STAGE_MAIN;
+                driver_state = STATE_MOVE;
 			}
+            else if (sequence_stage == SEQUENCE_STAGE_MAIN && current_iteration >= current_sequence_info->finalize_sequence_begin) {
+                
+				if (current_sequence != next_sequence) { 
+                    
+					//
+					// Need change current sequence - go to finalize sequence if it available
+					//
+					if (current_sequence_info->finalize_sequence_begin != GAIT_SEQUENCE_ABSENT) {
+						current_iteration = current_sequence_info->finalize_sequence_begin;
+						sequence_stage = SEQUENCE_STAGE_FINALIZE;
+					}
+					else {                        
+						driver_state = STATE_CHANGE_SEQUENCE;
+					}
+				}
+				else {
+                    
+					if (current_sequence_info->is_sequence_looped == true) {
+						current_iteration = current_sequence_info->main_sequence_begin;
+					}
+					else {
+						driver_state = STATE_IDLE;
+					}
+				}              
+            }
+            else if (sequence_stage == SEQUENCE_STAGE_FINALIZE && current_iteration >= current_sequence_info->total_iteration_count) {
+				driver_state = STATE_CHANGE_SEQUENCE;
+            }           
             break;
             
         case STATE_CHANGE_SEQUENCE:
-            if (current_sequence != next_sequence) {
-                current_sequence = next_sequence;
-                current_sequence_info = next_sequence_info;
-                current_iteration = 0;
-            }
+			current_sequence = next_sequence;
+			current_sequence_info = next_sequence_info;
+			current_iteration = 0;
             driver_state = STATE_MOVE;
+			
+			if (current_sequence == SEQUENCE_NONE) {
+    			driver_state = STATE_IDLE;
+			}        
             break;
             
         case STATE_NOINIT:
         default:
-            callback_set_selfdiag_error(ERROR_MODULE_GAITS_ENGINE);
+            callback_set_internal_error(ERROR_MODULE_MOVEMENT_ENGINE);
             return;
     }
 }
@@ -123,33 +160,31 @@ void movement_driver_process(void) {
 /// @param  sequence: new sequence
 /// @return none
 //  ***************************************************************************
-void movement_driver_select_sequence(sequence_t sequence) {
+void movement_driver_select_sequence(sequence_id_t sequence) {
     
     // Check possibility of go to selected sequence
-    bool is_possibility = false;
-    for (uint32_t i = 0; i < SUPPORT_SEQUENCE_COUNT; ++i) {
-        if (current_sequence_info->available_sequences[i] == SEQUENCE_NONE) {
-            return;
-        }
-        if (current_sequence_info->available_sequences[i] == sequence) {
-            is_possibility = true;
-            break;
-        }
-    }
-    if (is_possibility == false) {
-        return;
-    }
+    if (sequence != SEQUENCE_NONE) {
+        
+		bool is_possibility = false;
+		for (uint32_t i = 0; current_sequence_info->available_sequences[i] != SEQUENCE_NONE; ++i) {
+
+    		if (current_sequence_info->available_sequences[i] == sequence) {
+        		is_possibility = true;
+        		break;
+    		}
+		}
+		if (is_possibility == false) {
+    		return;
+		}
+	}    
     
     // Request switch current sequence
     switch (sequence) {
         
         case SEQUENCE_NONE:
+			next_sequence = SEQUENCE_NONE;
+            next_sequence_info = NULL;
             return;
-        
-        case SEQUENCE_BASE:
-            next_sequence = SEQUENCE_BASE;
-            next_sequence_info = &sequence_base;
-            break;
         
         case SEQUENCE_UP:
             next_sequence = SEQUENCE_UP;
@@ -166,9 +201,10 @@ void movement_driver_select_sequence(sequence_t sequence) {
             next_sequence_info = &sequence_direct_movement;
             break;
 
-        /*case SEQUENCE_REVERSE_MOVEMENT:    
-            next_gait_info = &sequence_reverse_movement;
-            break;*/
+        case SEQUENCE_REVERSE_MOVEMENT: 
+			next_sequence = SEQUENCE_REVERSE_MOVEMENT;
+            next_sequence_info = &sequence_reverse_movement;
+            break;
 
         case SEQUENCE_ROTATE_LEFT:
             next_sequence = SEQUENCE_ROTATE_LEFT;
@@ -181,10 +217,9 @@ void movement_driver_select_sequence(sequence_t sequence) {
             break;
 
         default:
-            callback_set_selfdiag_error(ERROR_MODULE_GAITS_ENGINE);
+            callback_set_internal_error(ERROR_MODULE_MOVEMENT_ENGINE);
             return;
     }
-    
 }
 
 

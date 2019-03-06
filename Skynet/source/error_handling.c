@@ -34,11 +34,11 @@ bool callback_is_limbs_driver_error_set(void) {
 }
 
 //  ***************************************************************************
-/// @brief  Callback function for check error - Gaits engine error
+/// @brief  Callback function for check error - Movement engine error
 /// @return true - error bit set, false - no
 //  ***************************************************************************
-bool callback_is_gaits_engine_error_set(void) {
-	return error_status & ERROR_MODULE_GAITS_ENGINE;
+bool callback_is_movement_engine_error_set(void) {
+	return error_status & ERROR_MODULE_MOVEMENT_ENGINE;
 }
 
 //  ***************************************************************************
