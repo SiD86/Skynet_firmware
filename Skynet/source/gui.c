@@ -160,7 +160,9 @@ static state_t module_state = STATE_NOINIT;
 
 void gui_init(void) {
 	
-	oled_gl_init();
+	if (oled_gl_init() == false) {
+		return;
+	}
 	
 	// Show logo
 	oled_gl_draw_bitmap(0, 0, SKYNET_LOGO_BITMAP_WIDTH, SKYNET_LOGO_BITMAP_HEIGHT, skynet_logo_bitmap);

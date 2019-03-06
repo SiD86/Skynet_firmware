@@ -7,9 +7,10 @@
 #define OLED_GL_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 
-void oled_gl_init(void);
+bool oled_gl_init(void);
 
 void oled_gl_clear_display(void);
 void oled_gl_clear_row_fragment(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uint32_t height);

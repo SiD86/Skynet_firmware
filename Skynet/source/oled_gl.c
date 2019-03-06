@@ -32,14 +32,15 @@ static driver_state_t driver_state = STATE_NOINIT;
 /// @param	none
 /// @return	none
 //  ***************************************************************************
-void oled_gl_init(void) {
+bool oled_gl_init(void) {
 	
-	if (!ssd1306_128x64_init())             return;
-	if (!ssd1306_128x64_set_inverse(false)) return;
-	if (!ssd1306_128x64_set_contrast(0xFF)) return;
-	if (!ssd1306_128x64_set_state(true))    return;
+	if (!ssd1306_128x64_init())             return false;
+	if (!ssd1306_128x64_set_inverse(false)) return false;
+	if (!ssd1306_128x64_set_contrast(0xFF)) return false;
+	if (!ssd1306_128x64_set_state(true))    return false;
 	
 	driver_state = STATE_IDLE;
+	return true;
 }
 
 //  ***************************************************************************
