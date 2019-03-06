@@ -980,6 +980,18 @@ void scr_process(void) {
 			rotate_right();
 			break;
 			
+		case 0x20:
+			movement_driver_select_sequence(SEQUENCE_UP);
+			break;
+			
+		case 0x21:
+			movement_driver_select_sequence(SEQUENCE_DIRECT_MOVEMENT);
+			break;
+			
+		case 0x22:
+			movement_driver_select_sequence(SEQUENCE_NONE);
+			break;
+			
         
 			
 		/*case SCR_CMD_CALCULATE_CHECKSUM:

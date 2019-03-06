@@ -194,7 +194,7 @@ void limbs_driver_process(void) {
 			if (synchro != prev_synchro_value) {
 				
 				if (synchro - prev_synchro_value > 1) {
-					callback_set_sync_error(ERROR_MODULE_LIMBS_DRIVER);
+					//callback_set_sync_error(ERROR_MODULE_LIMBS_DRIVER);
 				}
                 prev_synchro_value = synchro;
 				driver_state = STATE_CALC;

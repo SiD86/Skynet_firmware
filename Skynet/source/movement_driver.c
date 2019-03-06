@@ -103,11 +103,23 @@ void movement_driver_process(void) {
             driver_state = STATE_MOVE;
 			
 			if (sequence_stage == SEQUENCE_STAGE_PREPARE && current_iteration >= current_sequence_info->main_sequence_begin) {
-                current_iteration = current_sequence_info->main_sequence_begin;
                 sequence_stage = SEQUENCE_STAGE_MAIN;
-                driver_state = STATE_MOVE;
 			}
-            else if (sequence_stage == SEQUENCE_STAGE_MAIN && current_iteration >= current_sequence_info->finalize_sequence_begin) {
+            if (sequence_stage == SEQUENCE_STAGE_MAIN) {
+				
+				if (current_sequence_info->finalize_sequence_begin == GAIT_SEQUENCE_ABSENT) {
+					
+					if (current_iteration < current_sequence_info->total_iteration_count) {
+						break;
+					}
+				}
+				else {
+					
+					if (current_iteration < current_sequence_info->finalize_sequence_begin) {
+						break;
+					}
+				}
+				
                 
 				if (current_sequence != next_sequence) { 
                     
@@ -132,7 +144,7 @@ void movement_driver_process(void) {
 					}
 				}              
             }
-            else if (sequence_stage == SEQUENCE_STAGE_FINALIZE && current_iteration >= current_sequence_info->total_iteration_count) {
+            if (sequence_stage == SEQUENCE_STAGE_FINALIZE && current_iteration >= current_sequence_info->total_iteration_count) {
 				driver_state = STATE_CHANGE_SEQUENCE;
             }           
             break;
@@ -163,7 +175,7 @@ void movement_driver_process(void) {
 void movement_driver_select_sequence(sequence_id_t sequence) {
     
     // Check possibility of go to selected sequence
-    if (sequence != SEQUENCE_NONE) {
+    if (sequence != SEQUENCE_NONE && current_sequence != SEQUENCE_NONE) {
         
 		bool is_possibility = false;
 		for (uint32_t i = 0; current_sequence_info->available_sequences[i] != SEQUENCE_NONE; ++i) {

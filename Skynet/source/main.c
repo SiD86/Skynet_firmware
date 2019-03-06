@@ -51,7 +51,7 @@ int main(void) {
     
     servo_driver_init();
     limbs_driver_init();
-	//movement_driver_init();
+	movement_driver_init();
     
     while (1)  {
 		
@@ -70,7 +70,7 @@ int main(void) {
 		
         servo_driver_process();
         limbs_driver_process();
-        //movement_driver_process();
+        movement_driver_process();
 		
         wireless_modbus_process();
 		modbus_process();
