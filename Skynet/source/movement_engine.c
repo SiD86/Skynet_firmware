@@ -1,8 +1,8 @@
 //  ***************************************************************************
-/// @file    movement_driver.c
+/// @file    movement_engine.c
 /// @author  NeoProg
 //  ***************************************************************************
-#include "movement_driver.h"
+#include "movement_engine.h"
 
 #include <sam.h>
 #include <stdlib.h>
@@ -46,14 +46,14 @@ static bool read_configuration(void);
 /// @param  none
 /// @return none
 //  ***************************************************************************
-void movement_driver_init(void) {
+void movement_engine_init(void) {
     
     if (read_configuration() == false) {
         callback_set_config_error(ERROR_MODULE_MOVEMENT_ENGINE);
         return;
     }
 	
-    movement_driver_select_sequence(SEQUENCE_DOWN);
+    movement_engine_select_sequence(SEQUENCE_DOWN);
     driver_state = STATE_IDLE;
 }
 
@@ -62,7 +62,7 @@ void movement_driver_init(void) {
 /// @param  none
 /// @return none
 //  ***************************************************************************
-void movement_driver_process(void) {
+void movement_engine_process(void) {
     
     if (callback_is_movement_engine_error_set() == true) return; // Module disabled
     
@@ -105,34 +105,13 @@ void movement_driver_process(void) {
 			if (sequence_stage == SEQUENCE_STAGE_PREPARE && current_iteration >= current_sequence_info->main_sequence_begin) {
                 sequence_stage = SEQUENCE_STAGE_MAIN;
 			}
-            if (sequence_stage == SEQUENCE_STAGE_MAIN) {
+            if (sequence_stage == SEQUENCE_STAGE_MAIN && current_iteration >= current_sequence_info->finalize_sequence_begin) {
 				
-				if (current_sequence_info->finalize_sequence_begin == GAIT_SEQUENCE_ABSENT) {
-					
-					if (current_iteration < current_sequence_info->total_iteration_count) {
-						break;
-					}
-				}
-				else {
-					
-					if (current_iteration < current_sequence_info->finalize_sequence_begin) {
-						break;
-					}
-				}
-				
-                
 				if (current_sequence != next_sequence) { 
-                    
-					//
+					
 					// Need change current sequence - go to finalize sequence if it available
-					//
-					if (current_sequence_info->finalize_sequence_begin != GAIT_SEQUENCE_ABSENT) {
-						current_iteration = current_sequence_info->finalize_sequence_begin;
-						sequence_stage = SEQUENCE_STAGE_FINALIZE;
-					}
-					else {                        
-						driver_state = STATE_CHANGE_SEQUENCE;
-					}
+					current_iteration = current_sequence_info->finalize_sequence_begin;
+					sequence_stage = SEQUENCE_STAGE_FINALIZE;
 				}
 				else {
                     
@@ -140,6 +119,7 @@ void movement_driver_process(void) {
 						current_iteration = current_sequence_info->main_sequence_begin;
 					}
 					else {
+						// Current sequence completed and new sequence not selected
 						driver_state = STATE_IDLE;
 					}
 				}              
@@ -174,7 +154,7 @@ void movement_driver_process(void) {
 /// @param  sequence: new sequence
 /// @return none
 //  ***************************************************************************
-void movement_driver_select_sequence(sequence_id_t sequence) {
+void movement_engine_select_sequence(sequence_id_t sequence) {
     
     // Check possibility of go to selected sequence
     if (sequence != SEQUENCE_NONE && current_sequence != SEQUENCE_NONE) {

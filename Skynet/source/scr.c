@@ -5,7 +5,7 @@
 #include "scr.h"
 
 #include <sam.h>
-#include "movement_driver.h"
+#include "movement_engine.h"
 #include "limbs_driver.h"
 #include "servo_driver.h"
 #include "veeprom.h"
@@ -981,15 +981,15 @@ void scr_process(void) {
 			break;
 			
 		case 0x20:
-			movement_driver_select_sequence(SEQUENCE_UP);
+			movement_engine_select_sequence(SEQUENCE_UP);
 			break;
 			
 		case 0x21:
-			movement_driver_select_sequence(SEQUENCE_DIRECT_MOVEMENT);
+			movement_engine_select_sequence(SEQUENCE_DIRECT_MOVEMENT);
 			break;
 			
 		case 0x22:
-			movement_driver_select_sequence(SEQUENCE_NONE);
+			movement_engine_select_sequence(SEQUENCE_NONE);
 			break;
 			
         

@@ -8,9 +8,7 @@
 
 
 #include "limbs_driver.h"
-#include "movement_driver.h"
-
-#define GAIT_SEQUENCE_ABSENT			(0xFFFFFFFF)
+#include "movement_engine.h"
 
 
 typedef struct {
@@ -36,7 +34,7 @@ static const sequence_info_t sequence_down = {
     
     .is_sequence_looped      = false,
     .main_sequence_begin     = 0,
-    .finalize_sequence_begin = GAIT_SEQUENCE_ABSENT,
+    .finalize_sequence_begin = 1,
     .total_iteration_count   = 1,
 	
     {
@@ -53,7 +51,7 @@ static const sequence_info_t sequence_up = {
 
 	.is_sequence_looped      = false,
 	.main_sequence_begin     = 0,
-	.finalize_sequence_begin = GAIT_SEQUENCE_ABSENT,
+	.finalize_sequence_begin = 5,
     .total_iteration_count   = 5,
      
 	{
@@ -216,7 +214,7 @@ static const sequence_info_t sequence_rotate_left = {
 
 	.is_sequence_looped      = true,
 	.main_sequence_begin     = 0,
-	.finalize_sequence_begin = GAIT_SEQUENCE_ABSENT,
+	.finalize_sequence_begin = 2,
 	.total_iteration_count   = 2,
 	
 	{
@@ -237,7 +235,7 @@ static const sequence_info_t sequence_rotate_right = {
 
 	.is_sequence_looped      = true,
 	.main_sequence_begin     = 0,
-	.finalize_sequence_begin = GAIT_SEQUENCE_ABSENT,
+	.finalize_sequence_begin = 2,
 	.total_iteration_count   = 2,
 	
 	{

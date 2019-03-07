@@ -5,7 +5,7 @@
 #include <sam.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "movement_driver.h"
+#include "movement_engine.h"
 #include "limbs_driver.h"
 #include "servo_driver.h"
 #include "wireless_modbus.h"
@@ -51,7 +51,7 @@ int main(void) {
     
     servo_driver_init();
     limbs_driver_init();
-	movement_driver_init();
+	movement_engine_init();
     
     while (1)  {
 		
@@ -70,7 +70,7 @@ int main(void) {
 		
         servo_driver_process();
         limbs_driver_process();
-        movement_driver_process();
+        movement_engine_process();
 		
         wireless_modbus_process();
 		modbus_process();

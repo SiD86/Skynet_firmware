@@ -216,7 +216,7 @@
     <Compile Include="include\monitoring.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="include\movement_driver.h">
+    <Compile Include="include\movement_engine.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\oled_gl.h">
@@ -336,7 +336,7 @@
     <Compile Include="source\monitoring.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="source\movement_driver.c">
+    <Compile Include="source\movement_engine.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="source\oled_gl.c">

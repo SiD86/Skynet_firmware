@@ -1,10 +1,10 @@
 //  ***************************************************************************
-/// @file    movement_driver.h
+/// @file    movement_engine.h
 /// @author  NeoProg
-/// @brief   Hexapod movement driver
+/// @brief   Hexapod movement engine
 //  ***************************************************************************
-#ifndef MOVEMENT_DRIVER_H_
-#define MOVEMENT_DRIVER_H_
+#ifndef MOVEMENT_ENGINE_H_
+#define MOVEMENT_ENGINE_H_
 
 
 typedef enum {
@@ -20,9 +20,9 @@ typedef enum {
 } sequence_id_t;
 
 
-void movement_driver_init(void);
-void movement_driver_process(void);
-void movement_driver_select_sequence(sequence_id_t sequence);
+void movement_engine_init(void);
+void movement_engine_process(void);
+void movement_engine_select_sequence(sequence_id_t sequence);
 
 
-#endif /* MOVEMENT_DRIVER_H_ */
+#endif /* MOVEMENT_ENGINE_H_ */
