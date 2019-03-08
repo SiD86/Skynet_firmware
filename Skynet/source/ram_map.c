@@ -21,9 +21,9 @@
                                      .data[(ram_addr) + 3] = ((uint8_t*)&(var)) + 0
 
 
-extern int16_t x;
-extern int16_t y;
-extern int16_t z;
+int16_t x;
+int16_t y;
+int16_t z;
 
 typedef struct {
     uint8_t* data[RAM_MAP_SIZE];

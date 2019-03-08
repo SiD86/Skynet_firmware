@@ -74,11 +74,7 @@ void movement_engine_process(void) {
         
         case STATE_IDLE:
 			if (current_sequence != next_sequence) {
-                current_sequence      = next_sequence;
-                current_sequence_info = next_sequence_info;
-                current_iteration     = 0;
-                sequence_stage        = SEQUENCE_STAGE_PREPARE;
-                driver_state = STATE_MOVE;
+                driver_state = STATE_CHANGE_SEQUENCE;
             }
 			break;
         
@@ -130,9 +126,10 @@ void movement_engine_process(void) {
             break;
             
         case STATE_CHANGE_SEQUENCE:
-			current_sequence = next_sequence;
-			current_sequence_info = next_sequence_info;
-			current_iteration = 0;
+			current_sequence      = next_sequence;
+            current_sequence_info = next_sequence_info;
+            current_iteration     = 0;
+            sequence_stage        = SEQUENCE_STAGE_PREPARE;
             driver_state = STATE_MOVE;
 			
 			if (current_sequence == SEQUENCE_NONE) {

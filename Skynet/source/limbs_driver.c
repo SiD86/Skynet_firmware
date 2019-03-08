@@ -15,14 +15,13 @@
 #define RAD_TO_DEG(rad)                ((rad) * 180.0f / M_PI)
 #define DEG_TO_RAD(deg)                ((deg) * M_PI / 180.0f)
 
-#define SMOOTH_DEFAULT_TOTAL_POINT_COUNT			(15)
+#define SMOOTH_DEFAULT_TOTAL_POINT_COUNT			(30)
 #define OVERRIDE_DISABLE_VALUE						(0x7F)
 
 
 // Servo driver states
 typedef enum {
     STATE_NOINIT,
-    STATE_IDLE,
 	STATE_WAIT,
     STATE_CALC
 } driver_state_t;
@@ -117,7 +116,7 @@ void limbs_driver_init(void) {
     }
     
     // Initialization driver state
-    driver_state = STATE_IDLE;
+    driver_state = STATE_WAIT;
 }
 
 //  ***************************************************************************
@@ -159,7 +158,6 @@ void limbs_driver_start_move(const point_3d_t* point_list, const path_type_t* pa
         }
         
 		smooth_current_point = 0;
-        driver_state = STATE_WAIT;
     }
 }
 
@@ -170,7 +168,7 @@ void limbs_driver_start_move(const point_3d_t* point_list, const path_type_t* pa
 //  ***************************************************************************
 bool limbs_driver_is_move_complete(void) {
     
-    return driver_state == STATE_IDLE;
+    return (smooth_current_point > smooth_total_point_count);
 }
 
 //  ***************************************************************************
@@ -186,10 +184,6 @@ void limbs_driver_process(void) {
     
     switch (driver_state) {
         
-        case STATE_IDLE:
-			prev_synchro_value = synchro;
-            break;
-			
 		case STATE_WAIT:
 			if (synchro != prev_synchro_value) {
 				
@@ -202,22 +196,31 @@ void limbs_driver_process(void) {
 			break;
         
         case STATE_CALC:
-            if (smooth_current_point > smooth_total_point_count) {
-				driver_state = STATE_IDLE;
-				break;
-			}
-			servo_driver_set_update_state(SERVO_DRIVER_UPDATE_DISABLE);
-            for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
-				
-				// Calculate next point
-				path_calculate_point(&limbs[i].movement_path, &limbs[i].position);
+            //
+            // Calculate new servo angles
+            //
+			if (smooth_current_point <= smooth_total_point_count) {
                 
-				// Calculate angles for point
-				if (kinematic_calculate_angles(&limbs[i]) == false) {
-					callback_set_out_of_range_error(ERROR_MODULE_LIMBS_DRIVER);
-					return;
-				}
-				
+                for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
+                
+                    // Calculate next point
+                    path_calculate_point(&limbs[i].movement_path, &limbs[i].position);
+                    
+                    // Calculate angles for point
+                    if (kinematic_calculate_angles(&limbs[i]) == false) {
+                        callback_set_out_of_range_error(ERROR_MODULE_LIMBS_DRIVER);
+                        return;
+                    }
+                }
+                ++smooth_current_point;
+            }            
+               
+            //
+            // Load new angles to servo driver
+            //
+            servo_driver_set_update_state(SERVO_DRIVER_UPDATE_DISABLE);
+            for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
+                 
 				// Override process
 				if (ram_link_angles_override[i * 3 + 0] != OVERRIDE_DISABLE_VALUE) {
 					limbs[i].links[LINK_COXA].angle = ram_link_angles_override[i * 3 + 0];
@@ -240,8 +243,6 @@ void limbs_driver_process(void) {
 				ram_link_angles[i * 3 + 2] = limbs[i].links[LINK_TIBIA].angle;
             }
 			servo_driver_set_update_state(SERVO_DRIVER_UPDATE_ENABLE);
-			
-			++smooth_current_point;
 			driver_state = STATE_WAIT;
             break;
         
