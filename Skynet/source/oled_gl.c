@@ -34,10 +34,10 @@ static driver_state_t driver_state = STATE_NOINIT;
 //  ***************************************************************************
 bool oled_gl_init(void) {
 	
-	if (!ssd1306_128x64_init())             return false;
-	if (!ssd1306_128x64_set_inverse(false)) return false;
-	if (!ssd1306_128x64_set_contrast(0xFF)) return false;
-	if (!ssd1306_128x64_set_state(true))    return false;
+	if (!ssd1306_128x64_init())             { callback_set_i2c_error(ERROR_MODULE_OLED_GL); return false; }
+	if (!ssd1306_128x64_set_inverse(false)) { callback_set_i2c_error(ERROR_MODULE_OLED_GL); return false; }
+	if (!ssd1306_128x64_set_contrast(0xFF)) { callback_set_i2c_error(ERROR_MODULE_OLED_GL); return false; }
+	if (!ssd1306_128x64_set_state(true))    { callback_set_i2c_error(ERROR_MODULE_OLED_GL); return false; }
 	
 	driver_state = STATE_IDLE;
 	return true;
@@ -282,6 +282,8 @@ void oled_gl_async_display_update_process(void) {
 			break;
 			
 		case STATE_NOINIT:
+			break;
+		
 		default:
 			callback_set_internal_error(ERROR_MODULE_OLED_GL);
 			break;
