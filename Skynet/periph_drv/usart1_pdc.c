@@ -101,7 +101,7 @@ void usart1_set_baud_rate(uint32_t baud_rate) {
 /// @note	Check overrun error, framing error, parity error. Need reset USART
 /// @return	true - error, false - no errors
 //  ***************************************************************************
-bool usart1_is_error() {
+bool usart1_is_error(void) {
 	uint32_t reg = REG_USART1_CSR;
 	return (reg & (US_CSR_OVRE | US_CSR_FRAME | US_CSR_PARE));
 }
@@ -167,7 +167,7 @@ void usart1_start_tx(uint32_t bytes_count) {
 /// @brief	Check transmit complete
 /// @return None
 //  ***************************************************************************
-bool usart1_is_tx_complete() {
+bool usart1_is_tx_complete(void) {
 	uint32_t reg = REG_USART1_CSR;
 	return (reg & US_CSR_TXEMPTY);
 }
@@ -176,7 +176,7 @@ bool usart1_is_tx_complete() {
 /// @brief	Get internal TX buffer address
 /// @return Buffer address
 //  ***************************************************************************
-uint8_t* usart1_get_internal_tx_buffer_address() {
+uint8_t* usart1_get_internal_tx_buffer_address(void) {
 	return internal_tx_buffer;
 }
 
@@ -216,7 +216,7 @@ void usart1_start_rx(uint8_t* external_rx_buffer, uint32_t external_buffer_size)
 /// @brief	Check frame receive complete
 /// @return	true - frame received, false - no
 //  ***************************************************************************
-bool usart1_is_frame_received() {
+bool usart1_is_frame_received(void) {
 	uint32_t reg = REG_USART1_CSR;
 	return reg & US_CSR_TIMEOUT;
 }
@@ -225,7 +225,7 @@ bool usart1_is_frame_received() {
 /// @brief	Get received frame size
 /// @return	Frame size
 //  ***************************************************************************
-uint32_t usart1_get_frame_size() {
+uint32_t usart1_get_frame_size(void) {
 	return INTERNAL_RX_BUFFER_SIZE - REG_USART1_RCR;
 }
 
@@ -233,7 +233,7 @@ uint32_t usart1_get_frame_size() {
 /// @brief	Get internal RX buffer address
 /// @return Buffer address
 //  ***************************************************************************
-const uint8_t* usart1_get_internal_rx_buffer_address() {
+const uint8_t* usart1_get_internal_rx_buffer_address(void) {
 	return internal_rx_buffer;
 }
 
@@ -243,7 +243,7 @@ const uint8_t* usart1_get_internal_rx_buffer_address() {
 /// @brief	USART1 ISR
 /// @note	This for only frame timeout IRQ
 //  ***************************************************************************
-void USART1_Handler() {
+void USART1_Handler(void) {
 	
 	// Frame received - disable DMA and frame timeout IRQ
 	REG_USART1_IDR = US_IDR_TIMEOUT;

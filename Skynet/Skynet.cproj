@@ -252,9 +252,6 @@
     <Compile Include="include\version.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="include\wireless_modbus.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="periph_drv\adc.c">
       <SubType>compile</SubType>
     </Compile>
@@ -355,9 +352,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="source\veeprom.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="source\wireless_modbus.c">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

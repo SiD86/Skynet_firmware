@@ -8,7 +8,6 @@
 #include "movement_engine.h"
 #include "limbs_driver.h"
 #include "servo_driver.h"
-#include "wireless_modbus.h"
 #include "monitoring.h"
 #include "systimer.h"
 #include "veeprom.h"
@@ -45,7 +44,6 @@ int main(void) {
 	gui_init();
 	veeprom_init();
 	modbus_init();
-	wireless_modbus_init();
 	monitoring_init();
 	led_init();
     
@@ -72,7 +70,6 @@ int main(void) {
         limbs_driver_process();
         movement_engine_process();
 		
-        wireless_modbus_process();
 		modbus_process();
 		scr_process();
         
@@ -87,7 +84,6 @@ static void enter_to_emergency_loop(void) {
 		gui_process();
 		led_process();
 		
-		wireless_modbus_process();
 		modbus_process();
 		scr_process();
 		

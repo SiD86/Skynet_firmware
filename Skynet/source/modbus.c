@@ -9,8 +9,10 @@
 #include "ram_map.h"
 #include "veeprom.h"
 #include "usart0_pdc.h"
+#include "usart3_pdc.h"
 
-#define USART_BAUD_RATE                         (175000)
+#define SUPPORT_USART_COUNT						(2)
+#define USART_BAUD_RATE                         (115200)
 
 #define CRC16_POLYNOM							(0xA001)	// CRC polynom
 
@@ -37,6 +39,67 @@
 #define MB_EXCEPTION_SLAVE_DEV_FAILURE			(0x04)		// ModBus Exception code: Slave Device Failure. Device can't execute incoming command (EEPROM failure, insufficient RAM, etc).
 #define MB_BAD_FRAME							(0xFF)
 
+/*
+void           usart3_init(uint32_t baud_rate);
+void           usart3_set_baud_rate(uint32_t baud_rate);
+void           usart3_reset(bool is_reset_transmitter, bool is_reset_receiver);
+bool           usart3_is_error();
+
+void           usart3_start_tx(uint32_t bytes_count);
+bool           usart3_is_tx_complete();
+uint8_t*       usart3_get_internal_tx_buffer_address();
+
+void           usart3_start_rx(uint8_t* external_rx_buffer, uint32_t external_buffer_size);
+bool           usart3_is_frame_received();
+uint32_t       usart3_get_frame_size();
+const uint8_t* usart3_get_internal_rx_buffer_address();
+
+*/
+
+typedef struct {
+	
+	void(*usart_init)(uint32_t baud_rate);
+	void(*usart_reset)(bool is_reset_transmitter, bool is_reset_receiver);
+	bool(*usart_is_error)(void);
+	void(*usart_start_tx)(uint32_t bytes_count);
+	bool(*usart_is_tx_complete)(void);
+	uint8_t*(*usart_get_internal_tx_buffer_address)(void);
+	void(*usart_start_rx)(uint8_t* external_rx_buffer, uint32_t external_buffer_size);
+	bool(*usart_is_frame_received)(void);
+	uint32_t(*usart_get_frame_size)(void);
+	const uint8_t*(*usart_get_internal_rx_buffer_address)(void);
+	
+} usart_info_t;
+
+
+static const usart_info_t usarts[SUPPORT_USART_COUNT] = {
+	
+	{
+		.usart_init = usart0_init,
+		.usart_reset = usart0_reset,
+		.usart_is_error = usart0_is_error,
+		.usart_start_tx = usart0_start_tx,
+		.usart_is_tx_complete = usart0_is_tx_complete,
+		.usart_get_internal_tx_buffer_address = usart0_get_internal_tx_buffer_address,
+		.usart_start_rx = usart0_start_rx,
+		.usart_is_frame_received = usart0_is_frame_received,
+		.usart_get_frame_size = usart0_get_frame_size,
+		.usart_get_internal_rx_buffer_address = usart0_get_internal_rx_buffer_address
+	},
+	{
+		.usart_init = usart3_init,
+		.usart_reset = usart3_reset,
+		.usart_is_error = usart3_is_error,
+		.usart_start_tx = usart3_start_tx,
+		.usart_is_tx_complete = usart3_is_tx_complete,
+		.usart_get_internal_tx_buffer_address = usart3_get_internal_tx_buffer_address,
+		.usart_start_rx = usart3_start_rx,
+		.usart_is_frame_received = usart3_is_frame_received,
+		.usart_get_frame_size = usart3_get_frame_size,
+		.usart_get_internal_rx_buffer_address = usart3_get_internal_rx_buffer_address
+	}
+};
+
 
 static bool     is_request_valid(const uint8_t* request, uint32_t size);
 static uint32_t read_ram_command_handler(const uint8_t* request, uint8_t* response, uint16_t rq_size, uint8_t* rs_size);
@@ -54,8 +117,11 @@ static uint16_t calculate_crc16(const uint8_t* data, uint32_t size);
 //  ***************************************************************************
 void modbus_init(void) {
 	
-	usart0_init(USART_BAUD_RATE);
-	usart0_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
+	for (uint32_t i = 0; i < SUPPORT_USART_COUNT; ++i) {
+		
+		usarts[i].usart_init(USART_BAUD_RATE);
+		usarts[i].usart_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
+	}
 }
 
 //  ***************************************************************************
@@ -64,91 +130,94 @@ void modbus_init(void) {
 //  ***************************************************************************
 void modbus_process(void) {
 	
-	// Check USART errors
-	if (usart0_is_error() == true) {
-		usart0_reset(true, true);
-		usart0_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
-		return;
-	}
+	for (uint32_t i = 0; i < SUPPORT_USART_COUNT; ++i) {
 	
-	// Check frame received
-	if (usart0_is_frame_received() == false) {
-		return;
-	}
-	
-	// Check complete transmit response
-	if (usart0_is_tx_complete() == false) {
-		usart0_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
-		return;
-	}
-	
-	// Verify frame
-	const uint8_t* request = usart0_get_internal_rx_buffer_address();
-	uint32_t request_size = usart0_get_frame_size();
-	if (is_request_valid(request, request_size) == false) {
-		usart0_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
-		return;
-	}
-	
-	// Process command
-	uint8_t* response = usart0_get_internal_tx_buffer_address();
-	uint8_t response_size = 0;
-	uint32_t result = MB_OK;
-
-	switch (request[1]) {
-		
-		case MB_CMD_READ_RAM:
-			result = read_ram_command_handler(request, response, request_size, &response_size);
-			break;
-
-		case MB_CMD_WRITE_RAM:
-			result = write_ram_command_handler(request, request_size);
-			break;
-		
-		case MB_CMD_READ_EEPROM:
-			result = read_eeprom_command_handler(request, response, request_size, &response_size);
-			break;
-
-		case MB_CMD_WRITE_EEPROM:
-			result = write_eeprom_command_handler(request, request_size);
-			break;
-
-		default:
-			usart0_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
-			return;
-	}
-	
-	// Check result
-	if (result != MB_OK) {
-		
-		if (result != MB_BAD_FRAME) {
-			
-			// Make and send exception
-			response[1] = request[0] | 0x80;
-			response[2] = result;
-			
-			uint16_t crc = calculate_crc16(response, response_size);
-			response[response_size++] = crc & 0xFF;
-			response[response_size++] = crc >> 8;
-			
-			usart0_start_tx(response_size);
-			usart0_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
+		// Check USART errors
+		if (usarts[i].usart_is_error() == true) {
+			usarts[i].usart_reset(true, true);
+			usarts[i].usart_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
+			continue;
 		}
-		return;
+	
+		// Check frame received
+		if (usarts[i].usart_is_frame_received() == false) {
+			continue;
+		}
+	
+		// Check complete transmit response
+		if (usarts[i].usart_is_tx_complete() == false) {
+			usarts[i].usart_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
+			continue;
+		}
+	
+		// Verify frame
+		const uint8_t* request = usart0_get_internal_rx_buffer_address();
+		uint32_t request_size = usart0_get_frame_size();
+		if (is_request_valid(request, request_size) == false) {
+			usarts[i].usart_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
+			continue;
+		}
+	
+		// Process command
+		uint8_t* response = usart0_get_internal_tx_buffer_address();
+		uint8_t response_size = 0;
+		uint32_t result = MB_OK;
+
+		switch (request[1]) {
+		
+			case MB_CMD_READ_RAM:
+				result = read_ram_command_handler(request, response, request_size, &response_size);
+				break;
+
+			case MB_CMD_WRITE_RAM:
+				result = write_ram_command_handler(request, request_size);
+				break;
+		
+			case MB_CMD_READ_EEPROM:
+				result = read_eeprom_command_handler(request, response, request_size, &response_size);
+				break;
+
+			case MB_CMD_WRITE_EEPROM:
+				result = write_eeprom_command_handler(request, request_size);
+				break;
+
+			default:
+				usart0_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
+				continue;
+		}
+	
+		// Check result
+		if (result != MB_OK) {
+		
+			if (result != MB_BAD_FRAME) {
+			
+				// Make and send exception
+				response[1] = request[0] | 0x80;
+				response[2] = result;
+			
+				uint16_t crc = calculate_crc16(response, response_size);
+				response[response_size++] = crc & 0xFF;
+				response[response_size++] = crc >> 8;
+			
+				usarts[i].usart_start_tx(response_size);
+				usarts[i].usart_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
+			}
+			continue;
+		}
+	
+		// Make response
+		response[0] = request[0];
+		response[1] = request[1];
+		response_size += 2;
+	
+		uint16_t crc = calculate_crc16(response, response_size);
+		response[response_size++] = crc & 0xFF;
+		response[response_size++] = crc >> 8;
+	
+		// Send response
+		usarts[i].usart_start_tx(response_size);
+		usarts[i].usart_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
 	}
-	
-	// Make response
-	response[0] = request[0];
-	response[1] = request[1];
-	response_size += 2;
-	
-	uint16_t crc = calculate_crc16(response, response_size);
-	response[response_size++] = crc & 0xFF;
-	response[response_size++] = crc >> 8;
-	
-	// Send response
-	usart0_start_tx(response_size);
-	usart0_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
 }
 
 
