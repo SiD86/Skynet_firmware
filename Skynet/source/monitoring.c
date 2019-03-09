@@ -8,9 +8,15 @@
 #include <sam.h>
 #include <stdbool.h>
 #include "adc.h"
+#include "dac.h"
 #include "veeprom_map.h"
 #include "veeprom.h"
+#include "systimer.h"
 #include "error_handling.h"
+
+#define LOW_BATTERY_VOLTAGE_BEEP_PERIOD			(10000)	// ms
+#define LOW_BATTERY_VOLTAGE_BEEP_ENABLE_TIME	(100)	// ms
+#define LOW_BATTERY_VOLTAGE_BEEP_DISABLE_TIME	(200)	// ms
 
 #define SUPPORT_ADC_CHANNEL_COUNT				(3)
 #define WIRELESS_VOLTAGE_ADC_CH					(2)
@@ -24,6 +30,16 @@ typedef enum {
 	STATE_CALCULATE
 } state_t;
 
+typedef enum {
+	BEEP_STATE_IDLE,
+	BEEP_STATE_CHECK,
+	BEEP_STATE_WAIT,
+	BEEP_STATE_ENABLE,
+	BEEP_STATE_ENABLE_DELAY,
+	BEEP_STATE_DISABLE,
+	BEEP_STATE_DISABLE_DELAY
+} beep_state_t;
+
 typedef struct {
 	uint32_t up_resist;
 	uint32_t down_resist;	
@@ -32,6 +48,7 @@ typedef struct {
 
 static state_t subsystem_state = STATE_NOINIT;
 static voltage_divisor_info_t voltage_divisor[SUPPORT_ADC_CHANNEL_COUNT] = {0};
+static uint32_t battery_low_voltage_threshold = 0;
 
 uint16_t wireless_voltage = 0;	// 0.1 V
 uint16_t periphery_voltage = 0;	// 0.1 V
@@ -56,6 +73,8 @@ void monitoring_init(void) {
 	adc_init();
 	adc_start_conversion();
 	
+	dac_init();
+	
 	subsystem_state = STATE_WAIT_CONVERSION;
 }
 
@@ -65,9 +84,12 @@ void monitoring_init(void) {
 //  ***************************************************************************
 void monitoring_process(void) {
 	
-	if (callback_is_monitoring_error_set() == true) return; // Module disabled
+	if (callback_is_monitoring_error_set() == true) {
+		dac_set_output_value(0, 0);
+		return; // Module disabled
+	}
 	
-	
+	static beep_state_t beep_state = BEEP_STATE_IDLE;
 	static float adc_voltage[SUPPORT_ADC_CHANNEL_COUNT] = {0};
 	switch (subsystem_state) {
 		
@@ -88,10 +110,69 @@ void monitoring_process(void) {
 			periphery_voltage = calculate_voltage(adc_voltage[1], &voltage_divisor[1]);
 			battery_voltage   = calculate_voltage(adc_voltage[2], &voltage_divisor[2]);
 			
+			beep_state = BEEP_STATE_CHECK;
 			subsystem_state = STATE_WAIT_CONVERSION;
 			break;
 		
 		case STATE_NOINIT:
+		default:
+			callback_set_internal_error(ERROR_MODULE_MONITORING);
+			break;
+	}
+	
+	
+	
+	static uint32_t prev_time = 0;
+	static uint32_t beep_count = 0;
+	switch (beep_state) {
+		
+		case BEEP_STATE_IDLE:
+			break;
+		
+		case BEEP_STATE_CHECK:
+			if (battery_voltage < battery_low_voltage_threshold) {
+				beep_state = BEEP_STATE_WAIT;
+			}
+			break;
+			
+		case BEEP_STATE_WAIT:
+			if (get_time_ms() - prev_time > LOW_BATTERY_VOLTAGE_BEEP_PERIOD) {
+				prev_time = get_time_ms();
+				beep_state = BEEP_STATE_ENABLE;
+			}
+			break;
+		
+		case BEEP_STATE_ENABLE:
+			prev_time = get_time_ms();
+			dac_set_output_value(0, 4095);
+			beep_state = BEEP_STATE_ENABLE_DELAY;
+			break;
+			
+		case BEEP_STATE_ENABLE_DELAY:
+			if (get_time_ms() - prev_time > LOW_BATTERY_VOLTAGE_BEEP_ENABLE_TIME) {
+				beep_state = BEEP_STATE_DISABLE;
+			}
+			break;
+		
+		case BEEP_STATE_DISABLE:
+			prev_time = get_time_ms();
+			dac_set_output_value(0, 0);
+			beep_state = BEEP_STATE_DISABLE_DELAY;
+			break;
+			
+		case BEEP_STATE_DISABLE_DELAY:
+			if (get_time_ms() - prev_time > LOW_BATTERY_VOLTAGE_BEEP_DISABLE_TIME) {
+				
+				if (++beep_count >= 3) {
+					beep_count = 0;
+					beep_state = BEEP_STATE_CHECK;
+				}
+				else {
+					beep_state = BEEP_STATE_ENABLE;
+				}
+			}
+			break;
+		
 		default:
 			callback_set_internal_error(ERROR_MODULE_MONITORING);
 			break;
@@ -118,6 +199,11 @@ static bool read_configuration(void) {
 		if (voltage_divisor[i].up_resist == 0xFFFFFFFF || voltage_divisor[i].down_resist == 0xFFFFFFFF) {
 			return false;
 		}
+	}
+	
+	battery_low_voltage_threshold = veeprom_read_16(BATTERY_LOW_VOLTAGE_THRESHOLD_EE_ADDRESS);
+	if (battery_low_voltage_threshold == 0xFFFF) {
+		return false;
 	}
 	
 	return true;

@@ -2,6 +2,8 @@
 /// @file    dac.c
 /// @author  NeoProg
 //  ***************************************************************************
+#include "dac.h"
+
 #include <sam.h>
 #include <stdbool.h>
 	
