@@ -18,7 +18,7 @@
 //  ***************************************************************************
 #include <sam.h>
 #include <stdbool.h>
-#define SUPPORT_ADC_CHANNELS_COUNT				(5)
+#define SUPPORT_ADC_CHANNELS_COUNT				(3)
 
 static uint16_t adc_data[SUPPORT_ADC_CHANNELS_COUNT] = { 0 };
 	
@@ -55,8 +55,6 @@ void adc_init(void) {
 	REG_ADC_CHER = ADC_CHER_CH7;	// (A0)
 	REG_ADC_CHER = ADC_CHER_CH6;	// (A1)
 	REG_ADC_CHER = ADC_CHER_CH5;	// (A2)
-	REG_ADC_CHER = ADC_CHER_CH4;	// (A3)
-	REG_ADC_CHER = ADC_CHER_CH3;	// (A4)
 }
 
 //  ***************************************************************************
@@ -95,5 +93,5 @@ float adc_get_voltage(uint32_t ch) {
 	
 	if (ch >= SUPPORT_ADC_CHANNELS_COUNT) return 0;
 	
-	return (adc_data[ch] & 0x0FFF) * 3.3 / 4095.0;
+	return (adc_data[ch] & 0x0FFF) * 3.3f / 4095.0f;
 }

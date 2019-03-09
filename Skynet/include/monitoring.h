@@ -9,9 +9,9 @@
 #include <stdint.h>
 
 
-extern uint32_t wireless_voltage;
-extern uint32_t periphery_voltage;
-extern uint32_t battery_voltage;
+extern uint16_t wireless_voltage;
+extern uint16_t periphery_voltage;
+extern uint16_t battery_voltage;
 
 
 extern void monitoring_init(void);

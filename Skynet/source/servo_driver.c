@@ -138,22 +138,22 @@ static bool read_configuration(void) {
     
     for (uint32_t servo_index = 0; servo_index < SUPPORT_SERVO_COUNT; ++servo_index) {
         
-        uint32_t base_address = servo_index * SERVO_CONFIGURATION_SIZE;
+        uint32_t base_address = SERVO_CONFIGURATION_BASE_EE_ADDRESS + servo_index * SERVO_CONFIGURATION_SIZE;
         
         // Read servo configuration
-        uint8_t config = veeprom_read_8(base_address + SERVO_CONFIG_EE_ADDRESS);
+        uint8_t config = veeprom_read_8(base_address + SERVO_CONFIG_OFFSET);
         if (config == 0xFF) {
             return false;
         }
         
         // Read angle correction
-        uint32_t angle_correction = veeprom_read_8(base_address + SERVO_ANGLE_CORRECTION_EE_ADDRESS);
+        uint32_t angle_correction = veeprom_read_8(base_address + SERVO_ANGLE_CORRECTION_OFFSET);
 		if (angle_correction == 0xFF) {
 			return false;
 		}
 		
 		// Read max physic angle
-        uint32_t max_physic_angle = veeprom_read_16(base_address + SERVO_MAX_PHYSIC_ANGLE_EE_ADDRESS);
+        uint32_t max_physic_angle = veeprom_read_16(base_address + SERVO_MAX_PHYSIC_ANGLE_OFFSET);
         if (max_physic_angle == 0xFFFF || angle_correction > max_physic_angle) {
             return false;
         }
@@ -168,7 +168,7 @@ static bool read_configuration(void) {
 		uint32_t max_table_point = max_physic_angle / CALIBRATION_TABLE_STEP_SIZE;
 		for (uint32_t i = 0; i <= max_table_point; ++i) {
 			
-			servo_channels[servo_index].calibration_table[i] = veeprom_read_16(base_address + SERVO_CALIBRATION_TABLE_EE_ADDRESS + i * 2);
+			servo_channels[servo_index].calibration_table[i] = veeprom_read_16(base_address + SERVO_CALIBRATION_TABLE_OFFSET + i * 2);
 			
 			if (servo_channels[servo_index].calibration_table[i] == 0xFFFF) {
 				return false;
