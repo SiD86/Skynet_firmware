@@ -51,15 +51,15 @@ typedef struct {
 
 static state_t subsystem_state = STATE_NOINIT;
 static voltage_divisor_info_t voltage_divisor[SUPPORT_ADC_CHANNEL_COUNT] = {0};
-static uint32_t battery_low_voltage_threshold = 0;
+static uint8_t battery_low_voltage_threshold = 0;
 
-uint16_t wireless_voltage = 0;	// 0.1 V
-uint16_t periphery_voltage = 0;	// 0.1 V
-uint16_t battery_voltage = 0;	// 0.1 V
+uint8_t wireless_voltage = 0;	// 0.1 V
+uint8_t periphery_voltage = 0;	// 0.1 V
+uint8_t battery_voltage = 0;	// 0.1 V
 
 
 static bool read_configuration(void);
-static uint16_t calculate_voltage(float adc_voltage, const voltage_divisor_info_t* divisor_info);
+static uint8_t calculate_voltage(float adc_voltage, const voltage_divisor_info_t* divisor_info);
 
 
 //  ***************************************************************************
@@ -216,8 +216,8 @@ static bool read_configuration(void) {
 		}
 	}
 	
-	battery_low_voltage_threshold = veeprom_read_16(BATTERY_LOW_VOLTAGE_THRESHOLD_EE_ADDRESS);
-	if (battery_low_voltage_threshold == 0xFFFF) {
+	battery_low_voltage_threshold = veeprom_read_8(BATTERY_LOW_VOLTAGE_THRESHOLD_EE_ADDRESS);
+	if (battery_low_voltage_threshold == 0xFF) {
 		return false;
 	}
 	
@@ -231,7 +231,7 @@ static bool read_configuration(void) {
 /// @param	down_resistor: down resistor value, [Ohm]
 /// @return	Resistance divisor supply voltage, [0.1 V]
 //  ***************************************************************************
-static uint16_t calculate_voltage(float adc_voltage, const voltage_divisor_info_t* divisor_info) {
+static uint8_t calculate_voltage(float adc_voltage, const voltage_divisor_info_t* divisor_info) {
 	
 	float divisor_factor = ((float)divisor_info->up_resist + (float)divisor_info->down_resist) / (float)divisor_info->down_resist;
 	

@@ -34,9 +34,9 @@ static const ram_map_t ram_map = {
     
 	RAM_PUT_DWORD(0x0000, error_status),
 	
-	RAM_PUT_WORD (0x0020, wireless_voltage),
-	RAM_PUT_WORD (0x0022, periphery_voltage),
-	RAM_PUT_WORD (0x0024, battery_voltage),
+	RAM_PUT_BYTE (0x0020, wireless_voltage),
+	RAM_PUT_BYTE (0x0021, periphery_voltage),
+	RAM_PUT_BYTE (0x0022, battery_voltage),
 	
 	RAM_PUT_WORD (0x0040, x),
 	RAM_PUT_WORD (0x0042, y),

@@ -151,15 +151,15 @@ void modbus_process(void) {
 		}
 	
 		// Verify frame
-		const uint8_t* request = usart0_get_internal_rx_buffer_address();
-		uint32_t request_size = usart0_get_frame_size();
+		const uint8_t* request = usarts[i].usart_get_internal_rx_buffer_address();
+		uint32_t request_size = usarts[i].usart_get_frame_size();
 		if (is_request_valid(request, request_size) == false) {
 			usarts[i].usart_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
 			continue;
 		}
 	
 		// Process command
-		uint8_t* response = usart0_get_internal_tx_buffer_address();
+		uint8_t* response = usarts[i].usart_get_internal_tx_buffer_address();
 		uint8_t response_size = 0;
 		uint32_t result = MB_OK;
 
@@ -182,7 +182,7 @@ void modbus_process(void) {
 				break;
 
 			default:
-				usart0_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
+				usarts[i].usart_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
 				continue;
 		}
 	
