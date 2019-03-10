@@ -39,7 +39,7 @@ static const sequence_info_t sequence_down = {
 	
     {
         { 
-			{{110, 0, 110}, {150, 0, 0}, {110, 0, -110}, {110, 0, 110}, {150, 0, 0}, {110, 0, -110}},
+			{{100, -35, 100}, {142, -35, 0}, {100, -35, -100}, {100, -35, 100}, {142, -35, 0}, {100, -35, -100}},
 			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 80
 		},	
     },
@@ -57,7 +57,7 @@ static const sequence_info_t sequence_up = {
 	{
 		{   // Down all legs
 			{{88, -85, 88}, {125, -85, 0}, {88, -85, -88}, {88, -85, 88}, {125, -85, 0}, {88, -85, -88}}, 
-			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 15
 		},
 		{	// Up 0, 2, 4 legs
 			{{95, -55, 95}, {125, -85, 0}, {95, -55, -95}, {88, -85, 88}, {135, -55, 0}, {88, -85, -88}}, 

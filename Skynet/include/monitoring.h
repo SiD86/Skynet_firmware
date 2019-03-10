@@ -7,6 +7,7 @@
 #define MONITORING_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 
 extern uint16_t wireless_voltage;
@@ -16,6 +17,7 @@ extern uint16_t battery_voltage;
 
 extern void monitoring_init(void);
 extern void monitoring_process(void);
+extern bool monitoring_is_low_battery_voltage(void);
 
 
 #endif /* MONITORING_H_ */

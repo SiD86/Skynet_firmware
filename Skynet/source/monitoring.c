@@ -15,7 +15,7 @@
 #include "error_handling.h"
 
 #define LOW_BATTERY_VOLTAGE_BEEP_PERIOD			(10000)	// ms
-#define LOW_BATTERY_VOLTAGE_BEEP_ENABLE_TIME	(100)	// ms
+#define LOW_BATTERY_VOLTAGE_BEEP_ENABLE_TIME	(150)	// ms
 #define LOW_BATTERY_VOLTAGE_BEEP_DISABLE_TIME	(200)	// ms
 
 #define SUPPORT_ADC_CHANNEL_COUNT				(3)
@@ -23,10 +23,13 @@
 #define PERIPHERY_VOLTAGE_ADC_CH				(1)
 #define BATTERY_VOLTAGE_ADC_CH					(0)
 
+#define ADC_ACCUMULATION_COUNT					(100)
+
 
 typedef enum {
 	STATE_NOINIT,
 	STATE_WAIT_CONVERSION,
+	STATE_ACCUMULATE,
 	STATE_CALCULATE
 } state_t;
 
@@ -74,6 +77,7 @@ void monitoring_init(void) {
 	adc_start_conversion();
 	
 	dac_init();
+	dac_set_output_value(0, 0);
 	
 	subsystem_state = STATE_WAIT_CONVERSION;
 }
@@ -89,28 +93,36 @@ void monitoring_process(void) {
 		return; // Module disabled
 	}
 	
-	static beep_state_t beep_state = BEEP_STATE_IDLE;
-	static float adc_voltage[SUPPORT_ADC_CHANNEL_COUNT] = {0};
+	
+	static float adc_acc_voltage[SUPPORT_ADC_CHANNEL_COUNT] = {0};
+	static uint32_t accumulate_count = 0;
 	switch (subsystem_state) {
 		
 		case STATE_WAIT_CONVERSION:
 			if (adc_is_conversion_complete() == true) {
 				
-				adc_voltage[0] = adc_get_voltage(WIRELESS_VOLTAGE_ADC_CH);
-				adc_voltage[1] = adc_get_voltage(PERIPHERY_VOLTAGE_ADC_CH);
-				adc_voltage[2] = adc_get_voltage(BATTERY_VOLTAGE_ADC_CH);
+				adc_acc_voltage[0] += adc_get_voltage(WIRELESS_VOLTAGE_ADC_CH);
+				adc_acc_voltage[1] += adc_get_voltage(PERIPHERY_VOLTAGE_ADC_CH);
+				adc_acc_voltage[2] += adc_get_voltage(BATTERY_VOLTAGE_ADC_CH);
+				++accumulate_count;
 				
 				adc_start_conversion();
+			}
+			if (accumulate_count >= ADC_ACCUMULATION_COUNT) {
+				accumulate_count = 0;
 				subsystem_state = STATE_CALCULATE;
 			}
 			break;
-		
-		case STATE_CALCULATE:
-			wireless_voltage  = calculate_voltage(adc_voltage[0], &voltage_divisor[0]);
-			periphery_voltage = calculate_voltage(adc_voltage[1], &voltage_divisor[1]);
-			battery_voltage   = calculate_voltage(adc_voltage[2], &voltage_divisor[2]);
 			
-			beep_state = BEEP_STATE_CHECK;
+		case STATE_CALCULATE:
+			wireless_voltage  = calculate_voltage(adc_acc_voltage[0], &voltage_divisor[0]);
+			periphery_voltage = calculate_voltage(adc_acc_voltage[1], &voltage_divisor[1]);
+			battery_voltage   = calculate_voltage(adc_acc_voltage[2], &voltage_divisor[2]);
+			
+			adc_acc_voltage[0] = 0;
+			adc_acc_voltage[1] = 0;
+			adc_acc_voltage[2] = 0;
+			
 			subsystem_state = STATE_WAIT_CONVERSION;
 			break;
 		
@@ -121,24 +133,17 @@ void monitoring_process(void) {
 	}
 	
 	
-	
+	static beep_state_t beep_state = BEEP_STATE_CHECK;
 	static uint32_t prev_time = 0;
 	static uint32_t beep_count = 0;
 	switch (beep_state) {
 		
-		case BEEP_STATE_IDLE:
-			break;
-		
 		case BEEP_STATE_CHECK:
-			if (battery_voltage < battery_low_voltage_threshold) {
-				beep_state = BEEP_STATE_WAIT;
-			}
-			break;
-			
-		case BEEP_STATE_WAIT:
 			if (get_time_ms() - prev_time > LOW_BATTERY_VOLTAGE_BEEP_PERIOD) {
-				prev_time = get_time_ms();
-				beep_state = BEEP_STATE_ENABLE;
+				
+				if (monitoring_is_low_battery_voltage() == true) {
+					beep_state = BEEP_STATE_ENABLE;
+				}
 			}
 			break;
 		
@@ -177,6 +182,16 @@ void monitoring_process(void) {
 			callback_set_internal_error(ERROR_MODULE_MONITORING);
 			break;
 	}
+}
+
+//  ***************************************************************************
+/// @brief  Check battery on low voltage
+/// @param  none
+/// @return true - battery low voltage, false - battery normal voltage
+//  ***************************************************************************
+bool monitoring_is_low_battery_voltage(void) {
+	
+	return battery_voltage < battery_low_voltage_threshold;
 }
 
 
@@ -220,5 +235,5 @@ static uint16_t calculate_voltage(float adc_voltage, const voltage_divisor_info_
 	
 	float divisor_factor = ((float)divisor_info->up_resist + (float)divisor_info->down_resist) / (float)divisor_info->down_resist;
 	
-	return (adc_voltage * divisor_factor) * 10.0f;
+	return (adc_voltage / ADC_ACCUMULATION_COUNT * divisor_factor) * 10.0f;
 }

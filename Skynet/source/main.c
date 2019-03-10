@@ -22,11 +22,11 @@
 static void enter_to_emergency_loop(void);
 
 
-void HardFault_Handler(void) {
-	
-	while (true);
-}
-
+//  ***************************************************************************
+/// @brief  Normal mode loop
+/// @param  none
+/// @return none
+//  ***************************************************************************
 int main(void) {
 	
     // Initialize SAM system
@@ -59,7 +59,11 @@ int main(void) {
 		if (callback_is_emergency_mode_active() == true) {
 			enter_to_emergency_loop();
 		}
+		if (monitoring_is_low_battery_voltage() == true) {
+			movement_engine_select_sequence(SEQUENCE_DOWN);
+		}
         
+		
 		//
 		// NORMAL MODE PROCESS
 		//
@@ -77,6 +81,11 @@ int main(void) {
 	}
 }
 
+//  ***************************************************************************
+/// @brief  Emergency mode loop
+/// @param  none
+/// @return none
+//  ***************************************************************************
 static void enter_to_emergency_loop(void) {
     
 	while (1)  {
@@ -89,4 +98,9 @@ static void enter_to_emergency_loop(void) {
 		
 		monitoring_process();
 	}
+}
+
+void HardFault_Handler(void) {
+	
+	while (true);
 }

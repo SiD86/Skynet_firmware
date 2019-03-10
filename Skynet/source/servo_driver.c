@@ -16,17 +16,17 @@
 #define SERVO_BIDIRECTIONAL_MODE_DISABLE		(0x00)
 #define SERVO_BIDIRECTIONAL_MODE_ENABLE			(0x02)
 
-#define CALIBRATION_TABLE_MAX_SIZE              (27)
+#define CALIBRATION_TABLE_MAX_SIZE              (28)
 #define CALIBRATION_TABLE_STEP_SIZE             (10)
 
 
 // Servo information
 typedef struct {
-    float    physic_angle;			// Current servo physic angle, [degree] 
-    uint32_t config;			    // Servo configuration
-	uint32_t angle_currection;    	// Servo angle correction, [degree]
-    uint32_t max_physic_angle;      // Servo max physic angle, [degree]
-    uint16_t calibration_table[27]; // Calibration table
+    float    physic_angle;									// Current servo physic angle, [degree] 
+    uint32_t config;										// Servo configuration
+	uint32_t angle_currection;    							// Servo angle correction, [degree]
+    uint32_t max_physic_angle;								// Servo max physic angle, [degree]
+    uint16_t calibration_table[CALIBRATION_TABLE_MAX_SIZE]; // Calibration table
 } servo_info_t;
 
 
@@ -50,6 +50,11 @@ void servo_driver_init(void) {
 
     pwm_init();
     pwm_enable();
+	
+	// Move servos to start position
+	for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
+		servo_driver_move(i, 0);
+	}
 }
 
 //  ***************************************************************************
@@ -174,9 +179,6 @@ static bool read_configuration(void) {
 				return false;
 			}
 		}
-		
-		// Move servo to start position
-		servo_driver_move(servo_index, 0);
     }
 
     return true;

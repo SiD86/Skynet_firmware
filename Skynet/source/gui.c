@@ -158,6 +158,11 @@ typedef enum {
 static state_t module_state = STATE_NOINIT;
 
 
+//  ***************************************************************************
+/// @brief  GUI initialization
+/// @param  none
+/// @return none
+//  ***************************************************************************
 void gui_init(void) {
 	
 	if (oled_gl_init() == false) {
@@ -214,7 +219,11 @@ void gui_init(void) {
 	module_state = STATE_UPDATE_BATTERY_VOLTAGE;
 }
 
-
+//  ***************************************************************************
+/// @brief  GUI process
+/// @param  none
+/// @return none
+//  ***************************************************************************
 void gui_process(void) {
 	
 	static uint32_t prev_update_time = 0;

@@ -68,12 +68,12 @@ int8_t ram_link_angles[SUPPORT_LIMB_COUNT * 3] = {0};			// Read only
 
 static driver_state_t driver_state = STATE_NOINIT;
 static limb_info_t    limbs[SUPPORT_LIMB_COUNT] = {0};
+static bool			  is_limbs_move_started = false;
 static uint32_t		  smooth_total_point_count = SMOOTH_DEFAULT_TOTAL_POINT_COUNT;
-static uint32_t		  smooth_current_point = 0;
 
 
 static bool read_configuration(void);
-static void path_calculate_point(const path_3d_t* info, point_3d_t* point);
+static void path_calculate_point(const path_3d_t* info, point_3d_t* point, uint32_t smooth_current_point);
 static bool kinematic_calculate_angles(limb_info_t* info);
 
 
@@ -116,6 +116,7 @@ void limbs_driver_init(void) {
     }
     
     // Initialization driver state
+	is_limbs_move_started = false;
     driver_state = STATE_WAIT;
 }
 
@@ -157,7 +158,7 @@ void limbs_driver_start_move(const point_3d_t* point_list, const path_type_t* pa
             continue;
         }
         
-		smooth_current_point = 0;
+		is_limbs_move_started = true;
     }
 }
 
@@ -168,7 +169,7 @@ void limbs_driver_start_move(const point_3d_t* point_list, const path_type_t* pa
 //  ***************************************************************************
 bool limbs_driver_is_move_complete(void) {
     
-    return (smooth_current_point > smooth_total_point_count);
+    return is_limbs_move_started == false;
 }
 
 //  ***************************************************************************
@@ -180,6 +181,7 @@ void limbs_driver_process(void) {
     if (callback_is_limbs_driver_error_set() == true) return;  // Module disabled
 	
 
+	static uint32_t smooth_current_point = 0;
 	static uint32_t prev_synchro_value = 0;
     
     switch (driver_state) {
@@ -188,7 +190,7 @@ void limbs_driver_process(void) {
 			if (synchro != prev_synchro_value) {
 				
 				if (synchro - prev_synchro_value > 1) {
-					//callback_set_sync_error(ERROR_MODULE_LIMBS_DRIVER);
+					callback_set_sync_error(ERROR_MODULE_LIMBS_DRIVER);
 				}
                 prev_synchro_value = synchro;
 				driver_state = STATE_CALC;
@@ -199,12 +201,12 @@ void limbs_driver_process(void) {
             //
             // Calculate new servo angles
             //
-			if (smooth_current_point <= smooth_total_point_count) {
-                
+			if (is_limbs_move_started == true) {
+				
                 for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
                 
                     // Calculate next point
-                    path_calculate_point(&limbs[i].movement_path, &limbs[i].position);
+                    path_calculate_point(&limbs[i].movement_path, &limbs[i].position, smooth_current_point);
                     
                     // Calculate angles for point
                     if (kinematic_calculate_angles(&limbs[i]) == false) {
@@ -213,6 +215,11 @@ void limbs_driver_process(void) {
                     }
                 }
                 ++smooth_current_point;
+				
+				if (smooth_current_point > smooth_total_point_count) {
+					is_limbs_move_started = false;
+					smooth_current_point = 0;
+				}
             }            
                
             //
@@ -226,10 +233,10 @@ void limbs_driver_process(void) {
 					limbs[i].links[LINK_COXA].angle = ram_link_angles_override[i * 3 + 0];
 				}
 				if (ram_link_angles_override[i * 3 + 1] != OVERRIDE_DISABLE_VALUE) {
-					limbs[i].links[LINK_COXA].angle = ram_link_angles_override[i * 3 + 1];
+					limbs[i].links[LINK_FEMUR].angle = ram_link_angles_override[i * 3 + 1];
 				}
 				if (ram_link_angles_override[i * 3 + 2] != OVERRIDE_DISABLE_VALUE) {
-					limbs[i].links[LINK_COXA].angle = ram_link_angles_override[i * 3 + 2];
+					limbs[i].links[LINK_TIBIA].angle = ram_link_angles_override[i * 3 + 2];
 				}
 								
 				// Move servos to destination angles
@@ -321,7 +328,7 @@ static bool read_configuration(void) {
 /// @param  point: calculated point
 /// @retval point
 //  ***************************************************************************
-static void path_calculate_point(const path_3d_t* info, point_3d_t* point) {
+static void path_calculate_point(const path_3d_t* info, point_3d_t* point, uint32_t smooth_current_point) {
 	
 	float t_max = RAD_TO_DEG(M_PI); // [0; Pi]
 	float t = smooth_current_point * (t_max / smooth_total_point_count); // iter_index * dt
