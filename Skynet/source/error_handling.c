@@ -9,10 +9,10 @@
 #define INTERNAL_ERROR_MASK				(0x0002)
 #define CONFIG_ERROR_MASK				(0x0004)
 #define MEMORY_ERROR_MASK				(0x0008)
-#define SYNC_ERROR_MASK					(0x0010)
-#define MATH_ERROR_MASK					(0x0020)
-#define I2C_ERROR_MASK					(0x0040)
-#define VOLTAGE_ERROR_MASK				(0x0080)
+#define VOLTAGE_ERROR_MASK				(0x0010)
+#define SYNC_ERROR_MASK					(0x0020)
+#define MATH_ERROR_MASK					(0x0040)
+#define I2C_ERROR_MASK					(0x0080)
 
 
 uint32_t error_status = 0;
@@ -93,6 +93,13 @@ void callback_set_memory_error(error_module_name_t module) {
 }
 
 /// ***************************************************************************
+/// @brief  Callback function for set error - Voltage Error
+//  ***************************************************************************
+void callback_set_voltage_error(void) {
+	error_status |= (VOLTAGE_ERROR_MASK | EMERGENCY_MODE_MASK);
+}
+
+/// ***************************************************************************
 /// @brief  Callback function for set error - Sync Error
 /// @param  @ref error_module_name_t
 //  ***************************************************************************
@@ -116,12 +123,6 @@ void callback_set_i2c_error(error_module_name_t module) {
     error_status |= (module | I2C_ERROR_MASK);
 }
 
-/// ***************************************************************************
-/// @brief  Callback function for set error - Voltage Error
-//  ***************************************************************************
-void callback_set_voltage_error(void) {
-	error_status |= (VOLTAGE_ERROR_MASK | EMERGENCY_MODE_MASK);
-}
 
 
 /// ***************************************************************************

@@ -34,10 +34,10 @@ extern bool callback_is_gui_error_set(void);
 extern void callback_set_internal_error(error_module_name_t module);
 extern void callback_set_config_error(error_module_name_t module);
 extern void callback_set_memory_error(error_module_name_t module);
+extern void callback_set_voltage_error(void);
 extern void callback_set_sync_error(error_module_name_t module);
 extern void callback_set_math_error(error_module_name_t module);
 extern void callback_set_i2c_error(error_module_name_t module);
-extern void callback_set_voltage_error(void);
 
 extern bool callback_is_emergency_mode_active(void);
 extern bool callback_is_any_error_set(void);
