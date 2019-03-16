@@ -210,7 +210,7 @@ void limbs_driver_process(void) {
                     
                     // Calculate angles for point
                     if (kinematic_calculate_angles(&limbs[i]) == false) {
-                        callback_set_out_of_range_error(ERROR_MODULE_LIMBS_DRIVER);
+                        callback_set_math_error(ERROR_MODULE_LIMBS_DRIVER);
                         return;
                     }
                 }

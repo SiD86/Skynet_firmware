@@ -17,7 +17,7 @@ typedef enum {
 	ERROR_MODULE_MOVEMENT_ENGINE = 0x00080000,
 	ERROR_MODULE_WIRELESS_MODBUS = 0x00100000,
 	ERROR_MODULE_MONITORING		 = 0x00200000,
-    ERROR_MODULE_OLED_GL         = 0x00400000
+    ERROR_MODULE_GUI			 = 0x00400000
 } error_module_name_t;
 
 
@@ -29,16 +29,18 @@ extern bool callback_is_limbs_driver_error_set(void);
 extern bool callback_is_movement_engine_error_set(void);
 extern bool callback_is_wireless_modbus_error_set(void);
 extern bool callback_is_monitoring_error_set(void);
-extern bool callback_is_oled_gl_error_set(void);
+extern bool callback_is_gui_error_set(void);
 
 extern void callback_set_internal_error(error_module_name_t module);
 extern void callback_set_config_error(error_module_name_t module);
 extern void callback_set_memory_error(error_module_name_t module);
 extern void callback_set_sync_error(error_module_name_t module);
-extern void callback_set_out_of_range_error(error_module_name_t module);
+extern void callback_set_math_error(error_module_name_t module);
 extern void callback_set_i2c_error(error_module_name_t module);
+extern void callback_set_voltage_error(void);
 
 extern bool callback_is_emergency_mode_active(void);
 extern bool callback_is_any_error_set(void);
+extern bool callback_is_set_voltage_error_set(void);
 
 #endif // _ERROR_HANDLING_H_

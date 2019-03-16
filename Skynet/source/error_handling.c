@@ -10,8 +10,9 @@
 #define CONFIG_ERROR_MASK				(0x0004)
 #define MEMORY_ERROR_MASK				(0x0008)
 #define SYNC_ERROR_MASK					(0x0010)
-#define OOR_ERROR_MASK					(0x0020)
+#define MATH_ERROR_MASK					(0x0020)
 #define I2C_ERROR_MASK					(0x0040)
+#define VOLTAGE_ERROR_MASK				(0x0080)
 
 
 uint32_t error_status = 0;
@@ -58,11 +59,11 @@ bool callback_is_monitoring_error_set(void) {
 }
 
 //  ***************************************************************************
-/// @brief  Callback function for check error - OLED GL error
+/// @brief  Callback function for check error - GUI error
 /// @return true - error bit set, false - no
 //  ***************************************************************************
-bool callback_is_oled_gl_error_set(void) {
-    return error_status & ERROR_MODULE_OLED_GL;
+bool callback_is_gui_error_set(void) {
+    return error_status & ERROR_MODULE_GUI;
 }
 
 
@@ -100,11 +101,11 @@ void callback_set_sync_error(error_module_name_t module) {
 }
 
 /// ***************************************************************************
-/// @brief  Callback function for set error - Out Of Range Error
+/// @brief  Callback function for set error - Math Error
 /// @param  @ref error_module_name_t
 //  ***************************************************************************
-void callback_set_out_of_range_error(error_module_name_t module) {
-	error_status |= (module | OOR_ERROR_MASK);
+void callback_set_math_error(error_module_name_t module) {
+	error_status |= (module | MATH_ERROR_MASK);
 }
 
 /// ***************************************************************************
@@ -115,6 +116,12 @@ void callback_set_i2c_error(error_module_name_t module) {
     error_status |= (module | I2C_ERROR_MASK);
 }
 
+/// ***************************************************************************
+/// @brief  Callback function for set error - Voltage Error
+//  ***************************************************************************
+void callback_set_voltage_error(void) {
+	error_status |= (VOLTAGE_ERROR_MASK | EMERGENCY_MODE_MASK);
+}
 
 
 /// ***************************************************************************
@@ -131,4 +138,12 @@ bool callback_is_emergency_mode_active(void) {
 //  ***************************************************************************
 bool callback_is_any_error_set(void) {
     return error_status != 0;
+}
+
+/// ***************************************************************************
+/// @brief  Callback function for check - Voltage error
+/// @return true - status contain any error, false - no
+//  ***************************************************************************
+bool callback_is_set_voltage_error_set(void) {
+	return error_status & VOLTAGE_ERROR_MASK;
 }

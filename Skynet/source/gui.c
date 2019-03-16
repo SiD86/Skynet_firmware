@@ -226,6 +226,9 @@ void gui_init(void) {
 //  ***************************************************************************
 void gui_process(void) {
 	
+	if (callback_is_gui_error_set() == true) return;
+	
+	
 	static uint32_t prev_update_time = 0;
 	
 	switch (module_state) {
@@ -283,6 +286,7 @@ void gui_process(void) {
 		
 		case STATE_NOINIT:
 		default:
+			callback_set_internal_error(ERROR_MODULE_GUI);
 			break;
 	}
 	

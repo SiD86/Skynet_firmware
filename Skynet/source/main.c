@@ -16,6 +16,7 @@
 #include "led.h"
 #include "i2c.h"
 #include "gui.h"
+#include "buzzer.h"
 #include "error_handling.h"
 
 
@@ -46,6 +47,7 @@ int main(void) {
 	modbus_init();
 	monitoring_init();
 	led_init();
+	buzzer_init();
     
     servo_driver_init();
     limbs_driver_init();
@@ -69,6 +71,7 @@ int main(void) {
 		//
 		gui_process();
 		led_process();
+		buzzer_process();
 		
         servo_driver_process();
         limbs_driver_process();

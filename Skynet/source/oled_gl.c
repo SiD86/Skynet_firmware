@@ -34,10 +34,10 @@ static driver_state_t driver_state = STATE_NOINIT;
 //  ***************************************************************************
 bool oled_gl_init(void) {
 	
-	if (!ssd1306_128x64_init())             { callback_set_i2c_error(ERROR_MODULE_OLED_GL); return false; }
-	if (!ssd1306_128x64_set_inverse(false)) { callback_set_i2c_error(ERROR_MODULE_OLED_GL); return false; }
-	if (!ssd1306_128x64_set_contrast(0xFF)) { callback_set_i2c_error(ERROR_MODULE_OLED_GL); return false; }
-	if (!ssd1306_128x64_set_state(true))    { callback_set_i2c_error(ERROR_MODULE_OLED_GL); return false; }
+	if (!ssd1306_128x64_init())             { callback_set_i2c_error(ERROR_MODULE_GUI); return false; }
+	if (!ssd1306_128x64_set_inverse(false)) { callback_set_i2c_error(ERROR_MODULE_GUI); return false; }
+	if (!ssd1306_128x64_set_contrast(0xFF)) { callback_set_i2c_error(ERROR_MODULE_GUI); return false; }
+	if (!ssd1306_128x64_set_state(true))    { callback_set_i2c_error(ERROR_MODULE_GUI); return false; }
 	
 	driver_state = STATE_IDLE;
 	return true;
@@ -197,7 +197,7 @@ void oled_gl_draw_rect(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uin
 void oled_gl_draw_bitmap(uint32_t row, uint32_t x, uint32_t bitmap_width, uint32_t bitmap_height, const uint8_t* bitmap) {
 	
 	if ((bitmap_height % 8) != 0) {
-		callback_set_internal_error(ERROR_MODULE_OLED_GL);
+		callback_set_internal_error(ERROR_MODULE_GUI);
 		return;
 	}
 	
@@ -217,7 +217,7 @@ void oled_gl_draw_bitmap(uint32_t row, uint32_t x, uint32_t bitmap_width, uint32
 void oled_gl_display_update(void) {
 	
 	if (ssd1306_128x64_full_update() == false) {
-		callback_set_i2c_error(ERROR_MODULE_OLED_GL);
+		callback_set_i2c_error(ERROR_MODULE_GUI);
 	}
 }
 
@@ -228,11 +228,11 @@ void oled_gl_display_update(void) {
 //  ***************************************************************************
 void oled_gl_start_async_display_update(void) {
 	
-	if (callback_is_oled_gl_error_set() == true) return;
+	if (callback_is_gui_error_set() == true) return;
 	
 	
 	if (driver_state != STATE_IDLE) {
-		callback_set_internal_error(ERROR_MODULE_OLED_GL);
+		callback_set_internal_error(ERROR_MODULE_GUI);
 		return;
 	}
 		
@@ -246,7 +246,7 @@ void oled_gl_start_async_display_update(void) {
 //  ***************************************************************************
 void oled_gl_async_display_update_process(void) {
 	
-	if (callback_is_oled_gl_error_set() == true) return;
+	if (callback_is_gui_error_set() == true) return;
 	
 	
 	static uint32_t current_row = 0;
@@ -258,7 +258,7 @@ void oled_gl_async_display_update_process(void) {
 		
 		case STATE_UPDATE_ROW:
 			if (ssd1306_128x64_start_async_update_row(current_row) == false) {
-				callback_set_i2c_error(ERROR_MODULE_OLED_GL);
+				callback_set_i2c_error(ERROR_MODULE_GUI);
 			}
 			
 			++current_row;
@@ -275,7 +275,7 @@ void oled_gl_async_display_update_process(void) {
 			if (ssd1306_128x64_is_async_operation_complete() == true) {
 				
 				if (ssd1306_128x64_is_async_operation_success() == false) {
-					callback_set_i2c_error(ERROR_MODULE_OLED_GL);
+					callback_set_i2c_error(ERROR_MODULE_GUI);
 				}
 				driver_state = STATE_UPDATE_ROW;
 			}
@@ -285,7 +285,7 @@ void oled_gl_async_display_update_process(void) {
 			break;
 		
 		default:
-			callback_set_internal_error(ERROR_MODULE_OLED_GL);
+			callback_set_internal_error(ERROR_MODULE_GUI);
 			break;
 	}
 }

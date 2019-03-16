@@ -101,7 +101,7 @@ void servo_driver_move(uint32_t ch, float angle) {
 	
 	// Constrain physic servo angle
 	if (servo_info->physic_angle < 0) {
-		//callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
+		//callback_set_math_error(ERROR_MODULE_SERVO_DRIVER);
 		servo_info->physic_angle = 0;
 	}
 	
@@ -110,7 +110,7 @@ void servo_driver_move(uint32_t ch, float angle) {
 	
 	// Constrain physic servo angle
 	if (servo_info->physic_angle > servo_info->max_physic_angle) {
-		//callback_set_out_of_range_error(ERROR_MODULE_SERVO_DRIVER);
+		//callback_set_math_error(ERROR_MODULE_SERVO_DRIVER);
         servo_info->physic_angle = servo_info->max_physic_angle;
     }
 	

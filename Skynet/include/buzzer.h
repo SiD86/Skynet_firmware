@@ -1,13 +1,15 @@
 //  ***************************************************************************
-/// @file    version.h
+/// @file    buzzer.h
 /// @author  NeoProg
-/// @brief   Firmware version information
+/// @brief   Buzzer driver
 //  ***************************************************************************
-#ifndef VERSION_H_
-#define VERSION_H_
+#ifndef BUZZER_H_
+#define BUZZER_H_
 
 
-#define VERSION_STR				"v0.00.086"
+extern void buzzer_init(void);
+extern void buzzer_process(void);
 
 
-#endif // VERSION_H_
+
+#endif /* BUZZER_H_ */
