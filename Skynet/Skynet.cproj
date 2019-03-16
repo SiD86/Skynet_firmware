@@ -261,9 +261,6 @@
     <Compile Include="periph_drv\adc.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="periph_drv\buzzer.c">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="periph_drv\dac.c">
       <SubType>compile</SubType>
     </Compile>
@@ -316,6 +313,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="periph_drv\usart3_pdc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="source\buzzer.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="source\error_handling.c">

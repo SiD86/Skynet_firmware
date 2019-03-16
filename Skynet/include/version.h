@@ -7,7 +7,7 @@
 #define VERSION_H_
 
 
-#define VERSION_STR				"v0.00.087"
+#define VERSION_STR				"v0.00.088"
 
 
 #endif // VERSION_H_
