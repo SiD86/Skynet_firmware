@@ -154,20 +154,24 @@ void movement_engine_process(void) {
 void movement_engine_select_sequence(sequence_id_t sequence) {
     
     // Check possibility of go to selected sequence
-    if (sequence != SEQUENCE_NONE && current_sequence != SEQUENCE_NONE) {
-        
+	if (current_sequence != SEQUENCE_NONE) {
+		
 		bool is_possibility = false;
-		for (uint32_t i = 0; current_sequence_info->available_sequences[i] != SEQUENCE_NONE; ++i) {
-
+		for (uint32_t i = 0; /* NONE */; ++i) {
+			
     		if (current_sequence_info->available_sequences[i] == sequence) {
         		is_possibility = true;
         		break;
     		}
+			
+			if (current_sequence_info->available_sequences[i] == SEQUENCE_NONE) {
+				break;
+			}
 		}
 		if (is_possibility == false) {
     		return;
-		}
-	}    
+		}   
+	}
     
     // Request switch current sequence
     switch (sequence) {
@@ -175,7 +179,7 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
         case SEQUENCE_NONE:
 			next_sequence = SEQUENCE_NONE;
             next_sequence_info = NULL;
-            return;
+            break;
         
         case SEQUENCE_UP:
             next_sequence = SEQUENCE_UP;
