@@ -119,7 +119,7 @@ void oled_gl_draw_dec_number(uint32_t row, uint32_t x, int32_t number) {
 //  ***************************************************************************
 void oled_gl_draw_hex_number(uint32_t row, uint32_t x, uint32_t number) {
 	
-	char buffer[12] = {0};
+	char buffer[32] = {0};
 	sprintf(buffer, "%#010X", (int)number);
 	buffer[1] = 'x';
 	

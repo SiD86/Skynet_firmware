@@ -8,7 +8,7 @@
 #define PWM_FREQUENCY_HZ                (150)
 #define TIMER_CLOCK_FREQUENCY			(SystemCoreClock / 2)
 #define PWM_PERIOD_TICKS                (TIMER_CLOCK_FREQUENCY / PWM_FREQUENCY_HZ)
-#define US_TO_TICKS(_width)				((TIMER_CLOCK_FREQUENCY / 1000000) * _width)
+#define US_TO_TICKS(_width)				((TIMER_CLOCK_FREQUENCY / 1000000) * (_width))
 
 #define PWM_CH0_PIN                     (PIO_PC13)
 #define PWM_CH1_PIN                     (PIO_PB21)
