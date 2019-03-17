@@ -138,8 +138,6 @@ void movement_engine_process(void) {
             break;
             
         case STATE_NOINIT:
-			break;
-		
         default:
             callback_set_internal_error(ERROR_MODULE_MOVEMENT_ENGINE);
             return;

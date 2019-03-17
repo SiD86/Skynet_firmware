@@ -254,8 +254,6 @@ void limbs_driver_process(void) {
             break;
         
         case STATE_NOINIT:
-			break;
-			
         default:
             callback_set_internal_error(ERROR_MODULE_LIMBS_DRIVER);
             break;
