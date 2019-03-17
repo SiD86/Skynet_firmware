@@ -355,7 +355,7 @@ static void path_calculate_point(const path_3d_t* info, point_3d_t* point, uint3
 
     	float t_mapped_rad = DEG_TO_RAD(t * (atan1 - atan0) / t_max + atan0);
     	point->x = R * sin(t_mapped_rad); // Circle Y
-    	point->y = t * (info->dest_point.y - info->start_point.y) / t_max + info->start_point.y;
+    	point->y = t * (y1 - y0) / t_max + y0;
     	point->z = R * cos(t_mapped_rad); // Circle X
 	}
 	
@@ -366,7 +366,6 @@ static void path_calculate_point(const path_3d_t* info, point_3d_t* point, uint3
 		float atan1 = RAD_TO_DEG(atan2(x1, z1));
 
 		float t_mapped_rad = DEG_TO_RAD(t * (atan1 - atan0) / t_max + atan0);
-
 		point->x = R * sin(t_mapped_rad); // circle Y
 		point->y = (y1 - y0) * sin(DEG_TO_RAD(t)) + y0;
 		point->z = R * cos(t_mapped_rad); // circle X
