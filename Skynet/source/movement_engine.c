@@ -116,6 +116,7 @@ void movement_engine_process(void) {
 					}
 					else {
 						// Current sequence completed and new sequence not selected
+						movement_engine_select_sequence(SEQUENCE_NONE);
 						driver_state = STATE_IDLE;
 					}
 				}              

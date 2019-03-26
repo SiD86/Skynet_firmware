@@ -21,11 +21,11 @@ typedef enum {
 } sequence_id_t;
 
 
-void movement_engine_init(void);
-void movement_engine_process(void);
-void movement_engine_increase_height(void);
-void movement_engine_decrease_height(void);
-void movement_engine_select_sequence(sequence_id_t sequence);
+extern void movement_engine_init(void);
+extern void movement_engine_process(void);
+extern void movement_engine_increase_height(void);
+extern void movement_engine_decrease_height(void);
+extern void movement_engine_select_sequence(sequence_id_t sequence);
 
 
 #endif /* MOVEMENT_ENGINE_H_ */

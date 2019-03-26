@@ -10,8 +10,8 @@
 #include "limbs_driver.h"
 #include "movement_engine.h"
 
-#define GAIT_SEQUENCE_HEIGHT_LOW_LIMIT			(85)
-#define GAIT_SEQUENCE_HEIGHT_HIGH_LIMIT			(150)
+#define GAIT_SEQUENCE_HEIGHT_LOW_LIMIT			(55)
+#define GAIT_SEQUENCE_HEIGHT_HIGH_LIMIT			(185)
 
 
 typedef struct {
@@ -43,7 +43,7 @@ static sequence_info_t sequence_change_height = {
 	{
 		{   // Move to new height
 			{{88, -85, 88}, {125, -85, 0}, {88, -85, -88}, {88, -85, 88}, {125, -85, 0}, {88, -85, -88}},
-			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 5
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 10
 		},
 		{	// Up 0, 2, 4 legs
 			{{95, -55, 95}, {125, -85, 0}, {95, -55, -95}, {88, -85, 88}, {135, -55, 0}, {88, -85, -88}},
@@ -140,7 +140,7 @@ static sequence_info_t sequence_direct_movement = {
 		    { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 20
 		},		
 		{ 
-			{{110, -85,  20}, {110, -85,  45}, {110, -85, -110}, {110, -85, 110}, {110, -85, -45}, {110, -88,  -20}},
+			{{110, -85,  20}, {110, -85,  45}, {110, -85, -110}, {110, -85, 110}, {110, -85, -45}, {110, -85,  -20}},
 		    { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 20
 		},	
 				
@@ -172,7 +172,7 @@ static sequence_info_t sequence_direct_movement = {
 			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 20
 		},
 		{ 
-			{{ 88, -85,  88}, {125, -85,   0}, { 88, -85,  -88}, { 88, -85,  88}, {125, -85,   0}, { 88, -88,  -88}}, 
+			{{ 88, -85,  88}, {125, -85,   0}, { 88, -85,  -88}, { 88, -85,  88}, {125, -85,   0}, { 88, -85,  -88}}, 
 			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 20
 		},
 	},
@@ -205,7 +205,7 @@ static sequence_info_t sequence_reverse_movement = {
 			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 20
 		},
 		{
-			{{110, -85,  20}, {110, -85,  45}, {110, -85, -110}, {110, -85, 110}, {110, -85, -45}, {110, -88,  -20}},
+			{{110, -85,  20}, {110, -85,  45}, {110, -85, -110}, {110, -85, 110}, {110, -85, -45}, {110, -85,  -20}},
 			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 20
 		},
 		
@@ -238,7 +238,7 @@ static sequence_info_t sequence_reverse_movement = {
 			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 20
 		},
 		{
-			{{ 88, -85,  88}, {125, -85, 0}, { 88, -85,  -88}, { 88, -85,  88}, {125, -85,   0}, { 88, -88,  -88}},
+			{{ 88, -85,  88}, {125, -85, 0}, { 88, -85,  -88}, { 88, -85,  88}, {125, -85,   0}, { 88, -85,  -88}},
 			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 20
 		},
 	},
