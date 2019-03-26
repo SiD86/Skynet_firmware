@@ -43,7 +43,7 @@ static sequence_info_t sequence_change_height = {
 	{
 		{   // Move to new height
 			{{88, -85, 88}, {125, -85, 0}, {88, -85, -88}, {88, -85, 88}, {125, -85, 0}, {88, -85, -88}},
-			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 15
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 5
 		},
 		{	// Up 0, 2, 4 legs
 			{{95, -55, 95}, {125, -85, 0}, {95, -55, -95}, {88, -85, 88}, {135, -55, 0}, {88, -85, -88}},
