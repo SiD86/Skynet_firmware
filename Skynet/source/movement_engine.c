@@ -145,6 +145,105 @@ void movement_engine_process(void) {
 }
 
 //  ***************************************************************************
+/// @brief  Increase hexapod height
+/// @param  none
+/// @return none
+//  ***************************************************************************
+void movement_engine_increase_height(void) {
+	
+	if (current_sequence != SEQUENCE_NONE) {
+		return;
+	}
+	
+	// Make sequence list
+	sequence_info_t* sequence_list[] = {&sequence_change_height, 
+							            // &sequence_down, 
+							            &sequence_up, 
+							            &sequence_direct_movement, 
+							            &sequence_reverse_movement,
+							            &sequence_rotate_left,
+							            &sequence_rotate_right};
+										
+	// Check available increase height
+	for (uint32_t sequence = 0; sequence < sizeof(sequence_list) / sizeof(sequence_list[0]); ++sequence) {
+											
+		for (uint32_t i = 0; i < sequence_list[sequence]->total_iteration_count; ++i) {
+												
+			for (uint32_t a = 0; a < SUPPORT_LIMB_COUNT; ++a) {
+				
+				uint32_t height = abs(sequence_list[sequence]->iteration_list[i].point_list[a].y - 20);
+				if (height > GAIT_SEQUENCE_HEIGHT_HIGH_LIMIT) {
+					return;
+				}
+			}
+		}
+	}
+							
+	// Change height in sequences
+	for (uint32_t sequence = 0; sequence < sizeof(sequence_list) / sizeof(sequence_list[0]); ++sequence) {
+		
+		for (uint32_t i = 0; i < sequence_list[sequence]->total_iteration_count; ++i) {
+			
+			for (uint32_t a = 0; a < SUPPORT_LIMB_COUNT; ++a) {
+				sequence_list[sequence]->iteration_list[i].point_list[a].y -= 20;
+			}
+		}
+	}
+	
+	// Update height
+	movement_engine_select_sequence(SEQUENCE_CHANGE_HEIGHT);
+}
+
+//  ***************************************************************************
+/// @brief  Decrease hexapod height
+/// @param  none
+/// @return none
+//  ***************************************************************************
+void movement_engine_decrease_height(void) {
+	
+	if (current_sequence != SEQUENCE_NONE) {
+		return;
+	}
+	
+	// Make sequence list
+	sequence_info_t* sequence_list[] = {&sequence_change_height,
+										// &sequence_down,
+										&sequence_up,
+										&sequence_direct_movement,
+										&sequence_reverse_movement,
+										&sequence_rotate_left,
+										&sequence_rotate_right};
+	// Check available decrease height
+	for (uint32_t sequence = 0; sequence < sizeof(sequence_list) / sizeof(sequence_list[0]); ++sequence) {
+		
+		for (uint32_t i = 0; i < sequence_list[sequence]->total_iteration_count; ++i) {
+			
+			for (uint32_t a = 0; a < SUPPORT_LIMB_COUNT; ++a) {
+				
+				uint32_t height = abs(sequence_list[sequence]->iteration_list[i].point_list[a].y + 20);
+				if (height < GAIT_SEQUENCE_HEIGHT_LOW_LIMIT) {
+					return;
+				}
+			}
+		}
+	}
+	
+	// Change height in sequences
+	for (uint32_t sequence = 0; sequence < sizeof(sequence_list) / sizeof(sequence_list[0]); ++sequence) {
+		
+		for (uint32_t i = 0; i < sequence_list[sequence]->total_iteration_count; ++i) {
+			
+			for (uint32_t a = 0; a < SUPPORT_LIMB_COUNT; ++a) {
+				sequence_list[sequence]->iteration_list[i].point_list[a].y += 20;
+			}
+		}
+	}
+	
+	// Update height
+	movement_engine_select_sequence(SEQUENCE_CHANGE_HEIGHT);
+}
+
+//  ***************************************************************************
 /// @brief  Select sequence
 /// @param  sequence: new sequence
 /// @return none
@@ -178,6 +277,11 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
 			next_sequence = SEQUENCE_NONE;
             next_sequence_info = NULL;
             break;
+			
+		case SEQUENCE_CHANGE_HEIGHT:
+			next_sequence = SEQUENCE_CHANGE_HEIGHT;
+			next_sequence_info = &sequence_change_height;
+			break;
         
         case SEQUENCE_UP:
             next_sequence = SEQUENCE_UP;

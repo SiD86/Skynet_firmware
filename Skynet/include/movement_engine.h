@@ -9,6 +9,7 @@
 
 typedef enum {
     SEQUENCE_NONE,
+	SEQUENCE_CHANGE_HEIGHT,
 	SEQUENCE_UP,
 	SEQUENCE_DOWN,
 	SEQUENCE_DIRECT_MOVEMENT,
@@ -22,6 +23,8 @@ typedef enum {
 
 void movement_engine_init(void);
 void movement_engine_process(void);
+void movement_engine_increase_height(void);
+void movement_engine_decrease_height(void);
 void movement_engine_select_sequence(sequence_id_t sequence);
 
 

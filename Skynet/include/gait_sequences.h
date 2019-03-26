@@ -10,6 +10,9 @@
 #include "limbs_driver.h"
 #include "movement_engine.h"
 
+#define GAIT_SEQUENCE_HEIGHT_LOW_LIMIT			(85)
+#define GAIT_SEQUENCE_HEIGHT_HIGH_LIMIT			(150)
+
 
 typedef struct {
 	point_3d_t  point_list[SUPPORT_LIMB_COUNT];
@@ -30,6 +33,39 @@ typedef struct {
 } sequence_info_t;
 
 
+static sequence_info_t sequence_change_height = {
+	
+	.is_sequence_looped      = false,
+	.main_sequence_begin     = 0,
+	.finalize_sequence_begin = 5,
+	.total_iteration_count   = 5,
+	
+	{
+		{   // Move to new height
+			{{88, -85, 88}, {125, -85, 0}, {88, -85, -88}, {88, -85, 88}, {125, -85, 0}, {88, -85, -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 15
+		},
+		{	// Up 0, 2, 4 legs
+			{{95, -55, 95}, {125, -85, 0}, {95, -55, -95}, {88, -85, 88}, {135, -55, 0}, {88, -85, -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
+		},
+		{	// Down 0, 2, 4 legs
+			{{88, -85, 88}, {125, -85, 0}, {88, -85, -88}, {88, -85, 88}, {125, -85, 0}, {88, -85, -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
+		},
+		{	// Up 1, 3, 5 legs
+			{{88, -85, 88}, {135, -55, 0}, {88, -85, -88}, {95, -55, 95}, {125, -85, 0}, {95, -55, -95}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
+		},
+		{   // Down 0, 2, 4 legs
+			{{88, -85, 88}, {125, -85, 0}, {88, -85, -88}, {88, -85, 88}, {125, -85, 0}, {88, -85, -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
+		},
+	},
+	
+	{ SEQUENCE_NONE }
+};
+
 static const sequence_info_t sequence_down = {  
     
     .is_sequence_looped      = false,
@@ -47,7 +83,7 @@ static const sequence_info_t sequence_down = {
     { SEQUENCE_UP, SEQUENCE_NONE }
 };
 
-static const sequence_info_t sequence_up = {
+static sequence_info_t sequence_up = {
 
 	.is_sequence_looped      = false,
 	.main_sequence_begin     = 0,
@@ -80,7 +116,7 @@ static const sequence_info_t sequence_up = {
     { SEQUENCE_DOWN, SEQUENCE_DIRECT_MOVEMENT, SEQUENCE_REVERSE_MOVEMENT, SEQUENCE_ROTATE_LEFT, SEQUENCE_ROTATE_RIGHT, SEQUENCE_NONE }
 };
 
-static const sequence_info_t sequence_direct_movement = {
+static sequence_info_t sequence_direct_movement = {
 
 	.is_sequence_looped      = true,
 	.main_sequence_begin     = 4,
@@ -145,7 +181,7 @@ static const sequence_info_t sequence_direct_movement = {
 };
 
 
-static const sequence_info_t sequence_reverse_movement = {
+static sequence_info_t sequence_reverse_movement = {
 
 	.is_sequence_looped      = true,
 	.main_sequence_begin     = 4,
@@ -210,7 +246,7 @@ static const sequence_info_t sequence_reverse_movement = {
 	{ SEQUENCE_DOWN, SEQUENCE_DIRECT_MOVEMENT, SEQUENCE_REVERSE_MOVEMENT, SEQUENCE_ROTATE_LEFT, SEQUENCE_ROTATE_RIGHT, SEQUENCE_NONE }
 };
 
-static const sequence_info_t sequence_rotate_left = {
+static sequence_info_t sequence_rotate_left = {
 
 	.is_sequence_looped      = true,
 	.main_sequence_begin     = 0,
@@ -231,7 +267,7 @@ static const sequence_info_t sequence_rotate_left = {
 	{ SEQUENCE_DOWN, SEQUENCE_DIRECT_MOVEMENT, SEQUENCE_REVERSE_MOVEMENT, SEQUENCE_ROTATE_LEFT, SEQUENCE_ROTATE_RIGHT, SEQUENCE_NONE }
 };
 
-static const sequence_info_t sequence_rotate_right = {
+static sequence_info_t sequence_rotate_right = {
 
 	.is_sequence_looped      = true,
 	.main_sequence_begin     = 0,
