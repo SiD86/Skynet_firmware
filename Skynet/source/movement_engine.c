@@ -28,8 +28,15 @@ typedef enum {
 	SEQUENCE_STAGE_FINALIZE
 } sequence_stage_t;
 
+typedef enum {
+	HEXAPOD_STATE_DOWN,
+	HEXAPOD_STATE_UP
+} hexapod_state_t;
+
 
 static driver_state_t driver_state = STATE_NOINIT;
+static hexapod_state_t hexapod_state = HEXAPOD_STATE_DOWN;
+static uint32_t hexapod_height = GAIT_SEQUENCE_HEIGHT_LOW_LIMIT;
 
 static sequence_id_t current_sequence = SEQUENCE_NONE;
 static const sequence_info_t* current_sequence_info = NULL;
@@ -39,6 +46,7 @@ static const sequence_info_t* next_sequence_info = NULL;
 
 
 static bool read_configuration(void);
+static void update_sequences_y_coordinate(void);
 
 
 //  ***************************************************************************
@@ -53,8 +61,15 @@ void movement_engine_init(void) {
         return;
     }
 	
-    movement_engine_select_sequence(SEQUENCE_DOWN);
-    driver_state = STATE_IDLE;
+	update_sequences_y_coordinate();
+	
+	// Force select DOWN sequence. It automatically executed in movement_engine_process() function
+	current_sequence      = SEQUENCE_NONE;
+	current_sequence_info = NULL;
+    next_sequence         = SEQUENCE_DOWN;
+    next_sequence_info    = &sequence_down;
+	
+    driver_state          = STATE_IDLE;
 }
 
 //  ***************************************************************************
@@ -116,7 +131,7 @@ void movement_engine_process(void) {
 					}
 					else {
 						// Current sequence completed and new sequence not selected
-						movement_engine_select_sequence(SEQUENCE_NONE);
+						hexapod_state = (current_sequence == SEQUENCE_DOWN) ? HEXAPOD_STATE_DOWN : HEXAPOD_STATE_UP;
 						driver_state = STATE_IDLE;
 					}
 				}              
@@ -131,7 +146,7 @@ void movement_engine_process(void) {
             current_sequence_info = next_sequence_info;
             current_iteration     = 0;
             sequence_stage        = SEQUENCE_STAGE_PREPARE;
-            driver_state = STATE_MOVE;
+            driver_state          = STATE_MOVE;
 			
 			if (current_sequence == SEQUENCE_NONE) {
     			driver_state = STATE_IDLE;
@@ -146,102 +161,17 @@ void movement_engine_process(void) {
 }
 
 //  ***************************************************************************
-/// @brief  Increase hexapod height
-/// @param  none
+/// @brief  Set hexapod height
+/// @param  height: new height
 /// @return none
 //  ***************************************************************************
-void movement_engine_increase_height(void) {
+void movement_engine_set_height(uint32_t height) {
 	
-	if (current_sequence != SEQUENCE_NONE) {
+	if (height < GAIT_SEQUENCE_HEIGHT_LOW_LIMIT || height > GAIT_SEQUENCE_HEIGHT_HIGH_LIMIT) {
 		return;
 	}
 	
-	// Make sequence list
-	sequence_info_t* sequence_list[] = {&sequence_change_height, 
-							            // &sequence_down, 
-							            &sequence_up, 
-							            &sequence_direct_movement, 
-							            &sequence_reverse_movement,
-							            &sequence_rotate_left,
-							            &sequence_rotate_right};
-										
-	// Check available increase height
-	for (uint32_t sequence = 0; sequence < sizeof(sequence_list) / sizeof(sequence_list[0]); ++sequence) {
-											
-		for (uint32_t i = 0; i < sequence_list[sequence]->total_iteration_count; ++i) {
-												
-			for (uint32_t a = 0; a < SUPPORT_LIMB_COUNT; ++a) {
-				
-				uint32_t height = abs(sequence_list[sequence]->iteration_list[i].point_list[a].y - 20);
-				if (height > GAIT_SEQUENCE_HEIGHT_HIGH_LIMIT) {
-					return;
-				}
-			}
-		}
-	}
-							
-	// Change height in sequences
-	for (uint32_t sequence = 0; sequence < sizeof(sequence_list) / sizeof(sequence_list[0]); ++sequence) {
-		
-		for (uint32_t i = 0; i < sequence_list[sequence]->total_iteration_count; ++i) {
-			
-			for (uint32_t a = 0; a < SUPPORT_LIMB_COUNT; ++a) {
-				sequence_list[sequence]->iteration_list[i].point_list[a].y -= 20;
-			}
-		}
-	}
-	
-	// Update height
-	movement_engine_select_sequence(SEQUENCE_CHANGE_HEIGHT);
-}
-
-//  ***************************************************************************
-/// @brief  Decrease hexapod height
-/// @param  none
-/// @return none
-//  ***************************************************************************
-void movement_engine_decrease_height(void) {
-	
-	if (current_sequence != SEQUENCE_NONE) {
-		return;
-	}
-	
-	// Make sequence list
-	sequence_info_t* sequence_list[] = {&sequence_change_height,
-										// &sequence_down,
-										&sequence_up,
-										&sequence_direct_movement,
-										&sequence_reverse_movement,
-										&sequence_rotate_left,
-										&sequence_rotate_right};
-	// Check available decrease height
-	for (uint32_t sequence = 0; sequence < sizeof(sequence_list) / sizeof(sequence_list[0]); ++sequence) {
-		
-		for (uint32_t i = 0; i < sequence_list[sequence]->total_iteration_count; ++i) {
-			
-			for (uint32_t a = 0; a < SUPPORT_LIMB_COUNT; ++a) {
-				
-				uint32_t height = abs(sequence_list[sequence]->iteration_list[i].point_list[a].y + 20);
-				if (height < GAIT_SEQUENCE_HEIGHT_LOW_LIMIT) {
-					return;
-				}
-			}
-		}
-	}
-	
-	// Change height in sequences
-	for (uint32_t sequence = 0; sequence < sizeof(sequence_list) / sizeof(sequence_list[0]); ++sequence) {
-		
-		for (uint32_t i = 0; i < sequence_list[sequence]->total_iteration_count; ++i) {
-			
-			for (uint32_t a = 0; a < SUPPORT_LIMB_COUNT; ++a) {
-				sequence_list[sequence]->iteration_list[i].point_list[a].y += 20;
-			}
-		}
-	}
-	
-	// Update height
-	movement_engine_select_sequence(SEQUENCE_CHANGE_HEIGHT);
+	hexapod_height = height;
 }
 
 //  ***************************************************************************
@@ -251,26 +181,6 @@ void movement_engine_decrease_height(void) {
 //  ***************************************************************************
 void movement_engine_select_sequence(sequence_id_t sequence) {
     
-    // Check possibility of go to selected sequence
-	if (current_sequence != SEQUENCE_NONE) {
-		
-		bool is_possibility = false;
-		for (uint32_t i = 0; /* NONE */; ++i) {
-			
-    		if (current_sequence_info->available_sequences[i] == sequence) {
-        		is_possibility = true;
-        		break;
-    		}
-			
-			if (current_sequence_info->available_sequences[i] == SEQUENCE_NONE) {
-				break;
-			}
-		}
-		if (is_possibility == false) {
-    		return;
-		}   
-	}
-    
     // Request switch current sequence
     switch (sequence) {
         
@@ -279,39 +189,55 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
             next_sequence_info = NULL;
             break;
 			
-		case SEQUENCE_CHANGE_HEIGHT:
-			next_sequence = SEQUENCE_CHANGE_HEIGHT;
-			next_sequence_info = &sequence_change_height;
+		case SEQUENCE_UPDATE_HEIGHT:
+			if (hexapod_state == HEXAPOD_STATE_UP) {
+				next_sequence = SEQUENCE_UPDATE_HEIGHT;
+				next_sequence_info = &sequence_update_height;
+				
+				update_sequences_y_coordinate();
+			}
 			break;
         
         case SEQUENCE_UP:
-            next_sequence = SEQUENCE_UP;
-            next_sequence_info = &sequence_up;
+			if (hexapod_state == HEXAPOD_STATE_DOWN) {
+				next_sequence = SEQUENCE_UP;
+				next_sequence_info = &sequence_up;
+			}
             break;
 
         case SEQUENCE_DOWN:
-            next_sequence = SEQUENCE_DOWN;
-            next_sequence_info = &sequence_down;
+			if (hexapod_state == HEXAPOD_STATE_UP) {
+				next_sequence = SEQUENCE_DOWN;
+				next_sequence_info = &sequence_down;
+			}
             break;
 
         case SEQUENCE_DIRECT_MOVEMENT:
-            next_sequence = SEQUENCE_DIRECT_MOVEMENT;
-            next_sequence_info = &sequence_direct_movement;
+			if (hexapod_state == HEXAPOD_STATE_UP) {
+				next_sequence = SEQUENCE_DIRECT_MOVEMENT;
+				next_sequence_info = &sequence_direct_movement;
+			}
             break;
 
         case SEQUENCE_REVERSE_MOVEMENT: 
-			next_sequence = SEQUENCE_REVERSE_MOVEMENT;
-            next_sequence_info = &sequence_reverse_movement;
+			if (hexapod_state == HEXAPOD_STATE_UP) {
+				next_sequence = SEQUENCE_REVERSE_MOVEMENT;
+				next_sequence_info = &sequence_reverse_movement;
+			}
             break;
 
         case SEQUENCE_ROTATE_LEFT:
-            next_sequence = SEQUENCE_ROTATE_LEFT;
-            next_sequence_info = &sequence_rotate_left;
+			if (hexapod_state == HEXAPOD_STATE_UP) {
+				next_sequence = SEQUENCE_ROTATE_LEFT;
+				next_sequence_info = &sequence_rotate_left;
+			}
             break;
 
         case SEQUENCE_ROTATE_RIGHT:
-            next_sequence = SEQUENCE_ROTATE_RIGHT;
-            next_sequence_info = &sequence_rotate_right;
+			if (hexapod_state == HEXAPOD_STATE_UP) {
+				next_sequence = SEQUENCE_ROTATE_RIGHT;
+				next_sequence_info = &sequence_rotate_right;
+			}
             break;
 
         default:
@@ -330,4 +256,43 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
 static bool read_configuration(void) {
     
     return true;
+}
+
+//  ***************************************************************************
+/// @brief  Update Y coordinate in all sequences
+/// @param  none
+/// @return none
+//  ***************************************************************************
+static void update_sequences_y_coordinate(void) {
+	
+	static sequence_info_t* sequence_list[] = {
+		&sequence_update_height,
+		&sequence_down,
+		&sequence_up,
+		&sequence_direct_movement,
+		&sequence_reverse_movement,
+		&sequence_rotate_left,
+		&sequence_rotate_right
+	};
+	
+	// Change height in sequences
+	for (uint32_t sequence = 0; sequence < sizeof(sequence_list) / sizeof(sequence_list[0]); ++sequence) {
+					
+		for (uint32_t i = 0; i < sequence_list[sequence]->total_iteration_count; ++i) {
+						
+			sequence_iteration_t* iteration = &sequence_list[sequence]->iteration_list[i];
+			for (uint32_t a = 0; a < SUPPORT_LIMB_COUNT; ++a) {
+							
+				if (iteration->limb_state_list[a] == LIMB_STATE_DOWN) {
+					iteration->point_list[a].y = -hexapod_height;
+				}
+				if (iteration->limb_state_list[a] == LIMB_STATE_DOWN) {
+					iteration->point_list[a].y = -(hexapod_height - GAIT_SEQUENCE_LIMB_UP_STEP_HEIGHT);
+				}
+				/*if (iteration->limb_state_list[a] == LIMB_STATE_CUSTOM) {
+					continue;
+				}*/
+			}
+		}
+	}
 }

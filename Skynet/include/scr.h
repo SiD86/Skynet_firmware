@@ -10,6 +10,7 @@
 
 
 extern uint8_t scr;
+extern int32_t scr_argument;
 
 
 void scr_process(void);

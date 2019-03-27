@@ -43,6 +43,7 @@ static const ram_map_t ram_map = {
 	RAM_PUT_WORD (0x0044, z),
 	
 	RAM_PUT_BYTE (0x0060, scr),
+	RAM_PUT_DWORD(0x0061, scr_argument),
 	
 	RAM_PUT_BYTE (0x00C0, ram_link_angles[0]),
 	RAM_PUT_BYTE (0x00C1, ram_link_angles[1]),
