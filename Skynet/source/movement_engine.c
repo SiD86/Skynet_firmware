@@ -36,7 +36,7 @@ typedef enum {
 
 static driver_state_t driver_state = STATE_NOINIT;
 static hexapod_state_t hexapod_state = HEXAPOD_STATE_DOWN;
-static uint32_t hexapod_height = GAIT_SEQUENCE_HEIGHT_LOW_LIMIT;
+static int32_t hexapod_height = GAIT_SEQUENCE_HEIGHT_LOW_LIMIT;
 
 static sequence_id_t current_sequence = SEQUENCE_NONE;
 static const sequence_info_t* current_sequence_info = NULL;
@@ -132,7 +132,8 @@ void movement_engine_process(void) {
 					else {
 						// Current sequence completed and new sequence not selected
 						hexapod_state = (current_sequence == SEQUENCE_DOWN) ? HEXAPOD_STATE_DOWN : HEXAPOD_STATE_UP;
-						driver_state = STATE_IDLE;
+						movement_engine_select_sequence(SEQUENCE_NONE);
+						driver_state = STATE_CHANGE_SEQUENCE;
 					}
 				}              
             }
@@ -156,8 +157,13 @@ void movement_engine_process(void) {
         case STATE_NOINIT:
         default:
             callback_set_internal_error(ERROR_MODULE_MOVEMENT_ENGINE);
-            return;
+            break;
     }
+	
+	if (hexapod_state == HEXAPOD_STATE_DOWN && hexapod_height != GAIT_SEQUENCE_HEIGHT_LOW_LIMIT) {
+		hexapod_height = GAIT_SEQUENCE_HEIGHT_LOW_LIMIT;
+		update_sequences_y_coordinate();
+	}
 }
 
 //  ***************************************************************************
@@ -286,7 +292,7 @@ static void update_sequences_y_coordinate(void) {
 				if (iteration->limb_state_list[a] == LIMB_STATE_DOWN) {
 					iteration->point_list[a].y = -hexapod_height;
 				}
-				if (iteration->limb_state_list[a] == LIMB_STATE_DOWN) {
+				if (iteration->limb_state_list[a] == LIMB_STATE_UP) {
 					iteration->point_list[a].y = -(hexapod_height - GAIT_SEQUENCE_LIMB_UP_STEP_HEIGHT);
 				}
 				/*if (iteration->limb_state_list[a] == LIMB_STATE_CUSTOM) {
