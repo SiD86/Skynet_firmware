@@ -18,7 +18,6 @@ typedef enum {
     STATE_MOVE,             // Process step of current gait
     STATE_WAIT,             // Wait limbs movement complete
     STATE_NEXT_ITERATION,   // Select next step of current gait
-    STATE_NEXT_STAGE,
     STATE_CHANGE_SEQUENCE   // Change current sequence (if needed)
 } driver_state_t;
 
@@ -245,6 +244,20 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
 				next_sequence_info = &sequence_rotate_right;
 			}
             break;
+		
+		case SEQUENCE_DIRECT_MOVEMENT_SHORT:
+			if (hexapod_state == HEXAPOD_STATE_UP) {
+				next_sequence = SEQUENCE_DIRECT_MOVEMENT_SHORT;
+				next_sequence_info = &sequence_direct_movement_short;
+			}
+			break;
+
+		case SEQUENCE_REVERSE_MOVEMENT_SHORT:
+			if (hexapod_state == HEXAPOD_STATE_UP) {
+				next_sequence = SEQUENCE_REVERSE_MOVEMENT_SHORT;
+				next_sequence_info = &sequence_reverse_movement_short;
+			}
+			break;
 
         default:
             callback_set_internal_error(ERROR_MODULE_MOVEMENT_ENGINE);
@@ -278,7 +291,9 @@ static void update_sequences_y_coordinate(void) {
 		&sequence_direct_movement,
 		&sequence_reverse_movement,
 		&sequence_rotate_left,
-		&sequence_rotate_right
+		&sequence_rotate_right,
+		&sequence_direct_movement_short,
+		&sequence_reverse_movement_short
 	};
 	
 	// Change height in sequences

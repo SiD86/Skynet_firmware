@@ -39,22 +39,6 @@
 #define MB_EXCEPTION_SLAVE_DEV_FAILURE			(0x04)		// ModBus Exception code: Slave Device Failure. Device can't execute incoming command (EEPROM failure, insufficient RAM, etc).
 #define MB_BAD_FRAME							(0xFF)
 
-/*
-void           usart3_init(uint32_t baud_rate);
-void           usart3_set_baud_rate(uint32_t baud_rate);
-void           usart3_reset(bool is_reset_transmitter, bool is_reset_receiver);
-bool           usart3_is_error();
-
-void           usart3_start_tx(uint32_t bytes_count);
-bool           usart3_is_tx_complete();
-uint8_t*       usart3_get_internal_tx_buffer_address();
-
-void           usart3_start_rx(uint8_t* external_rx_buffer, uint32_t external_buffer_size);
-bool           usart3_is_frame_received();
-uint32_t       usart3_get_frame_size();
-const uint8_t* usart3_get_internal_rx_buffer_address();
-
-*/
 
 typedef struct {
 	
@@ -118,7 +102,6 @@ static uint16_t calculate_crc16(const uint8_t* data, uint32_t size);
 void modbus_init(void) {
 	
 	for (uint32_t i = 0; i < SUPPORT_USART_COUNT; ++i) {
-		
 		usarts[i].usart_init(USART_BAUD_RATE);
 		usarts[i].usart_start_rx(USART0_USE_INTERNAL_BUFFER, 0);
 	}

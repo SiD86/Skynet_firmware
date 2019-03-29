@@ -47,11 +47,12 @@ int main(void) {
 	modbus_init();
 	monitoring_init();
 	led_init();
-	buzzer_init();
     
     servo_driver_init();
     limbs_driver_init();
 	movement_engine_init();
+	
+	buzzer_init();
     
     while (1)  {
 		
