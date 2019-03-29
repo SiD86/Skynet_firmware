@@ -266,10 +266,10 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
 			}
 			break;
 			
-		case SEQUENCE_DENCE:
+		case SEQUENCE_DANCE:
 			if (hexapod_state == HEXAPOD_STATE_UP) {
-				next_sequence = SEQUENCE_DENCE;
-				next_sequence_info = &sequence_dence;
+				next_sequence = SEQUENCE_DANCE;
+				next_sequence_info = &sequence_dance;
 			}
 			break;
 
@@ -307,7 +307,9 @@ static void update_sequences_y_coordinate(void) {
 		&sequence_rotate_left,
 		&sequence_rotate_right,
 		&sequence_direct_movement_short,
-		&sequence_reverse_movement_short
+		&sequence_reverse_movement_short,
+        &sequence_attack_left,
+        &sequence_dance
 	};
 	
 	// Change height in sequences
