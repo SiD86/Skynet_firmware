@@ -460,4 +460,122 @@ static sequence_info_t sequence_reverse_movement_short = {
 	}
 };
 
+
+static sequence_info_t sequence_attack_left = {
+
+	.is_sequence_looped      = true,
+	.main_sequence_begin     = 1,
+	.finalize_sequence_begin = 3,
+	.total_iteration_count   = 4,
+	
+	{
+		//
+		// Prepare sequence
+		//
+		{
+			{ LIMB_STATE_CUSTOM, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN },
+			{{   0,   0, 150}, {125, -85,   0}, { 88, -85,  -88}, { 88, -85,  88}, {125, -85,   0}, { 88, -85,  -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 20
+		},
+		
+		//
+		// Main sequence
+		//
+		{
+			{ LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN },
+			{{   0,  50, 250}, {125, -85,   0}, { 88, -85,  -88}, { 88, -85,  88}, {125, -85,   0}, { 88, -85,  -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 50
+		},
+		{
+			{ LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP },
+			{{   0,   0, 150}, {125, -85,   0}, { 88, -85,  -88}, { 88, -85,  88}, {125, -85,   0}, { 88, -85,  -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 50
+		},
+
+		//
+		// Finalize sequence
+		//
+		{
+			{ LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN },
+			{{ 88, -85,  88}, {125, -85,   0}, { 88, -85,  -88}, { 88, -85,  88}, {125, -85,   0}, { 88, -85,  -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 20
+		},
+	}
+};
+
+
+
+static sequence_info_t sequence_dence = {
+
+	.is_sequence_looped      = true,
+	.main_sequence_begin     = 0,
+	.finalize_sequence_begin = 12,
+	.total_iteration_count   = 12,
+	
+	{
+		{	// Up 0, 2, 4 legs
+			{ LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN },
+			{{95, -55, 95}, {125, -85, 0}, {95, -55, -95}, {88, -85, 88}, {135, -55, 0}, {88, -85, -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
+		},
+		{	// Down 0, 2, 4 legs
+			{ LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN },
+			{{88, -85, 88}, {125, -85, 0}, {88, -85, -88}, {88, -85, 88}, {125, -85, 0}, {88, -85, -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
+		},
+		{	// Up 1, 3, 5 legs
+			{ LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP },
+			{{88, -85, 88}, {135, -55, 0}, {88, -85, -88}, {95, -55, 95}, {125, -85, 0}, {95, -55, -95}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
+		},
+		{   // Down 0, 2, 4 legs
+			{ LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN },
+			{{88, -85, 88}, {125, -85, 0}, {88, -85, -88}, {88, -85, 88}, {125, -85, 0}, {88, -85, -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
+		},
+		
+		{
+			{ LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN },
+			{{ 170,  50, 170}, {125, -85,   0}, { 170, 50, -170}, { 88, -85,  88}, {240, 50,   0}, { 88, -85,  -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 70
+		},
+		{
+			{ LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP },
+			{{ 88, -85,  88}, {125, -85,   0}, { 88, -85,  -88}, { 88, -85,  88}, {125, -85,   0}, { 88, -85,  -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 70
+		},
+		{
+			{ LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN },
+			{{ 88, -85,  88}, {240, 50,   0}, { 88, -85,  -88}, { 170, 50, 170}, {125, -85,   0}, {170, 50, -170}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 70
+		},
+		{
+			{ LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP },
+			{{ 88, -85,  88}, {125, -85,   0}, { 88, -85,  -88}, { 88, -85,  88}, {125, -85,   0}, { 88, -85,  -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 70
+		},
+		
+		{	// Up 0, 2, 4 legs
+			{ LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN },
+			{{95, -55, 95}, {125, -85, 0}, {95, -55, -95}, {88, -85, 88}, {135, -55, 0}, {88, -85, -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
+		},
+		{	// Down 0, 2, 4 legs
+			{ LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN },
+			{{88, -85, 88}, {125, -85, 0}, {88, -85, -88}, {88, -85, 88}, {125, -85, 0}, {88, -85, -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
+		},
+		{	// Up 1, 3, 5 legs
+			{ LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP },
+			{{88, -85, 88}, {135, -55, 0}, {88, -85, -88}, {95, -55, 95}, {125, -85, 0}, {95, -55, -95}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
+		},
+		{   // Down 0, 2, 4 legs
+			{ LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN },
+			{{88, -85, 88}, {125, -85, 0}, {88, -85, -88}, {88, -85, 88}, {125, -85, 0}, {88, -85, -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
+		}
+	}
+};
+
 #endif /* GAIT_SEQUENCES_H_ */

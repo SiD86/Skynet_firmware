@@ -182,14 +182,14 @@ void limbs_driver_process(void) {
 	
 
 	static uint32_t smooth_current_point = 0;
-	static uint32_t prev_synchro_value = 0;
+	static uint32_t prev_synchro_value = 0xFFFFFFFF;
     
     switch (driver_state) {
         
 		case STATE_WAIT:
 			if (synchro != prev_synchro_value) {
 				
-				if (synchro - prev_synchro_value > 1) {
+				if (synchro - prev_synchro_value > 1 && prev_synchro_value != 0xFFFFFFFF) {
 					callback_set_sync_error(ERROR_MODULE_LIMBS_DRIVER);
 				}
                 prev_synchro_value = synchro;

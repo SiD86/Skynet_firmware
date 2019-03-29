@@ -21,6 +21,10 @@
 #define SCR_CMD_SELECT_SEQUENCE_ROTATE_RIGHT			(0x06)
 #define SCR_CMD_SELECT_SEQUENCE_DIRECT_MOVEMENT_SHORT	(0x07)
 #define SCR_CMD_SELECT_SEQUENCE_REVERSE_MOVEMENT_SHORT	(0x08)
+
+#define SCR_CMD_SELECT_SEQUENCE_ATTACK_LEFT				(0x10)
+#define SCR_CMD_SELECT_SEQUENCE_DENCE					(0x20)
+
 #define SCR_CMD_SELECT_SEQUENCE_UPDATE_HEIGHT			(0x89)
 #define SCR_CMD_SELECT_SEQUENCE_NONE					(0x90)
 
@@ -77,6 +81,14 @@ void scr_process(void) {
         case SCR_CMD_SELECT_SEQUENCE_UPDATE_HEIGHT:
             movement_engine_select_sequence(SEQUENCE_UPDATE_HEIGHT);
             break;
+			
+		case SCR_CMD_SELECT_SEQUENCE_ATTACK_LEFT:
+			movement_engine_select_sequence(SEQUENCE_ATTACK_LEFT);
+			break;
+			
+		case SCR_CMD_SELECT_SEQUENCE_DENCE:
+			movement_engine_select_sequence(SEQUENCE_DENCE);
+			break;
 			
 		case SCR_CMD_SELECT_SEQUENCE_NONE:
 			movement_engine_select_sequence(SEQUENCE_NONE);

@@ -258,6 +258,20 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
 				next_sequence_info = &sequence_reverse_movement_short;
 			}
 			break;
+			
+		case SEQUENCE_ATTACK_LEFT:
+			if (hexapod_state == HEXAPOD_STATE_UP) {
+				next_sequence = SEQUENCE_ATTACK_LEFT;
+				next_sequence_info = &sequence_attack_left;
+			}
+			break;
+			
+		case SEQUENCE_DENCE:
+			if (hexapod_state == HEXAPOD_STATE_UP) {
+				next_sequence = SEQUENCE_DENCE;
+				next_sequence_info = &sequence_dence;
+			}
+			break;
 
         default:
             callback_set_internal_error(ERROR_MODULE_MOVEMENT_ENGINE);
