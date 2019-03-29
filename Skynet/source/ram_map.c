@@ -21,11 +21,6 @@
                                      .data[(ram_addr) + 2] = ((uint8_t*)&(var)) + 1,	\
                                      .data[(ram_addr) + 3] = ((uint8_t*)&(var)) + 0
 
-
-int16_t x;
-int16_t y;
-int16_t z;
-
 typedef struct {
     uint8_t* data[RAM_MAP_SIZE];
 } ram_map_t;
@@ -37,10 +32,6 @@ static const ram_map_t ram_map = {
 	RAM_PUT_BYTE (0x0020, wireless_voltage),
 	RAM_PUT_BYTE (0x0021, periphery_voltage),
 	RAM_PUT_BYTE (0x0022, battery_voltage),
-	
-	RAM_PUT_WORD (0x0040, x),
-	RAM_PUT_WORD (0x0042, y),
-	RAM_PUT_WORD (0x0044, z),
 	
 	RAM_PUT_BYTE (0x0060, scr),
 	RAM_PUT_DWORD(0x0061, scr_argument),
