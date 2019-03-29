@@ -13,13 +13,13 @@
         
 #define RAM_PUT_BYTE(ram_addr, var)  .data[ram_addr] = (uint8_t*)&(var)
 
-#define RAM_PUT_WORD(ram_addr, var)  .data[(ram_addr) + 0] = ((uint8_t*)&(var)) + 0,	\
-                                     .data[(ram_addr) + 1] = ((uint8_t*)&(var)) + 1
+#define RAM_PUT_WORD(ram_addr, var)  .data[(ram_addr) + 0] = ((uint8_t*)&(var)) + 1,	\
+                                     .data[(ram_addr) + 1] = ((uint8_t*)&(var)) + 0
 
-#define RAM_PUT_DWORD(ram_addr, var) .data[(ram_addr) + 0] = ((uint8_t*)&(var)) + 0,	\
-                                     .data[(ram_addr) + 1] = ((uint8_t*)&(var)) + 1,	\
-                                     .data[(ram_addr) + 2] = ((uint8_t*)&(var)) + 2,	\
-                                     .data[(ram_addr) + 3] = ((uint8_t*)&(var)) + 3
+#define RAM_PUT_DWORD(ram_addr, var) .data[(ram_addr) + 0] = ((uint8_t*)&(var)) + 3,	\
+                                     .data[(ram_addr) + 1] = ((uint8_t*)&(var)) + 2,	\
+                                     .data[(ram_addr) + 2] = ((uint8_t*)&(var)) + 1,	\
+                                     .data[(ram_addr) + 3] = ((uint8_t*)&(var)) + 0
 
 
 int16_t x;
