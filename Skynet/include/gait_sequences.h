@@ -199,7 +199,6 @@ static sequence_info_t sequence_direct_movement = {
 	}
 };
 
-
 static sequence_info_t sequence_reverse_movement = {
 
 	.is_sequence_looped      = true,
@@ -460,6 +459,47 @@ static sequence_info_t sequence_reverse_movement_short = {
 	}
 };
 
+static sequence_info_t sequence_rotate_left_short = {
+
+	.is_sequence_looped      = true,
+	.main_sequence_begin     = 0,
+	.finalize_sequence_begin = 2,
+	.total_iteration_count   = 2,
+	
+	{
+		{
+			{ LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN },
+			{{108, -55, 62}, {120, -85, 32}, {62, -55, -108}, {108, -85, 62}, {120, -55, 32}, {62, -85, -108}},
+			{ PATH_XZ_ARC_Y_SINUS, PATH_XZ_ARC_Y_LINEAR, PATH_XZ_ARC_Y_SINUS, PATH_XZ_ARC_Y_LINEAR, PATH_XZ_ARC_Y_SINUS, PATH_XZ_ARC_Y_LINEAR}, 50
+		},
+		{
+			{ LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP },
+			{{88, -85, 88}, {125, -55, 0}, {88, -85, -88}, {88, -55, 88}, {125, -85, 0}, {88, -55, -88}},
+			{ PATH_XZ_ARC_Y_LINEAR, PATH_XZ_ARC_Y_SINUS, PATH_XZ_ARC_Y_LINEAR, PATH_XZ_ARC_Y_SINUS, PATH_XZ_ARC_Y_LINEAR, PATH_XZ_ARC_Y_SINUS}, 50
+		},
+	}
+};
+
+static sequence_info_t sequence_rotate_right_short = {
+
+	.is_sequence_looped      = true,
+	.main_sequence_begin     = 0,
+	.finalize_sequence_begin = 2,
+	.total_iteration_count   = 2,
+	
+	{
+		{
+			{ LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN },
+			{{62, -55, 108}, {125, -85, -32}, {108, -55, -62}, {62, -85, 108}, {125, -55, -32}, {108, -85, -62}},
+			{ PATH_XZ_ARC_Y_SINUS, PATH_XZ_ARC_Y_LINEAR, PATH_XZ_ARC_Y_SINUS, PATH_XZ_ARC_Y_LINEAR, PATH_XZ_ARC_Y_SINUS, PATH_XZ_ARC_Y_LINEAR}, 50
+		},
+		{
+			{ LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP, LIMB_STATE_DOWN, LIMB_STATE_UP },
+			{{88, -85,  88}, {125, -55, 0}, {88, -85, -88}, {88, -55, 88}, {125, -85, 0}, {88, -55, -88}},
+			{ PATH_XZ_ARC_Y_LINEAR, PATH_XZ_ARC_Y_SINUS, PATH_XZ_ARC_Y_LINEAR, PATH_XZ_ARC_Y_SINUS, PATH_XZ_ARC_Y_LINEAR, PATH_XZ_ARC_Y_SINUS}, 50
+		},
+	}
+};
 
 static sequence_info_t sequence_attack_left = {
 
@@ -503,7 +543,47 @@ static sequence_info_t sequence_attack_left = {
 	}
 };
 
+static sequence_info_t sequence_attack_right = {
 
+	.is_sequence_looped      = true,
+	.main_sequence_begin     = 1,
+	.finalize_sequence_begin = 3,
+	.total_iteration_count   = 4,
+	
+	{
+		//
+		// Prepare sequence
+		//
+		{
+			{ LIMB_STATE_CUSTOM, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN },
+			{ {88, -85, 88}, {125, -85, 0}, {88, -85, -88}, {0, 0, 150}, {125, -85, 0}, { 88, -85, -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 50
+		},
+		
+		//
+		// Main sequence
+		//
+		{
+			{ LIMB_STATE_CUSTOM, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN },
+			{{ 88, -85, 88}, {125, -85, 0}, {88, -85, -88}, {0, 50, 250}, {125, -85, 0}, {88, -85, -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 50
+		},
+		{
+			{ LIMB_STATE_CUSTOM, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN },
+			{ {88, -85, 88}, {125, -85, 0}, {88, -85, -88}, {0, 0, 150}, {125, -85, 0}, {88, -85, -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 50
+		},
+
+		//
+		// Finalize sequence
+		//
+		{
+			{ LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN, LIMB_STATE_DOWN },
+			{ {88, -85, 88}, {125, -85, 0}, {88, -85, -88}, {88, -85, 88}, {125, -85, 0}, {88, -85, -88}},
+			{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 50
+		},
+	}
+};
 
 static sequence_info_t sequence_dance = {
 

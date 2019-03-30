@@ -21,8 +21,11 @@
 #define SCR_CMD_SELECT_SEQUENCE_ROTATE_RIGHT			(0x06)
 #define SCR_CMD_SELECT_SEQUENCE_DIRECT_MOVEMENT_SHORT	(0x07)
 #define SCR_CMD_SELECT_SEQUENCE_REVERSE_MOVEMENT_SHORT	(0x08)
+#define SCR_CMD_SELECT_SEQUENCE_ROTATE_LEFT_SHORT		(0x09)
+#define SCR_CMD_SELECT_SEQUENCE_ROTATE_RIGHT_SHORT		(0x0A)
 
 #define SCR_CMD_SELECT_SEQUENCE_ATTACK_LEFT				(0x10)
+#define SCR_CMD_SELECT_SEQUENCE_ATTACK_RIGHT			(0x11)
 #define SCR_CMD_SELECT_SEQUENCE_DANCE					(0x20)
 
 #define SCR_CMD_SELECT_SEQUENCE_UPDATE_HEIGHT			(0x89)
@@ -54,6 +57,7 @@ void scr_process(void) {
 			movement_engine_select_sequence(SEQUENCE_DOWN);
 			break;
 			
+			
 		case SCR_CMD_SELECT_SEQUENCE_DIRECT_MOVEMENT:
 			movement_engine_select_sequence(SEQUENCE_DIRECT_MOVEMENT);
 			break;
@@ -70,6 +74,7 @@ void scr_process(void) {
             movement_engine_select_sequence(SEQUENCE_ROTATE_RIGHT);
             break;
 			
+			
 		case SCR_CMD_SELECT_SEQUENCE_DIRECT_MOVEMENT_SHORT:
 			movement_engine_select_sequence(SEQUENCE_DIRECT_MOVEMENT_SHORT);
 			break;
@@ -77,19 +82,33 @@ void scr_process(void) {
 		case SCR_CMD_SELECT_SEQUENCE_REVERSE_MOVEMENT_SHORT:
 			movement_engine_select_sequence(SEQUENCE_REVERSE_MOVEMENT_SHORT);
 			break;
-            
-        case SCR_CMD_SELECT_SEQUENCE_UPDATE_HEIGHT:
-            movement_engine_select_sequence(SEQUENCE_UPDATE_HEIGHT);
-            break;
+			
+		case SCR_CMD_SELECT_SEQUENCE_ROTATE_LEFT_SHORT:
+			movement_engine_select_sequence(SEQUENCE_ROTATE_LEFT_SHORT);
+			break;
+		
+		case SCR_CMD_SELECT_SEQUENCE_ROTATE_RIGHT_SHORT:
+			movement_engine_select_sequence(SEQUENCE_ROTATE_RIGHT_SHORT);
+			break;
+			
 			
 		case SCR_CMD_SELECT_SEQUENCE_ATTACK_LEFT:
 			movement_engine_select_sequence(SEQUENCE_ATTACK_LEFT);
 			break;
 			
+		case SCR_CMD_SELECT_SEQUENCE_ATTACK_RIGHT:
+			movement_engine_select_sequence(SEQUENCE_ATTACK_RIGHT);
+			break;
+			
 		case SCR_CMD_SELECT_SEQUENCE_DANCE:
 			movement_engine_select_sequence(SEQUENCE_DANCE);
 			break;
+            
 			
+        case SCR_CMD_SELECT_SEQUENCE_UPDATE_HEIGHT:
+            movement_engine_select_sequence(SEQUENCE_UPDATE_HEIGHT);
+            break;
+
 		case SCR_CMD_SELECT_SEQUENCE_NONE:
 			movement_engine_select_sequence(SEQUENCE_NONE);
 			break;

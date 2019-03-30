@@ -259,10 +259,31 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
 			}
 			break;
 			
+		case SEQUENCE_ROTATE_LEFT_SHORT:
+			if (hexapod_state == HEXAPOD_STATE_UP) {
+				next_sequence = SEQUENCE_ROTATE_LEFT_SHORT;
+				next_sequence_info = &sequence_rotate_left_short;
+			}
+			break;
+
+		case SEQUENCE_ROTATE_RIGHT_SHORT:
+			if (hexapod_state == HEXAPOD_STATE_UP) {
+				next_sequence = SEQUENCE_ROTATE_RIGHT_SHORT;
+				next_sequence_info = &sequence_rotate_right_short;
+			}
+			break;
+			
 		case SEQUENCE_ATTACK_LEFT:
 			if (hexapod_state == HEXAPOD_STATE_UP) {
 				next_sequence = SEQUENCE_ATTACK_LEFT;
 				next_sequence_info = &sequence_attack_left;
+			}
+			break;
+			
+		case SEQUENCE_ATTACK_RIGHT:
+			if (hexapod_state == HEXAPOD_STATE_UP) {
+				next_sequence = SEQUENCE_ATTACK_RIGHT;
+				next_sequence_info = &sequence_attack_right;
 			}
 			break;
 			
@@ -308,7 +329,10 @@ static void update_sequences_y_coordinate(void) {
 		&sequence_rotate_right,
 		&sequence_direct_movement_short,
 		&sequence_reverse_movement_short,
+		&sequence_rotate_left_short,
+		&sequence_rotate_right_short,
         &sequence_attack_left,
+		&sequence_attack_right,
         &sequence_dance
 	};
 	
