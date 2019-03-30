@@ -36,6 +36,7 @@ typedef enum {
 static driver_state_t driver_state = STATE_NOINIT;
 static hexapod_state_t hexapod_state = HEXAPOD_STATE_DOWN;
 static int32_t hexapod_height = GAIT_SEQUENCE_HEIGHT_LOW_LIMIT;
+static bool select_sequence_available = true;
 
 static sequence_id_t current_sequence = SEQUENCE_NONE;
 static const sequence_info_t* current_sequence_info = NULL;
@@ -69,6 +70,7 @@ void movement_engine_init(void) {
     next_sequence_info    = &sequence_down;
 	
     driver_state          = STATE_IDLE;
+	select_sequence_available = true;
 }
 
 //  ***************************************************************************
@@ -185,6 +187,10 @@ void movement_engine_set_height(uint32_t height) {
 /// @return none
 //  ***************************************************************************
 void movement_engine_select_sequence(sequence_id_t sequence) {
+	
+	if (select_sequence_available == false) {
+		return;
+	}
     
     // Request switch current sequence
     switch (sequence) {
@@ -298,6 +304,16 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
             callback_set_internal_error(ERROR_MODULE_MOVEMENT_ENGINE);
             return;
     }
+}
+
+//  ***************************************************************************
+/// @brief  Disable select sequence function
+/// @param  none
+/// @return true - read success, false - fail
+//  ***************************************************************************
+void movement_engine_select_sequence_disable(void) {
+	
+	select_sequence_available = false;
 }
 
 

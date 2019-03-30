@@ -258,6 +258,11 @@ void gui_process(void) {
 				oled_gl_clear_row_fragment(2, 67, 0, 67, 8);
 				oled_gl_draw_string(2, 67, "EMERGENCY");
 			}
+			else if (callback_is_voltage_error_set() == true) {
+				oled_gl_draw_string(0, 67, "BATTERY");
+				oled_gl_draw_string(2, 67, "LOW");
+				oled_gl_draw_string(4, 67, "VOLTAGE");
+			}
 			else {
 				oled_gl_clear_row_fragment(2, 67, 0, 67, 8);
 				oled_gl_draw_string(2, 67, "STANDART");

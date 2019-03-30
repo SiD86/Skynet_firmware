@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include "dac.h"
 #include "systimer.h"
-#include "monitoring.h"
+#include "error_handling.h"
 
 #define LOW_BATTERY_VOLTAGE_BEEP_ENABLE_TIME	(150)	// ms
 #define LOW_BATTERY_VOLTAGE_BEEP_DISABLE_TIME	(500)	// ms
@@ -41,7 +41,7 @@ void buzzer_process(void) {
 	switch (beep_state) {
 		
 		case BEEP_STATE_CHECK:
-			if (monitoring_is_low_battery_voltage() == true) {
+			if (callback_is_voltage_error_set() == true) {
 				beep_state = BEEP_STATE_ENABLE;
 			}
 			break;

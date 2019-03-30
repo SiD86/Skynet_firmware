@@ -96,7 +96,7 @@ void callback_set_memory_error(error_module_name_t module) {
 /// @brief  Callback function for set error - Voltage Error
 //  ***************************************************************************
 void callback_set_voltage_error(void) {
-	error_status |= (VOLTAGE_ERROR_MASK | EMERGENCY_MODE_MASK);
+	error_status |= VOLTAGE_ERROR_MASK;
 }
 
 /// ***************************************************************************
@@ -145,6 +145,6 @@ bool callback_is_any_error_set(void) {
 /// @brief  Callback function for check - Voltage error
 /// @return true - status contain any error, false - no
 //  ***************************************************************************
-bool callback_is_set_voltage_error_set(void) {
+bool callback_is_voltage_error_set(void) {
 	return error_status & VOLTAGE_ERROR_MASK;
 }
