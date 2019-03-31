@@ -64,7 +64,6 @@ int main(void) {
 		}
 		if (callback_is_voltage_error_set() == true) {
 			movement_engine_select_sequence(SEQUENCE_DOWN);
-			movement_engine_select_sequence_disable();
 		}
         
 		
