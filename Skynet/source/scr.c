@@ -28,10 +28,9 @@
 #define SCR_CMD_SELECT_SEQUENCE_ATTACK_RIGHT			(0x11)
 #define SCR_CMD_SELECT_SEQUENCE_DANCE					(0x20)
 
-#define SCR_CMD_SELECT_SEQUENCE_UPDATE_HEIGHT			(0x89)
+#define SCR_CMD_SELECT_SEQUENCE_INCREASE_HEIGHT			(0x88)
+#define SCR_CMD_SELECT_SEQUENCE_DECREASE_HEIGHT			(0x89)
 #define SCR_CMD_SELECT_SEQUENCE_NONE					(0x90)
-
-#define SCR_CMD_SET_HEXAPOD_HEIGHT						(0x95)
 
 #define SCR_CMD_CALCULATE_CHECKSUM						(0xFD)
 #define SCR_CMD_RESET									(0xFE)
@@ -103,18 +102,17 @@ void scr_process(void) {
 		case SCR_CMD_SELECT_SEQUENCE_DANCE:
 			movement_engine_select_sequence(SEQUENCE_DANCE);
 			break;
-            
-			
-        case SCR_CMD_SELECT_SEQUENCE_UPDATE_HEIGHT:
-            movement_engine_select_sequence(SEQUENCE_UPDATE_HEIGHT);
+            	
+        case SCR_CMD_SELECT_SEQUENCE_INCREASE_HEIGHT:
+            movement_engine_increase_height();
             break;
+			
+		case SCR_CMD_SELECT_SEQUENCE_DECREASE_HEIGHT:
+			movement_engine_decrease_height();
+			break;
 
 		case SCR_CMD_SELECT_SEQUENCE_NONE:
 			movement_engine_select_sequence(SEQUENCE_NONE);
-			break;
-			
-		case SCR_CMD_SET_HEXAPOD_HEIGHT:
-			movement_engine_set_height(scr_argument);
 			break;
         
 		/*case SCR_CMD_CALCULATE_CHECKSUM:

@@ -43,14 +43,6 @@ bool callback_is_movement_engine_error_set(void) {
 }
 
 //  ***************************************************************************
-/// @brief  Callback function for check error - Wireless modbus error
-/// @return true - error bit set, false - no
-//  ***************************************************************************
-bool callback_is_wireless_modbus_error_set(void) {
-	return error_status & ERROR_MODULE_WIRELESS_MODBUS;
-}
-
-//  ***************************************************************************
 /// @brief  Callback function for check error - Monitoring error
 /// @return true - error bit set, false - no
 //  ***************************************************************************

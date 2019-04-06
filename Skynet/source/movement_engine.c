@@ -166,17 +166,33 @@ void movement_engine_process(void) {
 }
 
 //  ***************************************************************************
-/// @brief  Set hexapod height
+/// @brief  Increase hexapod height
 /// @param  height: new height
 /// @return none
 //  ***************************************************************************
-void movement_engine_set_height(uint32_t height) {
+void movement_engine_increase_height(void) {
 	
-	if (height < GAIT_SEQUENCE_HEIGHT_LOW_LIMIT || height > GAIT_SEQUENCE_HEIGHT_HIGH_LIMIT) {
+	if (hexapod_height + 20 > GAIT_SEQUENCE_HEIGHT_HIGH_LIMIT) {
 		return;
 	}
 	
-	hexapod_height = height;
+	hexapod_height += 20;
+	movement_engine_select_sequence(SEQUENCE_UPDATE_HEIGHT);
+}
+
+//  ***************************************************************************
+/// @brief  Decrease hexapod height
+/// @param  height: new height
+/// @return none
+//  ***************************************************************************
+void movement_engine_decrease_height(void) {
+	
+	if (hexapod_height - 20 < GAIT_SEQUENCE_HEIGHT_LOW_LIMIT) {
+		return;
+	}
+	
+	hexapod_height -= 20;
+	movement_engine_select_sequence(SEQUENCE_UPDATE_HEIGHT);
 }
 
 //  ***************************************************************************

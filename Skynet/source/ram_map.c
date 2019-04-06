@@ -28,10 +28,9 @@ typedef struct {
 static const ram_map_t ram_map = {
     
 	RAM_PUT_DWORD(0x0000, error_status),
-	
-	RAM_PUT_BYTE (0x0020, wireless_voltage),
-	RAM_PUT_BYTE (0x0021, periphery_voltage),
-	RAM_PUT_BYTE (0x0022, battery_voltage),
+	RAM_PUT_BYTE (0x0004, wireless_voltage),
+	RAM_PUT_BYTE (0x0005, periphery_voltage),
+	RAM_PUT_BYTE (0x0006, battery_voltage),
 	
 	RAM_PUT_BYTE (0x0060, scr),
 	RAM_PUT_DWORD(0x0061, scr_argument),

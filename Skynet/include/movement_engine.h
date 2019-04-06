@@ -36,7 +36,8 @@ typedef enum {
 
 extern void movement_engine_init(void);
 extern void movement_engine_process(void);
-extern void movement_engine_set_height(uint32_t height);
+extern void movement_engine_increase_height(void);
+extern void movement_engine_decrease_height(void);
 extern void movement_engine_select_sequence(sequence_id_t sequence);
 
 
