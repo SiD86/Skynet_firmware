@@ -10,14 +10,14 @@
 
 
 typedef enum {
-	GREEN_LED,
-	YELLOW_LED,
-	RED_LED
+    GREEN_LED,
+    YELLOW_LED,
+    RED_LED
 } led_id;
 
 
 static uint32_t leds[] = {PIO_PC23, PIO_PC24, PIO_PC25};
-	
+    
 static void led_enable(led_id id);
 
 
@@ -26,11 +26,11 @@ static void led_enable(led_id id);
 /// @param  none
 //  ***************************************************************************
 void led_init(void) {
-	
+    
     // Initialization GPIO
-	REG_PIOC_PER  = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
-	REG_PIOC_OER  = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
-	REG_PIOC_SODR = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
+    REG_PIOC_PER  = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
+    REG_PIOC_OER  = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
+    REG_PIOC_SODR = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
 }
 
 //  ***************************************************************************
@@ -38,18 +38,18 @@ void led_init(void) {
 /// @param  none
 //  ***************************************************************************
 void led_process(void) {
-	
-	if (callback_is_emergency_mode_active() == true) {
-		led_enable(RED_LED);
-		return;
-	}
+    
+    if (callback_is_emergency_mode_active() == true) {
+        led_enable(RED_LED);
+        return;
+    }
 
-	if (callback_is_any_error_set() == true) {
-		led_enable(YELLOW_LED);
-	}
-	else {
-		led_enable(GREEN_LED);;
-	}
+    if (callback_is_any_error_set() == true) {
+        led_enable(YELLOW_LED);
+    }
+    else {
+        led_enable(GREEN_LED);;
+    }
 }
 
 
@@ -72,6 +72,6 @@ static void led_enable(led_id id) {
     }
     
     // Disable all LEDs and enable requested LED
-	REG_PIOC_SODR = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
+    REG_PIOC_SODR = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
     REG_PIOC_CODR = leds[id];
 }

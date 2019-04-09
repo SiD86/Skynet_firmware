@@ -15,10 +15,10 @@ static volatile uint32_t systime_ms = 0;
 /// @return none
 //  ***************************************************************************
 void systimer_init(void) {
-	
-	if (SysTick_Config(SystemCoreClock / 1000)) { 
-		while (1);
-	}
+    
+    if (SysTick_Config(SystemCoreClock / 1000)) { 
+        while (1);
+    }
 }
 
 //  ***************************************************************************
@@ -27,7 +27,7 @@ void systimer_init(void) {
 /// @return Milliseconds
 //  ***************************************************************************
 uint32_t get_time_ms(void) {
-	return systime_ms;
+    return systime_ms;
 }
 
 //  ***************************************************************************
@@ -36,7 +36,7 @@ uint32_t get_time_ms(void) {
 /// @return Microseconds
 //  ***************************************************************************
 uint32_t get_time_us(void) {
-	
+    
      uint32_t ticks = 0;
      uint32_t count = 0;
 
@@ -45,7 +45,7 @@ uint32_t get_time_us(void) {
          ticks = SysTick->VAL;
          count = systime_ms;
      } 
-	 while (SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk);
+     while (SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk);
 
      return count * 1000 + (SysTick->LOAD + 1 - ticks) / (SystemCoreClock / 1000000) ;
 }
@@ -56,9 +56,9 @@ uint32_t get_time_us(void) {
 /// @return none
 //  ***************************************************************************
 void delay_ms(uint32_t ms) {
-	
-	uint32_t start = systime_ms;
-	while (systime_ms - start < ms);
+    
+    uint32_t start = systime_ms;
+    while (systime_ms - start < ms);
 }
 
 
@@ -68,5 +68,5 @@ void delay_ms(uint32_t ms) {
 /// @return none
 //  ***************************************************************************
 void SysTick_Handler(void) {
-	++systime_ms;
+    ++systime_ms;
 }

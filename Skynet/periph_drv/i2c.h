@@ -11,8 +11,8 @@
 
 
 typedef enum {
-	I2C_SPEED_100KHZ = 0x1D0D0,
-	I2C_SPEED_400KHZ = 0x6565
+    I2C_SPEED_100KHZ = 0x1D0D0,
+    I2C_SPEED_400KHZ = 0x6565
 } i2c_speed_t;
 
 

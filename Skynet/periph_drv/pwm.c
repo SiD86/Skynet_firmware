@@ -6,9 +6,9 @@
 #include "pwm.h"
 
 #define PWM_FREQUENCY_HZ                (150)
-#define TIMER_CLOCK_FREQUENCY			(SystemCoreClock / 2)
+#define TIMER_CLOCK_FREQUENCY           (SystemCoreClock / 2)
 #define PWM_PERIOD_TICKS                (TIMER_CLOCK_FREQUENCY / PWM_FREQUENCY_HZ)
-#define US_TO_TICKS(_width)				((TIMER_CLOCK_FREQUENCY / 1000000) * (_width))
+#define US_TO_TICKS(_width)             ((TIMER_CLOCK_FREQUENCY / 1000000) * (_width))
 
 #define PWM_CH0_PIN                     (PIO_PC13)
 #define PWM_CH1_PIN                     (PIO_PB21)
@@ -31,7 +31,7 @@
 #define PWM_CH17_PIN                    (PIO_PC7)
 
 #define PWM_ALL_PINS_PORTA              (PWM_CH7_PIN | PWM_CH13_PIN)
-#define PWM_ALL_PINS_PORTB				(PWM_CH1_PIN | PWM_CH2_PIN)
+#define PWM_ALL_PINS_PORTB              (PWM_CH1_PIN | PWM_CH2_PIN)
 #define PWM_ALL_PINS_PORTC              (PWM_CH0_PIN | PWM_CH3_PIN  | PWM_CH4_PIN  | PWM_CH5_PIN  | PWM_CH6_PIN  | PWM_CH8_PIN | \
                                          PWM_CH14_PIN | PWM_CH15_PIN | PWM_CH16_PIN | PWM_CH17_PIN)
 #define PWM_ALL_PINS_PORTD              (PWM_CH9_PIN  | PWM_CH10_PIN  | PWM_CH11_PIN | PWM_CH12_PIN)
@@ -53,10 +53,10 @@ void pwm_init(void) {
     REG_PIOA_PER  = PWM_ALL_PINS_PORTA;
     REG_PIOA_OER  = PWM_ALL_PINS_PORTA;
     REG_PIOA_SODR = PWM_ALL_PINS_PORTA;
-	
-	REG_PIOB_PER  = PWM_ALL_PINS_PORTB;
-	REG_PIOB_OER  = PWM_ALL_PINS_PORTB;
-	REG_PIOB_SODR = PWM_ALL_PINS_PORTB;
+    
+    REG_PIOB_PER  = PWM_ALL_PINS_PORTB;
+    REG_PIOB_OER  = PWM_ALL_PINS_PORTB;
+    REG_PIOB_SODR = PWM_ALL_PINS_PORTB;
     
     REG_PIOC_PER  = PWM_ALL_PINS_PORTC;
     REG_PIOC_OER  = PWM_ALL_PINS_PORTC;
@@ -85,10 +85,10 @@ void pwm_init(void) {
     for (uint32_t i = 0; i < 18; ++i) {
         pwm_channel_ticks[i] = PWM_DISABLE_CHANNEL_VALUE;
     }        
-	
-	// Enable timers IRQ
-	NVIC_EnableIRQ(TC0_IRQn);
-	NVIC_EnableIRQ(TC3_IRQn);
+    
+    // Enable timers IRQ
+    NVIC_EnableIRQ(TC0_IRQn);
+    NVIC_EnableIRQ(TC3_IRQn);
     NVIC_EnableIRQ(TC4_IRQn);
     NVIC_EnableIRQ(TC5_IRQn);
     NVIC_EnableIRQ(TC6_IRQn);
@@ -98,7 +98,7 @@ void pwm_init(void) {
 
 //  ***************************************************************************
 /// @brief  PWM enable
-/// @note	PWM channels timers auto enable in next PWM cycle
+/// @note    PWM channels timers auto enable in next PWM cycle
 /// @param  none
 /// @return none
 //  ***************************************************************************
@@ -107,7 +107,7 @@ void pwm_enable(void) {
     // Enable sync timer (PWM period)
     REG_TC0_CCR0 = TC_CCR_SWTRG | TC_CCR_CLKEN;
     
-	// Allow pulse width update
+    // Allow pulse width update
     pwm_update_state = PWM_UPDATE_ENABLE;
 }
 
@@ -136,8 +136,8 @@ void pwm_disable(void) {
 /// @return none
 //  ***************************************************************************
 void pwm_set_update_state(pwm_update_state_t state) {
-	
-	pwm_update_state = state;
+    
+    pwm_update_state = state;
 }
     
 //  ***************************************************************************
@@ -165,17 +165,17 @@ void TC0_Handler(void) {
 
     if (status & TC_SR_CPCS) {
         
-		++synchro;
+        ++synchro;
         
         // Connect all pins to VCC (reset state)
         REG_PIOA_SODR = PWM_ALL_PINS_PORTA;
-		REG_PIOB_SODR = PWM_ALL_PINS_PORTB;
+        REG_PIOB_SODR = PWM_ALL_PINS_PORTB;
         REG_PIOC_SODR = PWM_ALL_PINS_PORTC;
         REG_PIOD_SODR = PWM_ALL_PINS_PORTD;
 
         // Load pulse width to PWM channels
         if (pwm_update_state == PWM_UPDATE_ENABLE) {
-			
+            
             REG_TC1_RA0 = pwm_channel_ticks[0];
             REG_TC1_RB0 = pwm_channel_ticks[1];
             REG_TC1_RC0 = pwm_channel_ticks[2];

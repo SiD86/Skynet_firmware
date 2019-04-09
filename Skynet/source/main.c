@@ -29,60 +29,60 @@ static void enter_to_emergency_loop(void);
 /// @return none
 //  ***************************************************************************
 int main(void) {
-	
+    
     // Initialize SAM system
     SystemInit();
-	WDT->WDT_MR = WDT_MR_WDDIS;
+    WDT->WDT_MR = WDT_MR_WDDIS;
 
-	/*REG_PIOC_PER = PIO_PC22 | PIO_PC21 | PIO_PC29;
-	REG_PIOC_OER = PIO_PC22 | PIO_PC21 | PIO_PC29;
-	REG_PIOC_CODR = PIO_PC22 | PIO_PC21 | PIO_PC29;*/
-	
+    /*REG_PIOC_PER = PIO_PC22 | PIO_PC21 | PIO_PC29;
+    REG_PIOC_OER = PIO_PC22 | PIO_PC21 | PIO_PC29;
+    REG_PIOC_CODR = PIO_PC22 | PIO_PC21 | PIO_PC29;*/
+    
 
-	// Initialize FW
-	systimer_init();
-	i2c_init(I2C_SPEED_400KHZ);
-	gui_init();
-	veeprom_init();
-	modbus_init();
-	monitoring_init();
-	led_init();
+    // Initialize FW
+    systimer_init();
+    i2c_init(I2C_SPEED_400KHZ);
+    gui_init();
+    veeprom_init();
+    modbus_init();
+    monitoring_init();
+    led_init();
     
     servo_driver_init();
     limbs_driver_init();
-	movement_engine_init();
-	
-	buzzer_init();
+    movement_engine_init();
+    
+    buzzer_init();
     
     while (1)  {
-		
-		//
-		// CHECK SYSTEM STATUS
-		//
-		if (callback_is_emergency_mode_active() == true) {
-			enter_to_emergency_loop();
-		}
-		if (callback_is_voltage_error_set() == true) {
-			movement_engine_select_sequence(SEQUENCE_DOWN);
-		}
         
-		
-		//
-		// NORMAL MODE PROCESS
-		//
-		gui_process();
-		led_process();
-		buzzer_process();
-		
+        //
+        // CHECK SYSTEM STATUS
+        //
+        if (callback_is_emergency_mode_active() == true) {
+            enter_to_emergency_loop();
+        }
+        if (callback_is_voltage_error_set() == true) {
+            movement_engine_select_sequence(SEQUENCE_DOWN);
+        }
+        
+        
+        //
+        // NORMAL MODE PROCESS
+        //
+        gui_process();
+        led_process();
+        buzzer_process();
+        
         servo_driver_process();
         limbs_driver_process();
         movement_engine_process();
-		
-		modbus_process();
-		scr_process();
+        
+        modbus_process();
+        scr_process();
         
         monitoring_process();
-	}
+    }
 }
 
 //  ***************************************************************************
@@ -92,19 +92,19 @@ int main(void) {
 //  ***************************************************************************
 static void enter_to_emergency_loop(void) {
     
-	while (1)  {
-		
-		gui_process();
-		led_process();
-		
-		modbus_process();
-		scr_process();
-		
-		monitoring_process();
-	}
+    while (1)  {
+        
+        gui_process();
+        led_process();
+        
+        modbus_process();
+        scr_process();
+        
+        monitoring_process();
+    }
 }
 
 void HardFault_Handler(void) {
-	
-	while (true);
+    
+    while (true);
 }

@@ -9,25 +9,25 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define SUPPORT_LIMB_COUNT				(6)
+#define SUPPORT_LIMB_COUNT                (6)
 
 
 typedef struct {
-	float x;
-	float y;
-	float z;
+    float x;
+    float y;
+    float z;
 } point_3d_t;
 
 typedef enum {
-	PATH_LINEAR,
-	PATH_XZ_ARC_Y_LINEAR,
+    PATH_LINEAR,
+    PATH_XZ_ARC_Y_LINEAR,
     PATH_XZ_ARC_Y_SINUS,
-	PATH_XZ_ELLIPTICAL_Y_SINUS,
+    PATH_XZ_ELLIPTICAL_Y_SINUS,
 } path_type_t;
 
 
-extern int8_t ram_link_angles_override[SUPPORT_LIMB_COUNT * 3];	// Write only
-extern int8_t ram_link_angles[SUPPORT_LIMB_COUNT * 3];			// Read only
+extern int8_t ram_link_angles_override[SUPPORT_LIMB_COUNT * 3];    // Write only
+extern int8_t ram_link_angles[SUPPORT_LIMB_COUNT * 3];            // Read only
 
 
 extern void limbs_driver_init(void);

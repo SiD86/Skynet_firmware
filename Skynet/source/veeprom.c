@@ -35,10 +35,10 @@ void veeprom_init(void) {
     
     flash_init();
     
-    uint32_t calc_checksum = calculate_checksum();
+    /*uint32_t calc_checksum = calculate_checksum();
     uint32_t read_checksum = veeprom_read_32(VEEPROM_CHECKSUM_ADDRESS);
     
-    /*if (calc_checksum != read_checksum) {
+    if (calc_checksum != read_checksum) {
         callback_set_memory_error(ERROR_MODULE_VEEPROM_DRIVER);
     }*/
 }

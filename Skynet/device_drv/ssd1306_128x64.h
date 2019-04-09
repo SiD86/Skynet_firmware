@@ -9,8 +9,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define DISPLAY_WIDTH					(128)
-#define DISPLAY_HEIGHT					(64)
+#define DISPLAY_WIDTH                   (128)
+#define DISPLAY_HEIGHT                  (64)
 
 
 extern bool ssd1306_128x64_init(void);

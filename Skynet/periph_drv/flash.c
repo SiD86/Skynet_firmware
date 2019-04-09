@@ -4,7 +4,6 @@
 //  ***************************************************************************
 #include <sam.h>
 #include "flash.h"
-#include "uart.h"
 #define FLASH_BANK0_START_ADDRESS       (IFLASH0_ADDR)
 #define FLASH_BANK0_END_ADDRESS         (FLASH_BANK0_START_ADDRESS + IFLASH0_SIZE - 1)
 
@@ -28,7 +27,7 @@ void flash_init(void) {
     // * 128 access mode
     // * 4 wait states for flash writing (default)
     // * RDY interrupt disables
-	REG_EFC0_FMR = EEFC_FMR_FWS(4);
+    REG_EFC0_FMR = EEFC_FMR_FWS(4);
     REG_EFC1_FMR = EEFC_FMR_FWS(4);
 }
 

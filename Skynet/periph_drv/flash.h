@@ -9,10 +9,10 @@
 #include <stdbool.h>
 
 // Use flash bank #1
-#define FLASH_BANK1_START_ADDRESS			(IFLASH1_ADDR)
-#define FLASH_BANK1_END_ADDRESS				(FLASH_BANK1_START_ADDRESS + IFLASH1_SIZE - 1)
-#define FLASH_BANK1_PAGE_COUNT				(1024)
-#define FLASH_PAGE_SIZE						(IFLASH1_PAGE_SIZE)
+#define FLASH_BANK1_START_ADDRESS           (IFLASH1_ADDR)
+#define FLASH_BANK1_END_ADDRESS             (FLASH_BANK1_START_ADDRESS + IFLASH1_SIZE - 1)
+#define FLASH_BANK1_PAGE_COUNT              (1024)
+#define FLASH_PAGE_SIZE                     (IFLASH1_PAGE_SIZE)
 
 
 void flash_init(void);

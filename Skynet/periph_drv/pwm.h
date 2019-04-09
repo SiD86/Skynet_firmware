@@ -7,12 +7,12 @@
 #define PWM_H_
 
 
-#define PWM_DISABLE_CHANNEL_VALUE			(0x0000)
+#define PWM_DISABLE_CHANNEL_VALUE            (0x0000)
 
 
 typedef enum {
-	PWM_UPDATE_DISABLE,
-	PWM_UPDATE_ENABLE
+    PWM_UPDATE_DISABLE,
+    PWM_UPDATE_ENABLE
 } pwm_update_state_t;
 
 

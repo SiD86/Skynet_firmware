@@ -9,7 +9,7 @@
 #include <stdbool.h>
 
 
-#define USART1_USE_INTERNAL_BUFFER			(0x00000000)
+#define USART1_USE_INTERNAL_BUFFER            (0x00000000)
 
 
 void           usart1_init(uint32_t baud_rate);

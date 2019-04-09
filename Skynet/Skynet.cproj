@@ -186,12 +186,6 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="device_drv\i2c_eeprom.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="device_drv\i2c_eeprom.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="device_drv\ssd1306_128x64.c">
       <SubType>compile</SubType>
     </Compile>
@@ -289,12 +283,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="periph_drv\systimer.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="periph_drv\uart.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="periph_drv\uart.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="periph_drv\usart0_pdc.c">

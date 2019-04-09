@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 
-#define SUPPORT_SERVO_COUNT						(18)
+#define SUPPORT_SERVO_COUNT                        (18)
 
 typedef enum {
-	SERVO_DRIVER_UPDATE_DISABLE,
-	SERVO_DRIVER_UPDATE_ENABLE
+    SERVO_DRIVER_UPDATE_DISABLE,
+    SERVO_DRIVER_UPDATE_ENABLE
 } servo_driver_update_state_t;
 
 
