@@ -30,7 +30,7 @@ void led_init(void) {
     // Initialization GPIO
     REG_PIOC_PER  = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
     REG_PIOC_OER  = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
-    REG_PIOC_SODR = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
+    REG_PIOC_CODR = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
 }
 
 //  ***************************************************************************
@@ -67,11 +67,11 @@ static void led_enable(led_id id) {
     }
     
     // LED already enabled
-    if ((REG_PIOC_ODSR & leds[id]) == 0) {
+    if (REG_PIOC_ODSR & leds[id]) {
         return;
     }
     
     // Disable all LEDs and enable requested LED
-    REG_PIOC_SODR = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
-    REG_PIOC_CODR = leds[id];
+    REG_PIOC_CODR = leds[GREEN_LED] | leds[YELLOW_LED] | leds[RED_LED];
+    REG_PIOC_SODR = leds[id];
 }
