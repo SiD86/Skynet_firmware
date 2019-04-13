@@ -186,6 +186,12 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="device_drv\hc-sr04.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="device_drv\hc-sr04.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="device_drv\ssd1306_128x64.c">
       <SubType>compile</SubType>
     </Compile>
@@ -220,6 +226,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\oled_gl_font_6x8.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\orientation.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\veeprom_map.h">
@@ -331,6 +340,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="source\oled_gl.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="source\orientation.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="source\ram_map.c">

@@ -9,7 +9,7 @@
 #include "limbs_driver.h"
 #include "servo_driver.h"
 #include "monitoring.h"
-#include "systimer.h"
+#include "orientation.h"
 #include "veeprom.h"
 #include "modbus.h"
 #include "scr.h"
@@ -17,10 +17,12 @@
 #include "i2c.h"
 #include "gui.h"
 #include "buzzer.h"
+#include "systimer.h"
 #include "error_handling.h"
 
 
 static void enter_to_emergency_loop(void);
+
 
 
 //  ***************************************************************************
@@ -33,6 +35,9 @@ int main(void) {
     // Initialize SAM system
     SystemInit();
     WDT->WDT_MR = WDT_MR_WDDIS;
+	
+	// Enable PIOA, PIOB, PIOC, PIOD
+	REG_PMC_PCER0 |= (PMC_PCER0_PID11 | PMC_PCER0_PID12 | PMC_PCER0_PID13 | PMC_PCER0_PID14);
 
     /*REG_PIOC_PER = PIO_PC22 | PIO_PC21 | PIO_PC29;
     REG_PIOC_OER = PIO_PC22 | PIO_PC21 | PIO_PC29;
@@ -41,12 +46,13 @@ int main(void) {
 
     // Initialize FW
     systimer_init();
+	led_init();
     i2c_init(I2C_SPEED_400KHZ);
     gui_init();
     veeprom_init();
     modbus_init();
     monitoring_init();
-    led_init();
+	orientation_init();
     
     servo_driver_init();
     limbs_driver_init();
@@ -82,6 +88,7 @@ int main(void) {
         scr_process();
         
         monitoring_process();
+		orientation_process();
     }
 }
 

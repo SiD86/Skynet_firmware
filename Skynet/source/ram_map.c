@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include "limbs_driver.h"
 #include "monitoring.h"
+#include "orientation.h"
 #include "scr.h"
 #include "error_handling.h"
         
@@ -31,6 +32,8 @@ static const ram_map_t ram_map = {
     RAM_PUT_BYTE (0x0004, wireless_voltage),
     RAM_PUT_BYTE (0x0005, periphery_voltage),
     RAM_PUT_BYTE (0x0006, battery_voltage),
+	
+	RAM_PUT_DWORD(0x0010, current_orientation.front_distance),
     
     RAM_PUT_BYTE (0x0060, scr),
     RAM_PUT_DWORD(0x0061, scr_argument),

@@ -16,7 +16,8 @@ typedef enum {
     ERROR_MODULE_LIMBS_DRIVER    = 0x00040000,
     ERROR_MODULE_MOVEMENT_ENGINE = 0x00080000,
     ERROR_MODULE_MONITORING      = 0x00100000,
-    ERROR_MODULE_GUI             = 0x00200000
+    ERROR_MODULE_GUI             = 0x00200000,
+	ERROR_MODULE_ORIENTATION     = 0x00400000
 } error_module_name_t;
 
 
@@ -40,5 +41,6 @@ extern void callback_set_i2c_error(error_module_name_t module);
 extern bool callback_is_emergency_mode_active(void);
 extern bool callback_is_any_error_set(void);
 extern bool callback_is_voltage_error_set(void);
+
 
 #endif // _ERROR_HANDLING_H_
