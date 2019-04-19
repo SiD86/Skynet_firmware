@@ -10,18 +10,18 @@
 #include <stdbool.h>
 
 typedef enum {
-    ERROR_MODULE_NO              = 0x00000000,
-    ERROR_MODULE_VEEPROM         = 0x00010000,
-    ERROR_MODULE_SERVO_DRIVER    = 0x00020000,
-    ERROR_MODULE_LIMBS_DRIVER    = 0x00040000,
-    ERROR_MODULE_MOVEMENT_ENGINE = 0x00080000,
-    ERROR_MODULE_MONITORING      = 0x00100000,
-    ERROR_MODULE_GUI             = 0x00200000,
-	ERROR_MODULE_ORIENTATION     = 0x00400000
+    ERROR_MODULE_NO              = 0x0000,
+    ERROR_MODULE_VEEPROM         = 0x0100,
+    ERROR_MODULE_SERVO_DRIVER    = 0x0200,
+    ERROR_MODULE_LIMBS_DRIVER    = 0x0400,
+    ERROR_MODULE_MOVEMENT_ENGINE = 0x0800,
+    ERROR_MODULE_MONITORING      = 0x1000,
+    ERROR_MODULE_GUI             = 0x2000,
+	ERROR_MODULE_ORIENTATION     = 0x4000
 } error_module_name_t;
 
 
-extern uint32_t error_status;
+extern uint16_t error_status;
 
 
 extern bool callback_is_servo_driver_error_set(void);

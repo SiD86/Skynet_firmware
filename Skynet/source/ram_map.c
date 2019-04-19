@@ -11,6 +11,7 @@
 #include "orientation.h"
 #include "scr.h"
 #include "error_handling.h"
+#include "version.h"
         
 #define RAM_PUT_BYTE(ram_addr, var)  .data[ram_addr] = (uint8_t*)&(var)
 
@@ -26,14 +27,18 @@ typedef struct {
     uint8_t* data[RAM_MAP_SIZE];
 } ram_map_t;
 
+static const uint32_t device_id = DEVICE_ID;
+static const uint8_t  memory_map_version = MEMORY_MAP_VERSION;
 static const ram_map_t ram_map = {
     
-    RAM_PUT_DWORD(0x0000, error_status),
-    RAM_PUT_BYTE (0x0004, wireless_voltage),
-    RAM_PUT_BYTE (0x0005, periphery_voltage),
-    RAM_PUT_BYTE (0x0006, battery_voltage),
+	RAM_PUT_DWORD(0x0000, device_id),
+    RAM_PUT_BYTE (0x000F, memory_map_version),
+    RAM_PUT_WORD (0x0010, error_status),
+    RAM_PUT_BYTE (0x0012, wireless_voltage),
+    RAM_PUT_BYTE (0x0013, periphery_voltage),
+    RAM_PUT_BYTE (0x0014, battery_voltage),
 	
-	RAM_PUT_DWORD(0x0010, current_orientation.front_distance),
+	RAM_PUT_DWORD(0x0016, current_orientation.front_distance),
     
     RAM_PUT_BYTE (0x0060, scr),
     RAM_PUT_DWORD(0x0061, scr_argument),
