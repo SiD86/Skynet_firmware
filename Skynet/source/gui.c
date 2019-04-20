@@ -239,7 +239,7 @@ void gui_process(void) {
             break;
         
         case STATE_UPDATE_PERIPHERY_VOLTAGE:
-            oled_gl_draw_float_number(2, 20, periphery_voltage / 10.0);
+            oled_gl_draw_float_number(2, 20, sensors_voltage / 10.0);
             module_state = STATE_UPDATE_WIRELESS_VOLTAGE;
             break;
             

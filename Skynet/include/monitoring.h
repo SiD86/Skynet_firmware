@@ -11,7 +11,7 @@
 
 
 extern uint8_t wireless_voltage;
-extern uint8_t periphery_voltage;
+extern uint8_t sensors_voltage;
 extern uint8_t battery_voltage;
 
 

@@ -14,14 +14,14 @@
 #include "error_handling.h"
 
 #define SUPPORT_ADC_CHANNEL_COUNT               (3)
-#define WIRELESS_VOLTAGE_ADC_CH                 (2)
-#define PERIPHERY_VOLTAGE_ADC_CH                (1)
-#define BATTERY_VOLTAGE_ADC_CH                  (0)
+#define BATTERY_VOLTAGE_ADC_CH                  (2)
+#define WIRELESS_VOLTAGE_ADC_CH                 (1)
+#define SENSORS_VOLTAGE_ADC_CH                  (0)
 
 #define ADC_ACCUMULATION_COUNT                  (10000)
 
 #define WIRELESS_VOLTAGE_THRESHOLD              (40)    // 4.0V
-#define PERIPHERY_VOLTAGE_THRESHOLD             (40)    // 4.0V
+#define SENSORS_VOLTAGE_THRESHOLD               (40)    // 4.0V
 
 
 typedef enum {
@@ -41,9 +41,9 @@ static state_t subsystem_state = STATE_NOINIT;
 static voltage_divisor_info_t voltage_divisor[SUPPORT_ADC_CHANNEL_COUNT] = {0};
 static uint8_t battery_low_voltage_threshold = 0;
 
-uint8_t wireless_voltage  = 50;     // 5.0 V
-uint8_t periphery_voltage = 50;     // 5.0 V
-uint8_t battery_voltage   = 120;    // 12.0 V
+uint8_t wireless_voltage = 50;   // 5.0 V
+uint8_t sensors_voltage  = 60;   // 5.0 V
+uint8_t battery_voltage  = 80;   // 8.0 V
 
 
 static bool read_configuration(void);
@@ -86,7 +86,7 @@ void monitoring_process(void) {
             if (adc_is_conversion_complete() == true) {
                 
                 adc_acc_voltage[0] += adc_get_voltage(WIRELESS_VOLTAGE_ADC_CH);
-                adc_acc_voltage[1] += adc_get_voltage(PERIPHERY_VOLTAGE_ADC_CH);
+                adc_acc_voltage[1] += adc_get_voltage(SENSORS_VOLTAGE_ADC_CH);
                 adc_acc_voltage[2] += adc_get_voltage(BATTERY_VOLTAGE_ADC_CH);
                 ++accumulate_count;
                 
@@ -99,11 +99,11 @@ void monitoring_process(void) {
             break;
             
         case STATE_CALCULATE:
-            wireless_voltage  = calculate_voltage(adc_acc_voltage[0], &voltage_divisor[0]);
-            periphery_voltage = calculate_voltage(adc_acc_voltage[1], &voltage_divisor[1]);// * FRAC + (float)periphery_voltage * (1.0f - FRAC);
-            battery_voltage   = calculate_voltage(adc_acc_voltage[2], &voltage_divisor[2]);// * FRAC + (float)battery_voltage   * (1.0f - FRAC);
+            wireless_voltage = calculate_voltage(adc_acc_voltage[0], &voltage_divisor[0]);
+            sensors_voltage  = calculate_voltage(adc_acc_voltage[1], &voltage_divisor[1]);
+            battery_voltage  = calculate_voltage(adc_acc_voltage[2], &voltage_divisor[2]);
             
-            if (wireless_voltage < WIRELESS_VOLTAGE_THRESHOLD || periphery_voltage < PERIPHERY_VOLTAGE_THRESHOLD) {
+            if (wireless_voltage < WIRELESS_VOLTAGE_THRESHOLD || sensors_voltage < SENSORS_VOLTAGE_THRESHOLD) {
                 callback_set_voltage_error();
             }
             

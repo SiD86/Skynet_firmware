@@ -11,15 +11,17 @@
 #define HCSR04_TRIG_PIN						(PIO_PB17)
 #define HCSR04_ECHO_PIN						(PIO_PA2)
 #define HCSR04_TRIG_PULSE_WIDTH				(1)		// ms
-#define HCSR04_TIME_BETWEEN_MEAS			(50)	// ms
+#define HCSR04_TIME_BETWEEN_MEAS			(30)	// ms
 #define HCSR04_MEAS_TIMEOUT					(200)	// ms
 #define HCSR04_DISTANCE_DEFAULT_VALUE		(0xFFFFFFFF)
+#define HCSR04_ACCUMULATION_COUNT           (5)
 
 
 typedef enum {
 	STATE_IDLE,
 	STATE_TRIG_RISE,
 	STATE_TRIG_FALL,
+    STATE_MEAS,
 	STATE_CALCULATE,
 	STATE_DELAY
 } driver_state_t;
@@ -69,6 +71,8 @@ void hcsr04_start(void) {
 void hcsr04_process(void) {
 	
 	static uint32_t start_time = 0;
+    static float meas_acc = 0;
+    static uint32_t acc_counter = 0;
 	
 	switch (driver_state) {
 		
@@ -90,27 +94,37 @@ void hcsr04_process(void) {
 				REG_PIOB_CODR = HCSR04_TRIG_PIN;
 				
 				start_time = get_time_ms();
-				driver_state = STATE_CALCULATE;
+				driver_state = STATE_MEAS;
 			}
 			break;
+            
+        case STATE_MEAS:
+            if (REG_TC0_SR1 & TC_SR_LDRBS) {
+                
+                uint32_t rise_time = REG_TC0_RA1;
+                uint32_t fall_time = REG_TC0_RB1;
+                uint32_t pulse_time_us = (fall_time - rise_time) / 42;
+                meas_acc += (pulse_time_us / 58.0f) * 10;
+                ++acc_counter;
+                
+                start_time = get_time_ms();
+                driver_state = (acc_counter >= HCSR04_ACCUMULATION_COUNT) ? STATE_CALCULATE : STATE_DELAY;
+            }
+            else if (get_time_ms() - start_time >= HCSR04_MEAS_TIMEOUT) {
+                
+                distance = HCSR04_DISTANCE_DEFAULT_VALUE;
+                meas_acc = 0;
+                acc_counter = 0;
+                start_time = get_time_ms();
+                driver_state = STATE_DELAY;
+            }
+            break;
 		
 		case STATE_CALCULATE:
-			if (REG_TC0_SR1 & TC_SR_LDRBS) {
-				
-				uint32_t rise_time = REG_TC0_RA1;
-				uint32_t fall_time = REG_TC0_RB1;
-				uint32_t pulse_time_us = (fall_time - rise_time) / 42;
-				distance = (pulse_time_us / 58.0f) * 10;
-				
-				start_time = get_time_ms();
-				driver_state = STATE_DELAY;
-			}
-			else if (get_time_ms() - start_time >= HCSR04_MEAS_TIMEOUT) {
-				
-				distance = HCSR04_DISTANCE_DEFAULT_VALUE;
-				start_time = get_time_ms();
-				driver_state = STATE_DELAY;
-			}
+			distance = meas_acc / acc_counter;
+            acc_counter = 0;
+            meas_acc = 0;
+            driver_state = STATE_DELAY;
 			break;
 
 		case STATE_DELAY:
